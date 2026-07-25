@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Michael Zhou is a software engineer at Duke building high-throughput systems, applied ML pipelines, and full-stack AI products."
+    />
+    <meta name="theme-color" content="#000000" />
+    <title>Michael Zhou // Software Engineer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="noise" aria-hidden="true"></div>
+
+    <div class="shell page-shell">
+      <main id="main">
+        <section id="about" class="panel">
+          <span class="doodle doodle-a" data-doodle="star" data-color="#5eead4" aria-hidden="true"></span>
+          <h1 class="panel-title">
+            <button class="moon-toggle" type="button" aria-pressed="true" title="Turn the stars on"></button>
+            WELCOME TO MICHAELZHOU.DEV/
+            <span class="kicker-tail" data-doodle="sparkle" data-color="#cfff72" aria-hidden="true"></span>
+          </h1>
+
+          <div class="hero">
+            <div class="portrait">
+              <img class="portrait-img" src="./assets/mz-avatar.svg" alt="Pixel portrait of Michael Zhou" />
+              <span class="portrait-seal" aria-hidden="true">周</span>
+              <p class="portrait-caption">玩家 01 &mdash; duke '28</p>
+            </div>
+
+            <div class="hero-copy">
+              <p class="eyebrow">hello world, i'm</p>
+              <h2 class="hero-name">MICHAEL ZHOU<span class="accent">.</span><button
+                  class="cursor-block"
+                  type="button"
+                  aria-label="Blinking cursor — poke it"
+                ></button></h2>
+              <p class="lede">
+                I build software for the places where <b>systems, intelligence, and real-world impact</b> collide.
+              </p>
+              <p>
+                I'm an Electrical &amp; Computer Engineering and Computer Science student at Duke, with a Statistics
+                minor and a bias toward shipping. My recent work spans high-throughput market-making infrastructure,
+                bioacoustic ML research, resilient drone networks, and AI tools used across campus.
+              </p>
+            </div>
+          </div>
+
+          <pre class="boot-log" aria-live="polite" hidden></pre>
+
+          <p class="facts-lead">Some quick facts:</p>
+          <ul class="quick-facts">
+            <li>I study Electrical &amp; Computer Engineering and Computer Science at <span class="hl-duke">Duke</span>, class of '28.</li>
+            <li>I write mostly <span class="hl-lang">C++</span>, <span class="hl-lang">Python</span> and <span class="hl-lang">C#</span>, plus <span class="hl-lang">Rust</span> when latency actually matters.</li>
+            <li>Last summer I built market-making infrastructure at <a href="#experience">DraftKings</a>.</li>
+            <li>I love <span class="hl-good">racing lines</span> and <span class="hl-good">fast feedback loops</span>.</li>
+            <li>I hate <span class="hl-bad">flaky systems</span>.</li>
+            <li>There is a hand-drawn N&uuml;rburgring on this page &mdash; <a href="#race">two models drove it badly</a>.</li>
+            <li>This site is handcoded. No frameworks, no trackers, ten secrets.</li>
+            <li>I build things for people who need them. You can hire me or just say hi (use <a href="mailto:michael.zhou@duke.edu" data-hearts>e-mail</a>).</li>
+          </ul>
+
+          <div class="notice" id="site-notice">
+            <button class="notice-close" type="button" id="notice-close" aria-label="Dismiss this notice">&#10005;</button>
+            <p class="notice-title">Lights off recommended</p>
+            <p>
+              This site is best viewed in the dark. It is script-heavy on purpose &mdash; there is a cat, a starfield
+              and a racing game in here, and things get quiet if you block them.
+            </p>
+          </div>
+        </section>
+
+        <section id="race" class="panel">
+          <button
+            class="cart-slot"
+            type="button"
+            data-secret="cart"
+            title="it wobbles a bit"
+            aria-label="A loose cartridge. Give it a blow."
+          ></button>
+          <h2 class="section-title" data-icon="flag" data-icon-color="#f4f7f5">nordschleife eval</h2>
+          <p class="section-intro">
+            Two frontier models were sat down in front of a hand-drawn N&uuml;rburgring and told to drive it.
+            Neither is good at this. Take the keyboard and see if you are better.
+          </p>
+
+          <details class="brief">
+            <summary>
+              <span class="brief-cue" aria-hidden="true"></span>
+              how this works &mdash; and why it exists
+            </summary>
+            <div class="brief-body">
+              <p>
+                This is not the real Nordschleife. It is a sketch of one: 84 control points pushed through a
+                spline, following the real circuit's order of named corners and rescaled so the centreline adds
+                up to the real 20.832 km. The corner shapes are drawn by eye, not surveyed, and the road is far
+                wider than the real 8&ndash;9 m of asphalt, because at the zoom a 20 km lap needs, a true-width
+                road is a hairline. Treat it as a caricature of the Ring, not a map of it.
+              </p>
+              <p>
+                You drive it one sector at a time &mdash; clear the window you are in and it shifts to the next
+                stretch of the Ring. Grass slows you down; the treeline is a wall.
+              </p>
+              <p>
+                <b>Neither model is a scripted pace car.</b> Both lines are recordings of laps
+                <b>claude-opus-5</b> and <b>gpt-5.6-sol xhigh</b> actually drove. Each was shown the sector
+                window the same way the page draws it for you &mdash; the road as a polyline, its car inside it,
+                the gate it has to reach &mdash; and replied with arrow-key programmes. Those key presses ran
+                through <code>race-sim.js</code>, the same physics function your keyboard drives. Same four keys,
+                same grass penalty, same treeline.
+              </p>
+              <p class="brief-credit">
+                Inspired by <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>, which
+                grades models by publishing what they built and letting you play it instead of asking you to
+                trust a score. Same idea at a much smaller scale: every number here is backed by a run you can
+                watch, and you can regenerate either lap yourself with <code>npm run opus-lap</code>.
+              </p>
+            </div>
+          </details>
+
+          <div class="race-window">
+            <div class="race-window-bar">
+              <span><i></i> n&uuml;rburgring nordschleife &mdash; night</span>
+              <span id="sector-name">sector 01/18</span>
+            </div>
+            <div class="game-screen">
+              <canvas
+                id="race-canvas"
+                width="900"
+                height="600"
+                tabindex="0"
+                aria-label="Top-down racetrack. Use the arrow keys or WASD to drive to the finish."
+              ></canvas>
+              <div class="game-overlay" id="game-overlay">
+                <div class="overlay-car" aria-hidden="true">&#9650;</div>
+                <p class="overlay-title">NORDSCHLEIFE</p>
+                <p>20.832 km &middot; 18 sectors &middot; arrow keys or wasd</p>
+                <p>the window shifts each sector &middot; grass costs you</p>
+                <button id="start-race" class="button primary" type="button">start lap</button>
+              </div>
+            </div>
+            <div class="race-readout">
+              <div class="gauge you-gauge">
+                <span class="gauge-label"><i class="dot-you"></i> you</span>
+                <span class="gauge-value"><span id="player-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="player-progress"></span></span>
+              </div>
+              <div class="gauge">
+                <span class="gauge-label">lap time</span>
+                <span class="gauge-value" id="player-time">0:00.00</span>
+                <span class="gauge-note"><span id="player-hits">0</span> off-track</span>
+              </div>
+              <div class="gauge opus-stat">
+                <span class="gauge-label"><i class="dot-opus"></i> usv opus 5</span>
+                <span class="gauge-value"><span id="opus-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="opus-progress"></span></span>
+                <span class="gauge-note" id="opus-lap-note"></span>
+              </div>
+              <div class="gauge gpt-stat">
+                <span class="gauge-label"><i class="dot-gpt"></i> usv 5.6 sol xhigh</span>
+                <span class="gauge-value"><span id="gpt-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="gpt-progress"></span></span>
+                <span class="gauge-note" id="sol-lap-note"></span>
+              </div>
+            </div>
+            <div class="race-log">
+              <span id="race-log" aria-live="polite">USV OPUS 5 and USV 5.6 SOL XHIGH are waiting on the grid.</span>
+              <button id="restart-race" class="text-button" type="button">&#8635; reset</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="experience" class="panel">
+          <h2 class="section-title" data-icon="book" data-icon-color="#a9793f">
+            experience
+            <span class="heading-doodle" data-doodle="star" data-color="#f1c75b" data-scale="2" aria-hidden="true"></span>
+          </h2>
+
+          <div class="logs">
+            <article class="log">
+              <p class="log-date">2026 &mdash; jun/aug <span class="log-flag">latest</span></p>
+              <h3>DraftKings</h3>
+              <p class="log-role">software engineering intern &mdash; market making</p>
+              <p>
+                Shipped production infrastructure for a sports-pricing platform, turning legacy market-making workflows
+                into faster, more reliable systems.
+              </p>
+              <ul class="log-points">
+                <li><b>+25%</b> pipeline throughput after decomposing Kafka topics and refactoring pricing flows</li>
+                <li><b>&minus;70%</b> API latency by replacing full S3 scans with keyed Snowflake queries</li>
+                <li><b>78.7M</b> weekly warnings eliminated with precise tombstone events for dropped game states</li>
+              </ul>
+              <p class="log-tech">c# &middot; rust &middot; kafka &middot; snowflake</p>
+            </article>
+
+            <article class="log">
+              <p class="log-date">2025/26 &mdash; nov/jun</p>
+              <h3>Duke School of Medicine</h3>
+              <p class="log-role">machine learning research assistant &mdash; applied ml</p>
+              <p>
+                Built a bioacoustic ML pipeline that converts raw ultrasonic recordings into research-ready signal,
+                accelerating the study of respiratory symptoms in animal models.
+              </p>
+              <ul class="log-points">
+                <li><b>85%</b> less manual annotation across 20+ vocalization syllables at 98% recall</li>
+                <li><b>96%</b> classification accuracy using MFCC and spectral-entropy features</li>
+              </ul>
+              <p class="log-tech">pytorch &middot; matlab &middot; cuda &middot; faster r-cnn</p>
+            </article>
+
+            <article class="log">
+              <p class="log-date">2025 &mdash; may/aug</p>
+              <h3>United States Army</h3>
+              <p class="log-role">software engineering intern &mdash; resilient networks</p>
+              <p>
+                Engineered resilient communication protocols for nano-drone swarms operating in contested, dynamically
+                jammed environments.
+              </p>
+              <ul class="log-points">
+                <li><b>95.3%</b> packet delivery under static and dynamic jamming via adaptive channel hopping</li>
+                <li><b>&minus;30%</b> network blackout time using safe-RL risk constraints; co-authored a JSSR publication</li>
+              </ul>
+              <p class="log-tech">c++ &middot; python &middot; bluetooth tsch &middot; safe rl</p>
+            </article>
+
+            <article class="log">
+              <p class="log-date">2024 &mdash; jun/aug</p>
+              <h3>GMU Wireless Cyber Center</h3>
+              <p class="log-role">cyber security lab intern &mdash; wireless security</p>
+              <p>
+                Prototyped wireless security tooling and reverse-engineered embedded drone firmware, achieving an 80%
+                remote takeover rate in controlled research environments.
+              </p>
+              <p class="log-tech">python &middot; c++ &middot; 802.11 &middot; embedded</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="projects" class="panel">
+          <h2 class="section-title" data-icon="chest">
+            projects
+            <span class="heading-doodle" data-doodle="sparkle" data-color="#5eead4" data-scale="2" aria-hidden="true"></span>
+          </h2>
+
+          <article class="work">
+            <div class="work-visual graph-visual" aria-hidden="true">
+              <div class="graph-node n1">PDF</div>
+              <div class="graph-node n2">RAG</div>
+              <div class="graph-node n3">LTI</div>
+              <div class="graph-node n4">KG</div>
+              <div class="graph-node n5">AI</div>
+              <svg viewBox="0 0 500 220" preserveAspectRatio="none">
+                <path d="M80 105 L205 58 L330 118 L430 55 M205 58 L250 180 L430 55 M80 105 L250 180 L330 118" />
+              </svg>
+              <span class="visual-caption">knowledge graph // live</span>
+            </div>
+            <div class="work-body">
+              <h3>Playground AI <span class="work-num">// 001</span></h3>
+              <p>
+                An AI learning environment for Canvas, procured by Duke OIT and engineered for 1,000+ users. It turns
+                course documents into citation-backed answers, maps curriculum gaps, and deploys through repeatable IaC.
+              </p>
+              <p class="work-stats">
+                <span><b>1,000+</b> target users</span>
+                <span><b>CI/CD</b> from day one</span>
+                <span><b>RAG</b> with source citations</span>
+              </p>
+              <p class="log-tech">python &middot; flask &middot; vis.js &middot; terraform</p>
+              <p>
+                <a class="arrow-link" href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer">
+                  &rarr; view on github
+                </a>
+              </p>
+            </div>
+          </article>
+
+          <article class="work">
+            <div class="work-visual doc-visual" aria-hidden="true">
+              <div class="file-stack"><i></i><i></i><i></i><span>10K+</span></div>
+              <div class="pipeline-arrow">&rarr;</div>
+              <div class="data-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <span class="visual-caption">extraction pipeline</span>
+            </div>
+            <div class="work-body">
+              <h3>Amdahl <span class="work-num">// 002</span></h3>
+              <p>
+                Automated document extraction across 10,000+ pages of mixed-format government records, standardizing
+                metadata and cutting retention analysis from days to hours.
+              </p>
+              <p class="work-stats">
+                <span><b>&minus;85%</b> manual analysis time</span>
+                <span><b>10K+</b> pages processed</span>
+              </p>
+              <p class="log-tech">langchain &middot; chromadb &middot; gcloud</p>
+            </div>
+          </article>
+        </section>
+
+        <section id="contact" class="panel">
+          <button
+            class="doodle doodle-wish"
+            type="button"
+            data-doodle="star"
+            data-color="#cfff72"
+            data-scale="3"
+            data-secret="star"
+            title="make a wish"
+            aria-label="Make a wish"
+          ></button>
+          <h2 class="section-title" data-icon="tower" data-icon-color="#5eead4">transmission open</h2>
+          <p class="prompt-line">michael@portfolio:~$ <span>./start-a-conversation</span><i></i></p>
+          <h3 class="contact-headline">let's build something<br /><span>worth using.</span></h3>
+          <p class="contact-copy">
+            I'm always interested in ambitious engineering problems, especially where distributed systems, intelligent
+            products, or a little creative weirdness are involved.
+          </p>
+          <p class="actions">
+            <a class="button primary" href="mailto:michael.zhou@duke.edu" data-hearts>michael.zhou@duke.edu &#8599;</a>
+            <a class="button" href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer">github &#8599;</a>
+            <a class="button" href="https://linkedin.com/in/michaelzhou05" target="_blank" rel="noreferrer">linkedin &#8599;</a>
+          </p>
+        </section>
+      </main>
+
+      <aside class="sidebar" aria-label="Michael's links and profile status">
+        <nav class="side-block nav-block" aria-label="Primary">
+          <h2 class="side-title" data-icon="dpad" data-icon-color="#3ddc84">index</h2>
+          <ul class="warp-list" id="site-index">
+            <li><a href="#about" data-icon="hero" data-icon-color="#5eead4">About me</a></li>
+            <li><a href="#race" data-icon="car" data-icon-color="#ff6b6b">Nordschleife eval <em>&lt;-- play!!</em></a></li>
+            <li><a href="#experience" data-icon="book" data-icon-color="#a9793f">Work logs</a></li>
+            <li><a href="#projects" data-icon="chest">Project archive</a></li>
+            <li><a href="#contact" data-icon="tower" data-icon-color="#5eead4">Contact</a></li>
+          </ul>
+          <ul class="warp-list warp-list-away">
+            <li><a href="/Michael_Zhou_2026_FSWE.pdf" target="_blank" rel="noreferrer" data-icon="page" data-icon-color="#e8ece9">Resume &#8599;</a></li>
+            <li><a href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer" data-icon="floppy" data-icon-color="#8b918e">GitHub &#8599;</a></li>
+            <li><a href="https://linkedin.com/in/michaelzhou05" target="_blank" rel="noreferrer" data-icon="briefcase">LinkedIn &#8599;</a></li>
+            <li><a href="mailto:michael.zhou@duke.edu" data-icon="envelope" data-icon-color="#ff9ecd" data-hearts>E-mail &#9993;</a></li>
+          </ul>
+        </nav>
+
+        <section class="side-block online-block">
+          <p class="online-shout">I'm <b>ONLINE!</b></p>
+          <div class="player-card">
+            <img src="./assets/mz-avatar.svg" alt="" />
+            <div>
+              <b>Michael Zhou</b>
+              <span class="online"><i></i> open to building</span>
+            </div>
+          </div>
+          <dl class="player-stats">
+            <div><dt>class</dt><dd>engineer</dd></div>
+            <div><dt>level</dt><dd>duke '28</dd></div>
+            <div><dt>build</dt><dd>full-stack</dd></div>
+          </dl>
+        </section>
+
+        <section class="side-block">
+          <span class="napping-cat" data-doodle="catSleep" data-color="#f4f7f5" data-scale="2" aria-hidden="true"></span>
+          <h2 class="side-title" data-icon="sword" data-icon-color="#e8ece9">current quest</h2>
+          <p>Building reliable software at the intersection of systems and intelligence.</p>
+          <div class="quest-bar"><span></span></div>
+          <p class="side-note">exp: always loading&hellip;</p>
+        </section>
+
+        <section class="side-block secrets-panel">
+          <h2 class="side-title" data-icon="key" data-icon-color="#f1c75b">secrets</h2>
+          <p>Little things are hiding on this page. Go poke at them.</p>
+          <ol class="secrets-list" id="secrets-list"></ol>
+          <div class="secrets-meter"><span id="secrets-bar"></span></div>
+          <p class="side-note"><b id="secrets-count">0</b> / <b id="secrets-total">10</b> found</p>
+        </section>
+
+        <section class="side-block">
+          <h2 class="side-title" data-icon="crt" data-icon-color="#8b918e">system info</h2>
+          <dl class="player-stats">
+            <div><dt>local time</dt><dd id="local-time">--:--:--</dd></div>
+            <div>
+              <dt>screen</dt>
+              <dd>
+                <button class="gb-toggle" id="gb-toggle" type="button" title="there is another screen in here">
+                  <span class="gb-toggle-label">midnight</span>
+                </button>
+              </dd>
+            </div>
+            <div><dt>cat status</dt><dd>following you</dd></div>
+            <div><dt>coffee</dt><dd>espresso</dd></div>
+          </dl>
+          <p class="side-note ok">[ all systems operational ]</p>
+        </section>
+      </aside>
+    </div>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>★ thanks for stopping by ★ this site is handcoded, no frameworks ★ there are ten secrets hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ the screen has another mode ★ best viewed with the lights off ★</span>
+        <span>★ thanks for stopping by ★ this site is handcoded, no frameworks ★ there are ten secrets hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ the screen has another mode ★ best viewed with the lights off ★</span>
+      </div>
+    </div>
+
+    <footer>
+      <div class="shell footer-inner">
+        <p>
+          &copy; 2026 michael zhou &mdash; handcoded in a text editor<br />
+          <span class="footer-dim">best viewed in 1024&times;768 or better</span>
+        </p>
+        <p class="counter">
+          <button class="sound-test" id="sound-test" type="button" title="sound test" aria-label="Sound test">
+            <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+          </button>
+          <span class="counter-label">visitors</span>
+          <span class="counter-digits" id="hit-counter">0000000</span>
+        </p>
+        <p><a class="arrow-link" href="#top">&uarr; back to top</a></p>
+      </div>
+    </footer>
+
+    <button class="to-top" id="to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script type="module" src="./ui.js"></script>
+    <script type="module" src="./app.js"></script>
+    <script type="module" src="./friends.js"></script>
+  </body>
+</html>

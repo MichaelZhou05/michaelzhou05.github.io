@@ -1,0 +1,13 @@
+{
+  "name": "michael-zhou-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "benchmark": "node scripts/run-agent-benchmark.mjs",
+    "opus-lap": "node scripts/run-opus-racer.mjs",
+    "sol-lap": "node scripts/run-opus-racer.mjs --agent sol",
+    "check": "node --check app.js && node --check race-sim.js && node --check scripts/run-opus-racer.mjs"
+  }
+}
