@@ -1,7 +1,7 @@
 /**
  * The fun layer: a cat that follows your cursor, a pixel icon on every heading,
- * a moon that turns the stars on, a handheld hiding a second palette, and ten
- * secrets to stumble into.
+ * a moon that turns the stars on, a handheld hiding a second palette, and
+ * eleven secrets to stumble into.
  */
 import { SPRITES, spriteSvg } from './sprites.js';
 
@@ -24,6 +24,7 @@ const SECRETS = [
   { id: 'bug', icon: 'bug', color: '#2ed573', label: 'BUG SQUASHED', hint: 'something skitters past' },
   { id: 'sound', icon: 'note', color: '#7b68ee', label: 'SOUND TEST', hint: 'the footer can sing' },
   { id: 'espresso', icon: 'coffeeCup', color: '#e8e4f4', label: 'GOD SHOT', hint: 'the sidebar makes coffee' },
+  { id: 'koi', icon: 'fish', color: '#7cc7f5', label: 'THE SCREEN HOLDS WATER', hint: 'tap the dot matrix glass' },
 ];
 
 const found = new Set(JSON.parse(localStorage.getItem(STORE_KEY) || '[]'));
@@ -104,16 +105,16 @@ function paintIcons() {
  * interest in the pointer when you pet it (click), after which it follows for
  * a while, gets bored, and pads back to bed.
  *
- * Movement is a tiny steering model (velocity eased toward a target), and the
- * sprite is chosen from the velocity's compass heading — the calico has real
- * frames for E/N/S/NE/SE and mirrors them for the western half — so it walks
- * and gallops in every direction instead of moonwalking sideways.
+ * Movement is a tiny steering model (velocity eased toward a target) and the
+ * sprite comes off a classic oneko sheet (the "maria" skin — white coat, tan
+ * saddles, little red collar): 32×32 cells, all eight compass directions drawn
+ * natively, plus the sleep / groom / alert / yawn poses the states borrow.
  */
 function spawnCat() {
   const cat = document.createElement('div');
   cat.className = 'oneko';
   cat.setAttribute('role', 'img');
-  cat.setAttribute('aria-label', 'A pixel calico cat that lives on this page');
+  cat.setAttribute('aria-label', 'A pixel cat that lives on this page');
   cat.innerHTML = '<div class="oneko-bubble" hidden></div><div class="oneko-body"></div>';
   document.body.append(cat);
 
@@ -121,15 +122,34 @@ function spawnCat() {
   const bubble = cat.querySelector('.oneko-bubble');
   const statusReadout = document.getElementById('cat-status');
 
-  const frames = {};
-  ['catSit', 'catSitTail', 'catGroomA', 'catGroomB', 'catSleepA', 'catSleepB', 'catStretch',
-    'catWalkEA', 'catWalkEB', 'catRunEA', 'catRunEB', 'catWalkNA', 'catWalkNB',
-    'catWalkSA', 'catWalkSB', 'catWalkNEA', 'catWalkNEB', 'catWalkSEA', 'catWalkSEB',
-  ].forEach((name) => { frames[name] = spriteSvg(name, { scale: 2 }); });
+  // The sheet is an 8×4 grid of 32px cells, shown at the site's 2× pixel scale.
+  const CELL = 32;
+  const ZOOM = 2;
+  const BOX_W = CELL * ZOOM;
+  const BOX_H = CELL * ZOOM;
+  body.style.width = `${BOX_W}px`;
+  body.style.height = `${BOX_H}px`;
+  body.style.backgroundImage = "url('./assets/oneko-maria.png')";
+  body.style.backgroundSize = `${CELL * 8 * ZOOM}px ${CELL * 4 * ZOOM}px`;
 
-  const BOX_W = 44; // (20 + 2 outline cols) * scale 2
-  const BOX_H = 36;
-  const RUN_AT = 140; // px/s — faster than this is a gallop
+  /** [col, row] cells on the sheet, per pose — the adryd oneko.js layout. */
+  const POSE = {
+    idle: [[3, 3]],
+    alert: [[7, 3]],
+    yawn: [[3, 2]],
+    sleep: [[2, 0], [2, 1]],
+    groom: [[5, 0], [6, 0], [7, 0]],
+    N: [[1, 2], [1, 3]],
+    NE: [[0, 2], [0, 3]],
+    E: [[3, 0], [3, 1]],
+    SE: [[5, 1], [5, 2]],
+    S: [[6, 3], [7, 2]],
+    SW: [[5, 3], [6, 1]],
+    W: [[4, 2], [4, 3]],
+    NW: [[1, 0], [1, 1]],
+  };
+
+  const RUN_AT = 140; // px/s — faster than this cycles the gait at sprint tempo
 
   const rand = (lo, hi) => lo + Math.random() * (hi - lo);
 
@@ -137,9 +157,9 @@ function spawnCat() {
     mode: 'sleep',
     x: 0, y: 0, vx: 0, vy: 0,
     tx: 0, ty: 0,
-    sprite: '', facing: 1,
-    heading: 'S:1', headingCandidate: '', headingHeld: 0,
-    frameFlip: false, frameTimer: 0, bobPhase: 0,
+    pose: '', poseFrame: 0, gait: 0,
+    heading: 'S', headingCandidate: '', headingHeld: 0,
+    frameTimer: 0,
     modeTime: 0, until: 0,
     awake: 0,           // seconds since it last slept — drives the pull back to bed
     squash: 0,          // seconds of arrival-squash left
@@ -150,10 +170,14 @@ function spawnCat() {
     pointer: { x: window.innerWidth / 2, y: window.innerHeight / 2, seen: false },
   };
 
-  const setSprite = (name) => {
-    if (state.sprite === name) return;
-    state.sprite = name;
-    body.innerHTML = frames[name];
+  const setPose = (name, frame = 0) => {
+    const cells = POSE[name];
+    const index = frame % cells.length;
+    if (state.pose === name && state.poseFrame === index) return;
+    state.pose = name;
+    state.poseFrame = index;
+    const [col, row] = cells[index];
+    body.style.backgroundPosition = `${-col * CELL * ZOOM}px ${-row * CELL * ZOOM}px`;
   };
 
   const setStatus = (text) => {
@@ -208,8 +232,9 @@ function spawnCat() {
         setStatus('sleeping');
         break;
       case 'wake':
-        state.until = 1.1;
-        setStatus('stretching');
+        // Pet it awake and it skips the yawn — you have its full attention.
+        state.until = state.plan === 'follow' ? 0.55 : 1.15;
+        setStatus('waking up');
         break;
       case 'idle':
         state.until = rand(2, 5);
@@ -270,20 +295,20 @@ function spawnCat() {
   }
 
   /**
-   * Velocity → compass heading → sprite. Eight sectors map onto the five
-   * drawn directions plus a mirror flag; a heading only commits after ~90ms
-   * so the sprite doesn't flicker when the path crosses a sector boundary.
+   * Velocity → compass heading → sheet row. All eight directions exist as
+   * drawn frames, so no mirroring; a heading only commits after ~90ms so the
+   * sprite doesn't flicker when the path crosses a sector boundary.
    */
   const SECTOR = {
-    0: 'E:1', 1: 'SE:1', 2: 'S:1', 3: 'SE:-1', 4: 'E:-1',
-    '-1': 'NE:1', '-2': 'N:1', '-3': 'NE:-1', '-4': 'E:-1',
+    0: 'E', 1: 'SE', 2: 'S', 3: 'SW', 4: 'W',
+    '-1': 'NE', '-2': 'N', '-3': 'NW', '-4': 'W',
   };
 
   function moveSprite(delta) {
     const speed = Math.hypot(state.vx, state.vy);
     if (speed < 14) {
-      setSprite('catSit');
-      return 0;
+      setPose('idle');
+      return;
     }
 
     const sector = Math.round(Math.atan2(state.vy, state.vx) / (Math.PI / 4));
@@ -297,31 +322,18 @@ function spawnCat() {
         state.headingHeld = 0;
       }
     }
-    const [direction, face] = state.heading.split(':');
-    state.facing = Number(face);
 
-    const running = speed > RUN_AT;
-    const interval = running
-      ? Math.max(0.075, 11 / speed)
-      : Math.min(0.3, Math.max(0.13, 13 / speed));
+    // One stride, two tempos: an ambling walk below RUN_AT, the classic
+    // oneko sprint cadence above it.
+    const interval = speed > RUN_AT
+      ? Math.max(0.09, 14 / speed)
+      : Math.min(0.32, Math.max(0.16, 18 / speed));
     state.frameTimer += delta;
     if (state.frameTimer >= interval) {
       state.frameTimer -= interval;
-      state.frameFlip = !state.frameFlip;
+      state.gait += 1;
     }
-    state.bobPhase += (delta / interval) * Math.PI;
-
-    // The gallop is drawn side-on; diagonals borrow it with a lean. Straight
-    // up/down keeps the walk frames and just cycles them at sprint tempo.
-    let lean = 0;
-    let base = `catWalk${direction}`;
-    if (running && direction !== 'N' && direction !== 'S') {
-      base = 'catRunE';
-      lean = Math.max(-26, Math.min(26,
-        (Math.atan2(state.vy, Math.abs(state.vx)) * 180) / Math.PI * 0.6));
-    }
-    setSprite(base + (state.frameFlip ? 'B' : 'A'));
-    return running ? 0 : Math.sin(state.bobPhase) * 1.3; // run frames carry their own bounce
+    setPose(state.heading, state.gait);
   }
 
   /** A pixel "z" that drifts up off the sleeping loaf. */
@@ -329,8 +341,8 @@ function spawnCat() {
     const z = document.createElement('span');
     z.className = 'oneko-z';
     z.textContent = Math.random() < 0.25 ? 'Z' : 'z';
-    z.style.left = `${state.x + (state.facing === 1 ? 30 : 8)}px`;
-    z.style.top = `${state.y + 8}px`;
+    z.style.left = `${state.x + 40}px`;
+    z.style.top = `${state.y + 16}px`;
     document.body.append(z);
     setTimeout(() => z.remove(), 2100);
   }
@@ -405,11 +417,10 @@ function spawnCat() {
     previous = now;
     state.modeTime += delta;
     if (state.mode !== 'sleep') state.awake += delta;
-    let bob = 0;
 
     switch (state.mode) {
       case 'sleep': {
-        setSprite(state.modeTime % 2.4 < 1.2 ? 'catSleepA' : 'catSleepB');
+        setPose('sleep', Math.floor(state.modeTime / 1.1));
         state.zTimer += delta;
         if (state.zTimer > state.zNext) {
           state.zTimer = 0;
@@ -425,7 +436,7 @@ function spawnCat() {
       }
 
       case 'wake': {
-        setSprite(state.modeTime < 0.8 ? 'catStretch' : 'catSitTail');
+        setPose(state.modeTime < 0.5 ? 'alert' : 'yawn');
         if (state.modeTime >= state.until) {
           if (state.plan) decideNext();
           else enter('idle');
@@ -436,14 +447,15 @@ function spawnCat() {
       case 'idle': {
         state.flickTimer += delta;
         if (state.flicking > 0) {
+          // A single wash of the paw — three frames, then back to the loaf.
           state.flicking -= delta;
-          setSprite('catSitTail');
+          setPose('groom', Math.floor((0.9 - state.flicking) / 0.3));
         } else {
-          setSprite('catSit');
+          setPose('idle');
           if (state.flickTimer > state.flickNext) {
             state.flickTimer = 0;
-            state.flickNext = rand(1.6, 3.4);
-            state.flicking = 0.36;
+            state.flickNext = rand(2.2, 4.5);
+            state.flicking = 0.9;
           }
         }
         if (state.modeTime >= state.until) decideNext();
@@ -451,14 +463,14 @@ function spawnCat() {
       }
 
       case 'groom': {
-        setSprite(state.modeTime % 0.8 < 0.4 ? 'catGroomA' : 'catGroomB');
+        setPose('groom', Math.floor(state.modeTime / 0.28));
         if (state.modeTime >= state.until) enter('idle');
         break;
       }
 
       case 'wander': {
         const dist = locomote(delta, 78);
-        bob = moveSprite(delta);
+        moveSprite(delta);
         if (dist < 6 || state.modeTime > state.until) {
           arrive();
           if (Math.random() < 0.3) state.plan = 'wander';
@@ -480,21 +492,20 @@ function spawnCat() {
           const eager = state.mode === 'follow';
           const maxSpeed = eager ? (gap > 260 ? 250 : gap > 120 ? 165 : 110) : 105;
           locomote(delta, maxSpeed);
-          bob = moveSprite(delta);
+          moveSprite(delta);
         } else {
-          // Close enough: sit and watch the cursor, tail going.
+          // Close enough: settle and watch, with the odd wash of a paw.
           state.vx *= 0.7;
           state.vy *= 0.7;
-          state.facing = px >= 0 ? 1 : -1;
           state.flickTimer += delta;
           if (state.flicking > 0) {
             state.flicking -= delta;
-            setSprite('catSitTail');
+            setPose('groom', Math.floor((0.9 - state.flicking) / 0.3));
           } else {
-            setSprite('catSit');
-            if (state.flickTimer > 1.4) {
+            setPose('idle');
+            if (state.flickTimer > 1.8) {
               state.flickTimer = 0;
-              state.flicking = 0.36;
+              state.flicking = 0.9;
             }
           }
         }
@@ -516,7 +527,7 @@ function spawnCat() {
       }
 
       case 'curl': {
-        setSprite('catSit');
+        setPose('yawn');
         if (state.modeTime >= state.until) enter('sleep');
         break;
       }
@@ -529,21 +540,16 @@ function spawnCat() {
     state.x = Math.max(4, Math.min(window.innerWidth - BOX_W - 4, state.x));
     state.y = Math.max(4, Math.min(window.innerHeight - BOX_H - 4, state.y));
 
-    // While the pet-bounce plays, the CSS class owns the body transform.
+    // The frames carry the animation now; the only transforms left are the
+    // arrival squash and (via CSS) the pet-bounce, which owns the body while
+    // it plays.
     if (now >= state.happyUntil) {
-      if (state.squash > 0) state.squash -= delta;
-      const parts = [`scaleX(${state.facing})`];
-      if (bob !== 0) parts.unshift(`translateY(${bob.toFixed(1)}px)`);
-      if (state.mode === 'follow' || state.mode === 'shy' || state.mode === 'wander' || state.mode === 'return') {
-        const speed = Math.hypot(state.vx, state.vy);
-        if (speed > RUN_AT) {
-          const lean = Math.max(-26, Math.min(26,
-            (Math.atan2(state.vy, Math.abs(state.vx)) * 180) / Math.PI * 0.6));
-          parts.push(`rotate(${(lean * state.facing).toFixed(1)}deg)`);
-        }
+      if (state.squash > 0) {
+        state.squash -= delta;
+        body.style.transform = 'scaleY(0.9)';
+      } else if (body.style.transform) {
+        body.style.transform = '';
       }
-      if (state.squash > 0) parts.push('scaleY(0.88)');
-      body.style.transform = parts.join(' ');
     }
 
     cat.style.transform = `translate3d(${Math.round(state.x)}px, ${Math.round(state.y)}px, 0)`;
@@ -562,7 +568,7 @@ function spawnCat() {
   if (!reduceMotion) {
     requestAnimationFrame(step);
   } else {
-    setSprite('catSit');
+    setPose('idle');
     setStatus('loafing');
   }
 }
@@ -1007,7 +1013,7 @@ function greet() {
   const art = [
     '',
     '   /\\_/\\   michael zhou // portfolio',
-    '  ( o.o )  there are 10 secrets on this page.',
+    '  ( o.o )  there are 11 secrets on this page.',
     '   > ^ <   konami code. pet the cat. blow on the cartridge.',
     '',
   ].join('\n');

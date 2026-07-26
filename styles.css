@@ -562,10 +562,16 @@ main section {
   box-shadow: 0 0 8px color-mix(in srgb, var(--fami-red) 80%, transparent);
 }
 
-/* The glass: flat black behind the sprite, dot-matrix lattice in front of it. */
+/* The glass: flat black behind the sprite, dot-matrix lattice in front of it.
+   It's a button — tap it and something swims out into the page. */
 .portrait-screen {
   position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
   background: #000000;
+  cursor: pointer;
 }
 
 .portrait-screen::after {
@@ -2358,6 +2364,15 @@ footer {
   pointer-events: none;
   opacity: 0;
   transition: opacity 700ms ease;
+}
+
+/* The point-cloud creature the portrait releases — it crosses between the
+   starfield and the cards, so it reads as something out in the dark. */
+.swim-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
 body.stars-on .starfield {

@@ -491,6 +491,18 @@ export const SPRITES = {
     ],
   },
 
+  fish: {
+    grid: [
+      '........f...',
+      '..ffff..ff..',
+      '.ffffff.fff.',
+      'feffffffffff',
+      '.ffffff.fff.',
+      '..ffff..ff..',
+      '........f...',
+    ],
+  },
+
   sparkle: {
     grid: [
       '..f..',
