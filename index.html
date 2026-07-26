@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Michael Zhou is a software engineer at Duke building high-throughput systems, applied ML pipelines, and full-stack AI products."
+      content="Michael Zhou &mdash; student at Duke University studying Electrical &amp; Computer Engineering and Computer Science. Side projects, blogs, and whatever else I feel like building."
     />
-    <meta name="theme-color" content="#000000" />
-    <title>Michael Zhou // Software Engineer</title>
+    <meta name="theme-color" content="#070709" />
+    <title>Michael Zhou // student &amp; builder</title>
+    <!-- The pixel face and the text face both come from Google Fonts, and the
+         stylesheet @imports them, so open the sockets before the CSS asks. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body id="top">
@@ -18,34 +22,45 @@
     <div class="shell page-shell">
       <main id="main">
         <section id="about" class="panel">
-          <span class="doodle doodle-a" data-doodle="star" data-color="#5eead4" aria-hidden="true"></span>
           <h1 class="panel-title">
             <button class="moon-toggle" type="button" aria-pressed="true" title="Turn the stars on"></button>
-            WELCOME TO MICHAELZHOU.DEV/
-            <span class="kicker-tail" data-doodle="sparkle" data-color="#cfff72" aria-hidden="true"></span>
+            WELCOME TO MICHAELZHOU05.GITHUB.IO/
           </h1>
+
+          <div class="neon-hang">
+            <span class="neon-rig" aria-hidden="true"></span>
+            <p class="neon-sign">
+              <span class="neon-word">OPEN</span>
+              <span class="neon-sub">24/7 &mdash; always shipping</span>
+            </p>
+          </div>
 
           <div class="hero">
             <div class="portrait">
-              <img class="portrait-img" src="./assets/mz-avatar.svg" alt="Pixel portrait of Michael Zhou" />
+              <span class="portrait-led" aria-hidden="true"></span>
+              <div class="portrait-screen">
+                <img class="portrait-img" src="./assets/mz-avatar.svg" alt="Pixel portrait of Michael Zhou" />
+              </div>
               <span class="portrait-seal" aria-hidden="true">周</span>
               <p class="portrait-caption">玩家 01 &mdash; duke '28</p>
             </div>
 
             <div class="hero-copy">
-              <p class="eyebrow">hello world, i'm</p>
+              <p class="eyebrow">hey, my name is</p>
               <h2 class="hero-name">MICHAEL ZHOU<span class="accent">.</span><button
                   class="cursor-block"
                   type="button"
                   aria-label="Blinking cursor — poke it"
                 ></button></h2>
               <p class="lede">
-                I build software for the places where <b>systems, intelligence, and real-world impact</b> collide.
+                I'm a student at <b>Duke University</b>, doubling in <b>Electrical &amp; Computer Engineering</b>
+                and <b>Computer Science</b> &mdash; so yeah, pretty obviously a student and a programmer.
               </p>
               <p>
-                I'm an Electrical &amp; Computer Engineering and Computer Science student at Duke, with a Statistics
-                minor and a bias toward shipping. My recent work spans high-throughput market-making infrastructure,
-                bioacoustic ML research, resilient drone networks, and AI tools used across campus.
+                In my free time I build random things, this website very much included. Treat it as my junk
+                drawer: side projects I got way too excited about at 2am, blogs full of opinions nobody asked
+                for, and the occasional thing that actually works. Come tell me I'm wrong on
+                <a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer">@MichaelZhou50</a>.
               </p>
             </div>
           </div>
@@ -54,27 +69,19 @@
 
           <p class="facts-lead">Some quick facts:</p>
           <ul class="quick-facts">
-            <li>I study Electrical &amp; Computer Engineering and Computer Science at <span class="hl-duke">Duke</span>, class of '28.</li>
-            <li>I write mostly <span class="hl-lang">C++</span>, <span class="hl-lang">Python</span> and <span class="hl-lang">C#</span>, plus <span class="hl-lang">Rust</span> when latency actually matters.</li>
-            <li>Last summer I built market-making infrastructure at <a href="#experience">DraftKings</a>.</li>
-            <li>I love <span class="hl-good">racing lines</span> and <span class="hl-good">fast feedback loops</span>.</li>
-            <li>I hate <span class="hl-bad">flaky systems</span>.</li>
-            <li>There is a hand-drawn N&uuml;rburgring on this page &mdash; <a href="#race">two models drove it badly</a>.</li>
-            <li>This site is handcoded. No frameworks, no trackers, ten secrets.</li>
-            <li>I build things for people who need them. You can hire me or just say hi (use <a href="mailto:michael.zhou@duke.edu" data-hearts>e-mail</a>).</li>
+            <li>Mostly <span class="hl-lang">C++</span>, <span class="hl-lang">Python</span> and <span class="hl-lang">C#</span>, plus <span class="hl-lang">Rust</span> when latency actually matters.</li>
+            <li>In 2025 I made it to <span class="hl-good">6 of the 7 continents</span>. Antarctica is still winning.</li>
+            <li>Golf, spikeball and pickleball on repeat &mdash; and I'm learning tennis, badly.</li>
+            <li>
+              I'm a <span class="hl-good">BIIIGG</span> espresso geek &mdash; someone please buy me my
+              <a href="https://home.lamarzoccousa.com/espresso-machines/linea-mini/" target="_blank" rel="noreferrer" data-coffee>dream espresso machine</a> plzz.
+            </li>
+            <li>Say hi about anything: <a href="mailto:michael.zhou@duke.edu" data-hearts>e-mail</a> or <a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer" data-birds>Twitter</a>.</li>
           </ul>
-
-          <div class="notice" id="site-notice">
-            <button class="notice-close" type="button" id="notice-close" aria-label="Dismiss this notice">&#10005;</button>
-            <p class="notice-title">Lights off recommended</p>
-            <p>
-              This site is best viewed in the dark. It is script-heavy on purpose &mdash; there is a cat, a starfield
-              and a racing game in here, and things get quiet if you block them.
-            </p>
-          </div>
         </section>
 
         <section id="race" class="panel">
+          <span class="cart-dock" aria-hidden="true"></span>
           <button
             class="cart-slot"
             type="button"
@@ -82,7 +89,7 @@
             title="it wobbles a bit"
             aria-label="A loose cartridge. Give it a blow."
           ></button>
-          <h2 class="section-title" data-icon="flag" data-icon-color="#f4f7f5">nordschleife eval</h2>
+          <h2 class="section-title" data-icon="flag" data-icon-color="#e8e4f4">nordschleife eval</h2>
           <p class="section-intro">
             Two frontier models were sat down in front of a hand-drawn N&uuml;rburgring and told to drive it.
             Neither is good at this. Take the keyboard and see if you are better.
@@ -130,13 +137,13 @@
             <div class="game-screen">
               <canvas
                 id="race-canvas"
-                width="900"
-                height="600"
+                width="300"
+                height="200"
                 tabindex="0"
                 aria-label="Top-down racetrack. Use the arrow keys or WASD to drive to the finish."
               ></canvas>
               <div class="game-overlay" id="game-overlay">
-                <div class="overlay-car" aria-hidden="true">&#9650;</div>
+                <div class="overlay-car" aria-hidden="true"></div>
                 <p class="overlay-title">NORDSCHLEIFE</p>
                 <p>20.832 km &middot; 18 sectors &middot; arrow keys or wasd</p>
                 <p>the window shifts each sector &middot; grass costs you</p>
@@ -161,24 +168,21 @@
                 <span class="gauge-note" id="opus-lap-note"></span>
               </div>
               <div class="gauge gpt-stat">
-                <span class="gauge-label"><i class="dot-gpt"></i> usv 5.6 sol xhigh</span>
+                <span class="gauge-label"><i class="dot-gpt"></i> usv gpt 5.6 xhigh</span>
                 <span class="gauge-value"><span id="gpt-distance">00</span><em>%</em></span>
                 <span class="progress-track"><span id="gpt-progress"></span></span>
                 <span class="gauge-note" id="sol-lap-note"></span>
               </div>
             </div>
             <div class="race-log">
-              <span id="race-log" aria-live="polite">USV OPUS 5 and USV 5.6 SOL XHIGH are waiting on the grid.</span>
+              <span id="race-log" aria-live="polite">USV OPUS 5 and USV GPT 5.6 XHIGH are waiting on the grid.</span>
               <button id="restart-race" class="text-button" type="button">&#8635; reset</button>
             </div>
           </div>
         </section>
 
         <section id="experience" class="panel">
-          <h2 class="section-title" data-icon="book" data-icon-color="#a9793f">
-            experience
-            <span class="heading-doodle" data-doodle="star" data-color="#f1c75b" data-scale="2" aria-hidden="true"></span>
-          </h2>
+          <h2 class="section-title" data-icon="book" data-icon-color="#ffb000">experience</h2>
 
           <div class="logs">
             <article class="log">
@@ -241,10 +245,7 @@
         </section>
 
         <section id="projects" class="panel">
-          <h2 class="section-title" data-icon="chest">
-            projects
-            <span class="heading-doodle" data-doodle="sparkle" data-color="#5eead4" data-scale="2" aria-hidden="true"></span>
-          </h2>
+          <h2 class="section-title" data-icon="chest">projects</h2>
 
           <article class="work">
             <div class="work-visual graph-visual" aria-hidden="true">
@@ -305,21 +306,22 @@
             class="doodle doodle-wish"
             type="button"
             data-doodle="star"
-            data-color="#cfff72"
+            data-color="#ffb000"
             data-scale="3"
             data-secret="star"
             title="make a wish"
             aria-label="Make a wish"
           ></button>
-          <h2 class="section-title" data-icon="tower" data-icon-color="#5eead4">transmission open</h2>
+          <h2 class="section-title" data-icon="tower" data-icon-color="#7b68ee">transmission open</h2>
           <p class="prompt-line">michael@portfolio:~$ <span>./start-a-conversation</span><i></i></p>
           <h3 class="contact-headline">let's build something<br /><span>worth using.</span></h3>
           <p class="contact-copy">
-            I'm always interested in ambitious engineering problems, especially where distributed systems, intelligent
-            products, or a little creative weirdness are involved.
+            Cool engineering problem, a project idea, a strong opinion about espresso, or a pickleball game &mdash;
+            all of it is fair game. My inbox is open and my Twitter replies are worse.
           </p>
           <p class="actions">
-            <a class="button primary" href="mailto:michael.zhou@duke.edu" data-hearts>michael.zhou@duke.edu &#8599;</a>
+            <a class="button primary" href="mailto:michael.zhou@duke.edu">michael.zhou@duke.edu &#8599;</a>
+            <a class="button" href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer">twitter &#8599;</a>
             <a class="button" href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer">github &#8599;</a>
             <a class="button" href="https://linkedin.com/in/michaelzhou05" target="_blank" rel="noreferrer">linkedin &#8599;</a>
           </p>
@@ -328,21 +330,42 @@
 
       <aside class="sidebar" aria-label="Michael's links and profile status">
         <nav class="side-block nav-block" aria-label="Primary">
-          <h2 class="side-title" data-icon="dpad" data-icon-color="#3ddc84">index</h2>
+          <h2 class="side-title" data-icon="dpad" data-icon-color="#7b68ee">index</h2>
           <ul class="warp-list" id="site-index">
-            <li><a href="#about" data-icon="hero" data-icon-color="#5eead4">About me</a></li>
-            <li><a href="#race" data-icon="car" data-icon-color="#ff6b6b">Nordschleife eval <em>&lt;-- play!!</em></a></li>
-            <li><a href="#experience" data-icon="book" data-icon-color="#a9793f">Work logs</a></li>
+            <li><a href="#about" data-icon="hero" data-icon-color="#7b68ee">About me</a></li>
+            <li><a href="#race" data-icon="car" data-icon-color="#e60012">Nordschleife eval <i class="nav-tag">play</i></a></li>
+            <li><a href="#experience" data-icon="book" data-icon-color="#ffb000">Work logs</a></li>
             <li><a href="#projects" data-icon="chest">Project archive</a></li>
-            <li><a href="#contact" data-icon="tower" data-icon-color="#5eead4">Contact</a></li>
+            <li><a href="#contact" data-icon="tower" data-icon-color="#7b68ee">Contact</a></li>
           </ul>
           <ul class="warp-list warp-list-away">
-            <li><a href="/Michael_Zhou_2026_FSWE.pdf" target="_blank" rel="noreferrer" data-icon="page" data-icon-color="#e8ece9">Resume &#8599;</a></li>
-            <li><a href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer" data-icon="floppy" data-icon-color="#8b918e">GitHub &#8599;</a></li>
+            <li><a href="/Michael_Zhou_2026_FSWE.pdf" target="_blank" rel="noreferrer" data-icon="page" data-icon-color="#e8e4f4">Resume &#8599;</a></li>
+            <li><a href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer" data-icon="floppy" data-icon-color="#8a849f">GitHub &#8599;</a></li>
+            <li><a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer" data-icon="ghost" data-icon-color="#7b68ee">Twitter &#8599;</a></li>
             <li><a href="https://linkedin.com/in/michaelzhou05" target="_blank" rel="noreferrer" data-icon="briefcase">LinkedIn &#8599;</a></li>
-            <li><a href="mailto:michael.zhou@duke.edu" data-icon="envelope" data-icon-color="#ff9ecd" data-hearts>E-mail &#9993;</a></li>
+            <li><a href="mailto:michael.zhou@duke.edu" data-icon="envelope" data-icon-color="#b8a9ff">E-mail &#9993;</a></li>
           </ul>
         </nav>
+
+        <section class="side-block espresso-block">
+          <h2 class="side-title" data-icon="coffeeCup" data-icon-color="#e8e4f4">coffee break</h2>
+          <div class="espresso-frame">
+            <div class="espresso-bar">
+              <span><i></i> la pixelle &mdash; lever</span>
+              <span class="espresso-shots"><span id="espresso-shots">0</span> shots</span>
+            </div>
+            <div class="espresso-screen">
+              <canvas
+                id="espresso-canvas"
+                width="128"
+                height="104"
+                tabindex="0"
+                aria-label="A pixel espresso bar. Work the stations in order with clicks, or enter and space: scoop the beans, crank the grinder, dose and tamp the portafilter, lock it into the machine, hold the lever to pull the shot, then drink it."
+              ></canvas>
+            </div>
+            <p class="espresso-hint" id="espresso-hint" aria-live="polite">click the bean sack &mdash; load the hopper</p>
+          </div>
+        </section>
 
         <section class="side-block online-block">
           <p class="online-shout">I'm <b>ONLINE!</b></p>
@@ -355,29 +378,16 @@
           </div>
           <dl class="player-stats">
             <div><dt>class</dt><dd>engineer</dd></div>
-            <div><dt>level</dt><dd>duke '28</dd></div>
+            <div><dt>level</dt><dd>student, duke '28</dd></div>
             <div><dt>build</dt><dd>full-stack</dd></div>
           </dl>
-        </section>
-
-        <section class="side-block">
-          <span class="napping-cat" data-doodle="catSleep" data-color="#f4f7f5" data-scale="2" aria-hidden="true"></span>
-          <h2 class="side-title" data-icon="sword" data-icon-color="#e8ece9">current quest</h2>
-          <p>Building reliable software at the intersection of systems and intelligence.</p>
+          <p class="quest-line">current quest: side projects, better espresso shots, a tennis serve that lands.</p>
           <div class="quest-bar"><span></span></div>
           <p class="side-note">exp: always loading&hellip;</p>
         </section>
 
-        <section class="side-block secrets-panel">
-          <h2 class="side-title" data-icon="key" data-icon-color="#f1c75b">secrets</h2>
-          <p>Little things are hiding on this page. Go poke at them.</p>
-          <ol class="secrets-list" id="secrets-list"></ol>
-          <div class="secrets-meter"><span id="secrets-bar"></span></div>
-          <p class="side-note"><b id="secrets-count">0</b> / <b id="secrets-total">10</b> found</p>
-        </section>
-
         <section class="side-block">
-          <h2 class="side-title" data-icon="crt" data-icon-color="#8b918e">system info</h2>
+          <h2 class="side-title" data-icon="crt" data-icon-color="#8a849f">system info</h2>
           <dl class="player-stats">
             <div><dt>local time</dt><dd id="local-time">--:--:--</dd></div>
             <div>
@@ -388,25 +398,36 @@
                 </button>
               </dd>
             </div>
-            <div><dt>cat status</dt><dd>following you</dd></div>
+            <div><dt>cat status</dt><dd id="cat-status">sleeping</dd></div>
             <div><dt>coffee</dt><dd>espresso</dd></div>
           </dl>
           <p class="side-note ok">[ all systems operational ]</p>
         </section>
+
+        <div class="rail-tail">
+        <section class="side-block secrets-panel">
+          <h2 class="side-title" data-icon="key" data-icon-color="#ffb000">secrets</h2>
+          <p>Little things are hiding on this page. Go poke at them.</p>
+          <ol class="secrets-list" id="secrets-list"></ol>
+          <div class="secrets-meter"><span id="secrets-bar"></span></div>
+          <p class="side-note"><b id="secrets-count">0</b> / <b id="secrets-total">10</b> found</p>
+        </section>
+
+        </div>
       </aside>
     </div>
 
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>★ thanks for stopping by ★ this site is handcoded, no frameworks ★ there are ten secrets hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ the screen has another mode ★ best viewed with the lights off ★</span>
-        <span>★ thanks for stopping by ★ this site is handcoded, no frameworks ★ there are ten secrets hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ the screen has another mode ★ best viewed with the lights off ★</span>
+        <span>thanks for stopping by ★ no trackers, no popups ★ ten secrets are hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ best viewed with the lights off ★</span>
+        <span>thanks for stopping by ★ no trackers, no popups ★ ten secrets are hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ best viewed with the lights off ★</span>
       </div>
     </div>
 
     <footer>
       <div class="shell footer-inner">
         <p>
-          &copy; 2026 michael zhou &mdash; handcoded in a text editor<br />
+          &copy; 2026 michael zhou &mdash; built at 2am, probably<br />
           <span class="footer-dim">best viewed in 1024&times;768 or better</span>
         </p>
         <p class="counter">
@@ -425,5 +446,6 @@
     <script type="module" src="./ui.js"></script>
     <script type="module" src="./app.js"></script>
     <script type="module" src="./friends.js"></script>
+    <script type="module" src="./espresso.js"></script>
   </body>
 </html>

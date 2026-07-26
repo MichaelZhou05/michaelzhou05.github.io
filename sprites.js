@@ -7,44 +7,447 @@
  * so one drawing can serve many moods. Every other glyph is a fixed accent.
  */
 
+/**
+ * The sprite palette is the page palette: the neutrals carry the console's
+ * violet cast rather than the old green one, and the three accents are the
+ * same indigo / amber / PCB-green the CSS lights things with.
+ */
 const PALETTE = {
-  f: '#f4f7f5', // fur / body / primary
-  s: '#9aa5a0', // shade
-  e: '#0a0a0a', // eye
+  f: '#f2f0fa', // fur / body / primary
+  s: '#8a849f', // shade
+  e: '#07060c', // eye
   p: '#ff9ecd', // nose, blush, inner ear
-  t: '#5eead4', // teal accent
-  y: '#f1c75b', // amber accent / brass
-  m: '#cfff72', // lime accent / lit screen
-  d: '#1d2b27', // drawn line (closed eyes, mouth, panel gaps)
-  w: '#e8ece9', // paper white
+  t: '#7b68ee', // indigo accent
+  y: '#ffb000', // amber accent / brass
+  m: '#2ed573', // pcb green / lit screen
+  d: '#1b1826', // drawn line (closed eyes, mouth, panel gaps)
+  w: '#e8e4f4', // paper white
   k: '#f2c49b', // skin
   o: '#a9793f', // wood / leather
-  n: '#151816', // near-black plastic
+  n: '#16141d', // near-black plastic
+  g: '#dd9f4e', // ginger fur (the calico's brown/yellow patches)
+  c: '#3d3849', // charcoal fur — "black" that still reads against the outline
 };
 
-const cat = (legs, extra = {}) => [
-  '...f........f...',
-  '...ff......ff...',
-  '..ffff....ffff..',
-  '..ffffffffffff..',
-  '..ffffffffffff..',
-  extra.eyes ?? '..ffeffffffeff..',
-  '..fpfffppfffpf..',
-  '..ffffffffffff..',
-  '...ffffffffff..f',
-  '...ffffffffff..f',
-  '..ffffffffffffff',
-  '..ffffffffffff..',
-  '..ffffffffffff..',
-  legs,
-];
-
+/**
+ * The calico. One cat, many frames, all on the same 20×16 canvas so the DOM box
+ * never changes size between frames — the chase code just swaps innerHTML.
+ *
+ * Colour language, consistent everywhere: white base (`w`), a charcoal saddle
+ * over the back and left shoulder (`c`), ginger left ear / tail / flank
+ * patches (`g`). Every side-view frame is drawn facing RIGHT; the behaviour
+ * code mirrors with scaleX(-1) for the left-handed half of the compass.
+ *
+ * Directions on the sprite sheet: E (side), N (walking away — you get the
+ * back of its head), S (walking at you), NE and SE (three-quarter views).
+ * Each direction is a two-frame gait; the run is its own two-frame gallop
+ * (full extension in the air / gathered bound on the ground).
+ */
 export const SPRITES = {
-  catSit: { grid: cat('..fff.ffff.fff..') },
-  catStepA: { grid: cat('.ffff.ffff..ff..') },
-  catStepB: { grid: cat('..ff..ffff.ffff.') },
-  catSleep: {
-    grid: cat('..ffffffffffff..', { eyes: '..ffddffffddff..' }),
+  /* sit, facing the viewer — the default loaf */
+  catSit: {
+    grid: [
+      '.....g........w.....',
+      '....gg.......ww.....',
+      '....gpg.....wpw.....',
+      '....ggggwwwwwww.....',
+      '....ggwwwwwwwww.....',
+      '....gwwewwwweww.....',
+      '....wwwwwppwwww.....',
+      '.....wwwwwwwww......',
+      '.....wwwwwwwww......',
+      '....cwwwwwwwwww.....',
+      '...ccwwwwwwwwwww....',
+      '...ccwwwwwwwwwww....',
+      '...cwwwwwwwwwwww....',
+      '...wwwwwwwwwwwww....',
+      '..ggwwwwwwwwwwww....',
+      '..gg.www..www.......',
+    ],
+  },
+
+  /* sit with the tail flicked up — the idle blink of cat body language */
+  catSitTail: {
+    grid: [
+      '.....g........w.....',
+      '....gg.......ww.....',
+      '....gpg.....wpw.....',
+      '....ggggwwwwwww.....',
+      '....ggwwwwwwwww.....',
+      '....gwwewwwweww.....',
+      '....wwwwwppwwww.....',
+      '.....wwwwwwwww......',
+      '..g..wwwwwwwww......',
+      '..g.cwwwwwwwwww.....',
+      '..gccwwwwwwwwwww....',
+      '..gccwwwwwwwwwww....',
+      '...cwwwwwwwwwwww....',
+      '...wwwwwwwwwwwww....',
+      '...wwwwwwwwwwww.....',
+      '.....www..www.......',
+    ],
+  },
+
+  /* grooming: eyes shut, one forepaw raised to the cheek… */
+  catGroomA: {
+    grid: [
+      '.....g........w.....',
+      '....gg.......ww.....',
+      '....gpg.....wpw.....',
+      '....ggggwwwwwww.....',
+      '....ggwwwwwwwww.....',
+      '....gwwdwwwwdww.....',
+      '....wwwwwppwwww.....',
+      '.....wwwwwwwww......',
+      '.....wwwwwwwww.w....',
+      '....cwwwwwwwwwww....',
+      '...ccwwwwwwwwwww....',
+      '...ccwwwwwwwwwww....',
+      '...cwwwwwwwwwwww....',
+      '...wwwwwwwwwwwww....',
+      '..ggwwwwwwwwwwww....',
+      '..gg.www............',
+    ],
+  },
+
+  /* …and back down. Alternating the pair reads as licking. */
+  catGroomB: {
+    grid: [
+      '.....g........w.....',
+      '....gg.......ww.....',
+      '....gpg.....wpw.....',
+      '....ggggwwwwwww.....',
+      '....ggwwwwwwwww.....',
+      '....gwwdwwwwdww.....',
+      '....wwwwwppwwww.....',
+      '.....wwwwwwwww......',
+      '.....wwwwwwwww......',
+      '....cwwwwwwwwww.....',
+      '...ccwwwwwwwwwww....',
+      '...ccwwwwwwwwwww....',
+      '...cwwwwwwwwwwww....',
+      '...wwwwwwwwwwwww....',
+      '..ggwwwwwwwwwwww....',
+      '..gg.www..www.......',
+    ],
+  },
+
+  /* curled sleep, exhale — head on paws, tail wrapped over the front */
+  catSleepA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '.....ccccc..........',
+      '...ccccccccc..g.....',
+      '..ccccccccwwwwgw....',
+      '..cccccwwwwwwwwww...',
+      '..wwwwwwwwwwddwww...',
+      '..wwwwwwwwwwwwwpw...',
+      '..gggggwwwwwwwwww...',
+      '...ggggggwwwwww.....',
+    ],
+  },
+
+  /* curled sleep, inhale — the whole loaf lifts a pixel */
+  catSleepB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '......cccc..........',
+      '....cccccccc........',
+      '...ccccccccc..g.....',
+      '..ccccccccwwwwgw....',
+      '..cccccwwwwwwwwww...',
+      '..wwwwwwwwwwddwww...',
+      '..wwwwwwwwwwwwwpw...',
+      '..gggggwwwwwwwwww...',
+      '...ggggggwwwwww.....',
+    ],
+  },
+
+  /* the wake-up: rump high, forelegs flat along the ground */
+  catStretch: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '..c.................',
+      '..cc.........g.w....',
+      '...ccc.......gww....',
+      '...ccccc....wwww....',
+      '....cccwwwwwwwwewp..',
+      '....ww....wwwwww....',
+      '...ww.........ww....',
+    ],
+  },
+
+  /* -- walk east (side view, facing right) -- */
+  catWalkEA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '.c............g..w..',
+      '.c...........gg.ww..',
+      '..c..........gggwww.',
+      '..c..........ggwwwww',
+      '...c...ccc...gwwewwp',
+      '....ccccccccwwwwwwww',
+      '....ccccccccwwwwwww.',
+      '....wcccccwwwwwwww..',
+      '....wwwwwwwwwwwwww..',
+      '....ww.s......s.ww..',
+      '...ww...........ww..',
+    ],
+  },
+  catWalkEB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '..c...........g..w..',
+      '..c..........gg.ww..',
+      '..c..........gggwww.',
+      '...c.........ggwwwww',
+      '...c...ccc...gwwewwp',
+      '....ccccccccwwwwwwww',
+      '....ccccccccwwwwwww.',
+      '....wcccccwwwwwwww..',
+      '....wwwwwwwwwwwwww..',
+      '.....s.ww....ww.s...',
+      '.......ww.....ww....',
+    ],
+  },
+
+  /* -- gallop east: A is full extension (airborne), B the gathered bound -- */
+  catRunEA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '.............g..w...',
+      'c............ggwww..',
+      '.cc....ccc..gwwwewp.',
+      '...ccccccccwwwwwwww.',
+      '..wwccccwwwwwwwwww..',
+      '.ww..wwwwwwwww...ww.',
+      'ww................ww',
+      '....................',
+      '....................',
+    ],
+  },
+  catRunEB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '......cccc...g.w....',
+      '....cccccccggww.....',
+      '...ccccccwwwwwwew...',
+      '..ggwwwwwwwwwwwwp...',
+      '...wwwwwwwwwwwww....',
+      '....wwwwwwwwwww.....',
+      '.....ww...ww........',
+    ],
+  },
+
+  /* -- walk north: walking away, tail up like a flag -- */
+  catWalkNA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '..........g.........',
+      '..........g.........',
+      '.........gg.........',
+      '.....g...g....w.....',
+      '.....gg..g...ww.....',
+      '.....ggggccwwww.....',
+      '.....gggcccwwww.....',
+      '....wccccccccww.....',
+      '....wcccccccwww.....',
+      '....wwwwwwwwwww.....',
+      '.....ww....ww.......',
+      '.....ww.............',
+    ],
+  },
+  catWalkNB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '.........g..........',
+      '.........g..........',
+      '.........gg.........',
+      '.....g...g....w.....',
+      '.....gg..g...ww.....',
+      '.....ggggccwwww.....',
+      '.....gggcccwwww.....',
+      '....wccccccccww.....',
+      '....wcccccccwww.....',
+      '....wwwwwwwwwww.....',
+      '.....ww....ww.......',
+      '...........ww.......',
+    ],
+  },
+
+  /* -- walk south: coming straight at you -- */
+  catWalkSA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '.....g........w.....',
+      '....gg.......ww.....',
+      '....gpg.....wpw.....',
+      '....ggggwwwwwww.....',
+      '....gwwewwwweww.....',
+      '....wwwwwppwwww.....',
+      '.....wwwwwwwww......',
+      '....cwwwwwwwwww.....',
+      '...gcwwwwwwwwww.....',
+      '..g.wwwwwwwwwww.....',
+      '.....ww.....ww......',
+      '.....ww.............',
+    ],
+  },
+  catWalkSB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '.....g........w.....',
+      '....gg.......ww.....',
+      '....gpg.....wpw.....',
+      '....ggggwwwwwww.....',
+      '....gwwewwwweww.....',
+      '....wwwwwppwwww.....',
+      '.....wwwwwwwww......',
+      '....cwwwwwwwwww.....',
+      '...gcwwwwwwwwww.....',
+      '..g.wwwwwwwwwww.....',
+      '.....ww.....ww......',
+      '............ww......',
+    ],
+  },
+
+  /* -- walk north-east: three-quarter back view -- */
+  catWalkNEA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '...g................',
+      '...g.........g..w...',
+      '....g........ggww...',
+      '....g......ggggww...',
+      '.....g....ccggwwww..',
+      '......ccccccgwwww...',
+      '.....cccccccwwww....',
+      '....wcccccwwwww.....',
+      '....wwwwwwwwww......',
+      '....wwwwwwwww.......',
+      '....ww....ww........',
+      '....ww..............',
+    ],
+  },
+  catWalkNEB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '....g...............',
+      '....g........g..w...',
+      '....g........ggww...',
+      '.....g.....ggggww...',
+      '.....g....ccggwwww..',
+      '......ccccccgwwww...',
+      '.....cccccccwwww....',
+      '....wcccccwwwww.....',
+      '....wwwwwwwwww......',
+      '....wwwwwwwww.......',
+      '....ww....ww........',
+      '..........ww........',
+    ],
+  },
+
+  /* -- walk south-east: three-quarter front view -- */
+  catWalkSEA: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '..g.................',
+      '..g......g....w.....',
+      '...g....gg...ww.....',
+      '...g....gggwwww.....',
+      '..cc...ggggwwwww....',
+      '..ccccwgwwewwwew....',
+      '..ccwwwwwwwwwwww....',
+      '...wwwwwwwwwppww....',
+      '...wwwwwwwwwwww.....',
+      '....wwwwwwwwww......',
+      '...ww......ww.......',
+      '...ww...............',
+    ],
+  },
+  catWalkSEB: {
+    grid: [
+      '....................',
+      '....................',
+      '....................',
+      '....................',
+      '...g................',
+      '...g.....g....w.....',
+      '...g....gg...ww.....',
+      '....g...gggwwww.....',
+      '..cc...ggggwwwww....',
+      '..ccccwgwwewwwew....',
+      '..ccwwwwwwwwwwww....',
+      '...wwwwwwwwwppww....',
+      '...wwwwwwwwwwww.....',
+      '....wwwwwwwwww......',
+      '...ww......ww.......',
+      '...........ww.......',
+    ],
   },
 
   star: {
@@ -143,13 +546,17 @@ export const SPRITES = {
   /** Directional pad — the navigation icon, obviously. */
   dpad: {
     grid: [
-      '..fff..',
-      '..fff..',
-      'fffffff',
-      'fffsfff',
-      'fffffff',
-      '..fff..',
-      '..fff..',
+      '....fff....',
+      '....fff....',
+      '....fff....',
+      '....fff....',
+      'fffffffffff',
+      'fffffsfffff',
+      'fffffffffff',
+      '....fff....',
+      '....fff....',
+      '....fff....',
+      '....fff....',
     ],
   },
 
@@ -193,11 +600,51 @@ export const SPRITES = {
       '....fff....',
       '..fffffff..',
       '.fffffffff.',
+      'fffffffffff',
       'ffeefffeeff',
       'fffffffffff',
-      'ffffdddffff',
+      'fffdddddfff',
       'fffffffffff',
       'fffffffffff',
+      'fffffffffff',
+    ],
+  },
+
+  /** Side-view flyer, wing up mid-flap. The amber beak survives any recolour. */
+  bird: {
+    grid: [
+      '....ff...',
+      '...ffff..',
+      'f..fffff.',
+      'ffffffef.',
+      '.fffffffy',
+      '..fffff..',
+      '...ff....',
+    ],
+  },
+
+  /** One cell of a contribution graph. The auto-outline is the border. */
+  commitSquare: {
+    grid: [
+      '.fff.',
+      'fffff',
+      'fffff',
+      'fffff',
+      '.fff.',
+    ],
+  },
+
+  /** A demitasse on its saucer, steam still rising. The crema stays brown. */
+  coffeeCup: {
+    grid: [
+      '..w..w...',
+      '.w..w....',
+      'fooooof..',
+      'fffffffff',
+      'fffffff.f',
+      'fffffffff',
+      '.fffff...',
+      'ffffffff.',
     ],
   },
 
@@ -218,33 +665,38 @@ export const SPRITES = {
 
   /* -------------------------------------------------------- nav objects */
 
-  /** Top-down racer, four fat tyres and a dark cockpit. */
+  /**
+   * Top-down racer. The tyres are held a pixel off the bodywork so the
+   * renderer's outline runs between them — otherwise dark-on-dark reads as one
+   * solid lump.
+   */
   car: {
     grid: [
-      '..fff..',
-      '..fff..',
-      'nnfffnn',
-      'nnfffnn',
-      '..fff..',
-      '.ddddd.',
-      '..fff..',
-      'nnfffnn',
-      'nnfffnn',
-      '.fffff.',
-      '.fffff.',
+      '...fffff...',
+      '...fffff...',
+      'nn.fffff.nn',
+      'nn.fffff.nn',
+      '...fffff...',
+      '...ddddd...',
+      '...fffff...',
+      'nn.fffff.nn',
+      'nn.fffff.nn',
+      '..fffffff..',
+      '..fffffff..',
     ],
   },
 
+  /** Open book: white leaves, a dark gutter, the cover showing along the base. */
   book: {
     grid: [
-      '..fffffff..',
-      '.fffffffff.',
-      '.fwwwfwwwf.',
-      '.fwdwfwdwf.',
-      '.fwwwfwwwf.',
-      '.fwdwfwdwf.',
-      '.fwwwfwwwf.',
-      '.fffffffff.',
+      '..ff...ff..',
+      '.wwwwfwwww.',
+      'wwwwwfwwwww',
+      'wwdwwfwwdww',
+      'wwwwwfwwwww',
+      'wwdwwfwwdww',
+      'wwwwwfwwwww',
+      '.wwwwfwwww.',
       '..fffffff..',
     ],
   },
@@ -297,11 +749,11 @@ export const SPRITES = {
   floppy: {
     grid: [
       'fffffffff',
-      'fdddsdddf',
-      'fdddsdddf',
-      'fffffffff',
+      'ffssssdff',
+      'ffssssdff',
       'fffffffff',
       'fwwwwwwwf',
+      'fwdddddwf',
       'fwdddddwf',
       'fwwwwwwwf',
       'fffffffff',
@@ -329,9 +781,9 @@ export const SPRITES = {
       '.t..fff..t.',
       't...f.f...t',
       '...ff.ff...',
-      '...f...f...',
+      '..fffffff..',
       '..ff...ff..',
-      '..f.....f..',
+      '.ff.....ff.',
       '.ff.....ff.',
       'fff.....fff',
     ],
@@ -492,7 +944,7 @@ export function spriteSvg(name, options = {}) {
   const sprite = SPRITES[name];
   if (!sprite) throw new Error(`Unknown sprite: ${name}`);
 
-  const { scale = 3, color, outline = '#05100c', palette = {}, className = '' } = options;
+  const { scale = 3, color, outline = '#07060c', palette = {}, className = '' } = options;
   const colors = { ...PALETTE, ...(color ? { f: color } : {}), ...palette };
   const grid = sprite.grid;
   const height = grid.length;

@@ -1,7 +1,8 @@
 # Michael Zhou — Personal Portfolio
 
 A zero-dependency, retro-styled portfolio on a pure-black canvas, with a playable
-top-down human-vs-agent race and a handful of pixel-art easter eggs.
+top-down human-vs-agent race, a pixel espresso bar in the sidebar, and a handful
+of pixel-art easter eggs.
 
 ## Run locally
 
@@ -51,7 +52,7 @@ needed — but it is real inference, and a full lap costs a few dollars. The who
 is one resumed session, so the model carries what it learns from sector to sector.
 Pass `--sectors 2` to try a short run first.
 
-`USV 5.6 SOL XHIGH` works the same way. It runs `gpt-5.6-sol` through the local
+`USV GPT 5.6 XHIGH` works the same way. It runs `gpt-5.6-sol` through the local
 Codex CLI with `model_reasoning_effort="xhigh"`, gives the agent the same sector
 window, car position, road polyline, and gate as Opus, and records the resulting
 four-key input through the shared physics. Regenerate it with:
@@ -60,20 +61,35 @@ four-key input through the shared physics. Regenerate it with:
 npm run sol-lap
 ```
 
+## Coffee break
+
+The sidebar's `coffee break` card is a seven-step espresso game (`espresso.js`):
+scoop the beans, crank the grinder, dose and tamp the portafilter, lock it into
+the lever machine, hold the lever to pull the shot, drink. Everything is
+`fillRect` on a 128×104 canvas — no sprite sheets — so DMG mode greens the
+espresso along with everything else. The shot counter persists in
+`localStorage`.
+
 ## Easter eggs
 
-Six secrets are scattered across the page; the sidebar tracks how many you've found
+Ten secrets are scattered across the page; the sidebar tracks how many you've found
 (progress is kept in `localStorage`).
 
 | Secret | Where |
 | --- | --- |
-| The cat purrs | A pixel cat follows your cursor — click it |
+| The cat purrs | A pixel calico lives on the page — mostly asleep at the edges. Pet it (click) and it will follow you around for a while |
 | Lights out, stars on | The moon beside the hero kicker toggles the starfield |
 | Wish granted | One doodle, on the contact panel, is clickable |
-| Caught a ghost | A ghost drifts in every so often — catch it before it fades |
 | Secret boot log | Click the blinking cursor block in the wordmark three times |
 | Arcade mode | ↑ ↑ ↓ ↓ ← → ← → B A |
+| DMG mode | The `screen` row in system info is a button — it repaints the site in the original four greens |
+| Blew the dust out | A cartridge sits loose above the eval panel. It takes two goes, obviously |
+| Bug squashed | One skitters along the bottom of the window now and then; squashing it opens a battle box |
+| Sound test | The note button in the footer plays four square waves |
+| God shot | Pull a full shot on the sidebar espresso machine (`espresso.js`) |
 
 Sprites live in `sprites.js` (authored as silhouettes; outlines are drawn by the
-renderer) and the behaviour lives in `friends.js`. All of it respects
-`prefers-reduced-motion`, and the cursor cat is skipped on touch devices.
+renderer) and the behaviour lives in `friends.js`. Every heading and index entry
+names its own sprite through `data-icon`, so the rail is a d-pad, a sword, a key
+and a CRT rather than six copies of the same star. All of it respects
+`prefers-reduced-motion`, and the resident cat is skipped on touch devices.

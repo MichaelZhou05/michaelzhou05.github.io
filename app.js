@@ -9,15 +9,13 @@ import {
   ROAD_HALF_WIDTH,
   stepDriver,
   updateCamera as easeCamera,
+  VIEW_WIDTH,
+  VIEW_HEIGHT,
 } from './race-sim.js';
 import { opusLap } from './opus-lap.js';
 import { solLap } from './sol-lap.js';
 
 const $ = (selector) => document.querySelector(selector);
-
-$('#notice-close')?.addEventListener('click', () => {
-  $('#site-notice')?.setAttribute('hidden', '');
-});
 
 const clock = $('#local-time');
 const updateClock = () => {
@@ -44,10 +42,63 @@ document.querySelectorAll('.log, .work').forEach((element) => {
  * Nordschleife night lap
  * ------------------------------------------------------------------ */
 
+/**
+ * The screen is a dot-matrix panel, not a monitor. Everything below is authored
+ * in the 900×600 world the sector windows and both recorded laps were fitted to
+ * — change that and the replays no longer line up — but the canvas that
+ * actually receives it is a third of the size. One game pixel is a 3×3 block of
+ * layout pixels, `image-rendering: pixelated` blows it back up with no
+ * resampling, and nothing on the screen can be finer than that block.
+ */
+const PIXEL = 3;
+const VIEW_W = VIEW_WIDTH;
+const VIEW_H = VIEW_HEIGHT;
+const SCREEN_W = VIEW_W / PIXEL;
+const SCREEN_H = VIEW_H / PIXEL;
+
 const canvas = $('#race-canvas');
+canvas.width = SCREEN_W;
+canvas.height = SCREEN_H;
 const context = canvas.getContext('2d');
 context.imageSmoothingEnabled = false;
-const retroFont = getComputedStyle(document.body).fontFamily;
+
+/** Press Start 2P, so canvas type is cut from the same 8×8 grid as the page. */
+const retroFont = getComputedStyle(document.documentElement)
+  .getPropertyValue('--display').trim() || '"Press Start 2P", monospace';
+if (document.fonts) document.fonts.load(`${8 * PIXEL}px ${retroFont}`).catch(() => {});
+
+/** Screen space, in world units: the 1/3 squeeze onto the panel and nothing else. */
+function resetView() {
+  context.setTransform(1 / PIXEL, 0, 0, 1 / PIXEL, 0, 0);
+}
+
+/** Snap a screen-space length or coordinate onto the dot grid. */
+const snap = (value) => Math.round(value / PIXEL) * PIXEL;
+
+/** `size` is in game pixels — the only sizes that land on the grid cleanly. */
+const pixelFont = (size) => `400 ${size * PIXEL}px ${retroFont}`;
+
+/**
+ * 50% checkerboard, one game pixel per cell. A handheld with four shades tints
+ * the screen by dropping every other dot, not by blending — so does the
+ * off-track flash. Painted under the identity transform so the cells stay
+ * exactly one panel pixel wide.
+ */
+function ditherFill(color, alpha = 1) {
+  const tile = document.createElement('canvas');
+  tile.width = 2;
+  tile.height = 2;
+  const tileContext = tile.getContext('2d');
+  tileContext.fillStyle = color;
+  tileContext.fillRect(0, 0, 1, 1);
+  tileContext.fillRect(1, 1, 1, 1);
+  const pattern = context.createPattern(tile, 'repeat');
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.globalAlpha = alpha;
+  context.fillStyle = pattern;
+  context.fillRect(0, 0, SCREEN_W, SCREEN_H);
+  context.globalAlpha = 1;
+}
 
 const ui = {
   overlay: $('#game-overlay'),
@@ -63,7 +114,7 @@ const ui = {
   log: $('#race-log'),
 };
 
-const course = buildCourse(canvas.width, canvas.height);
+const course = buildCourse(VIEW_W, VIEW_H);
 const { track, sectorViews } = course;
 const pointAtDistance = (distance) => pointAtDistanceOn(course, distance);
 
@@ -125,13 +176,69 @@ const scenery = (() => {
   return items;
 })();
 
-/* Fixed twinkle positions so the night sky does not strobe between frames. */
+/**
+ * Fixed twinkle positions so the night sky does not strobe between frames, and
+ * fixed to the dot grid so a star is a whole lit pixel rather than a smear
+ * across two of them.
+ */
 const NIGHT_STARS = Array.from({ length: 70 }, (_, index) => ({
-  x: ((index * 137.5) % 89) / 89 * 900,
-  y: ((index * 71.3) % 61) / 61 * 600,
+  x: snap(((index * 137.5) % 89) / 89 * VIEW_W),
+  y: snap(((index * 71.3) % 61) / 61 * VIEW_H),
   size: index % 7 === 0 ? 2 : 1,
   phase: (index % 11) / 11,
 }));
+
+/* --------------------------------- minimap --------------------------------- */
+
+/**
+ * The whole lap, in the top-right corner. The camera only ever shows you one
+ * sector window — a few hundred metres of a 20.8 km circuit — which is enough
+ * to drive by and tells you nothing about where on the Nordschleife you
+ * actually are. So the full centreline is rasterised once, here, onto the same
+ * dot grid as everything else; the frame only repaints those cells and the
+ * markers that sit on top of them.
+ */
+const MINIMAP_SPAN = 50; // game pixels across the drawn circuit
+const MINIMAP_PAD = 4; // game pixels of quiet border inside the frame
+
+const minimap = (() => {
+  const size = (MINIMAP_SPAN + MINIMAP_PAD * 2) * PIXEL;
+  const left = snap(VIEW_W - size - 5 * PIXEL);
+  const top = 5 * PIXEL;
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  track.points.forEach((point) => {
+    if (point.x < minX) minX = point.x;
+    if (point.x > maxX) maxX = point.x;
+    if (point.y < minY) minY = point.y;
+    if (point.y > maxY) maxY = point.y;
+  });
+
+  // One scale for both axes so the circuit keeps its shape; the shorter span
+  // just sits centred in the frame.
+  const scale = (MINIMAP_SPAN * PIXEL) / Math.max(maxX - minX, maxY - minY);
+  const midX = (minX + maxX) / 2;
+  const midY = (minY + maxY) / 2;
+  const centreX = left + size / 2;
+  const centreY = top + size / 2;
+
+  // North stays up: world y climbs north, screen y climbs down.
+  const project = (x, y) => ({
+    x: snap(centreX + (x - midX) * scale),
+    y: snap(centreY - (y - midY) * scale),
+  });
+
+  return {
+    left,
+    top,
+    size,
+    project,
+    cells: track.points.map((point) => project(point.x, point.y)),
+  };
+})();
 
 /* ---------------------------------- racers ---------------------------------- */
 
@@ -139,21 +246,25 @@ const NIGHT_STARS = Array.from({ length: 70 }, (_, index) => ({
  * USV OPUS 5 is not a pace multiplier. `opus-lap.js` is a recording of a lap
  * that claude-opus-5 actually drove, offline, through the physics in
  * `race-sim.js` — same four keys, same corridor, same grass penalty as you.
- * `scripts/run-opus-racer.mjs` regenerates it. USV 5.6 SOL is a second real
+ * `scripts/run-opus-racer.mjs` regenerates it. USV GPT 5.6 is a second real
  * replay, driven by gpt-5.6-sol at xhigh reasoning through the same harness.
  */
 const RACERS = [
   {
     id: 'opus',
     label: 'USV OPUS 5',
-    color: '#f1c75b',
+    // Nameplates on the canvas are 8×8 tiles wide apiece, so they get the short
+    // form; the telemetry strip under the screen carries the full name.
+    tag: 'OPUS',
+    color: '#ffb000',
     kind: 'replay',
     lap: opusLap,
   },
   {
     id: 'gpt',
-    label: 'USV 5.6 SOL XHIGH',
-    color: '#b79cff',
+    label: 'USV GPT 5.6 XHIGH',
+    tag: 'GPT',
+    color: '#2ed573',
     kind: 'replay',
     lap: solLap,
   },
@@ -295,7 +406,7 @@ function resetRace() {
   lines[1].textContent = 'THE WINDOW SHIFTS EACH SECTOR · GRASS COSTS YOU';
   ui.start.textContent = 'START LAP';
   ui.overlay.classList.remove('hidden');
-  setLog('USV OPUS 5 and USV 5.6 SOL XHIGH are waiting on the grid.');
+  setLog('USV OPUS 5 and USV GPT 5.6 XHIGH are waiting on the grid.');
   updateUi();
 }
 
@@ -381,6 +492,15 @@ function updateRace(delta) {
     && activeSector < track.sectors.length - 1) {
     activeSector += 1;
     sectorFlash = 0.85;
+    /**
+     * Cut to the new window rather than swinging into it. Every sector is
+     * framed along its own axis, so easing between two of them rotates the
+     * whole world under the car — and because steering is screen-relative,
+     * your controls rotate with it, mid-corner. A hard cut is what a machine
+     * that draws one screen at a time would do anyway: the screen changes, the
+     * controls are immediately whatever the new screen says they are.
+     */
+    snapCamera(activeSector);
     setSectorBanner();
     setLog(`Window shifts to sector ${activeSector + 1} — ${track.sectors[activeSector].note}.`);
   }
@@ -417,32 +537,39 @@ function worldToScreen(x, y) {
   const cos = Math.cos(camera.angle);
   const sin = Math.sin(camera.angle);
   return {
-    x: canvas.width / 2 + (dx * cos + dy * sin) * camera.scale,
-    y: canvas.height / 2 - (dy * cos - dx * sin) * camera.scale,
+    x: VIEW_W / 2 + (dx * cos + dy * sin) * camera.scale,
+    y: VIEW_H / 2 - (dy * cos - dx * sin) * camera.scale,
   };
 }
 
 function applyCamera() {
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.translate(canvas.width / 2, canvas.height / 2);
+  resetView();
+  context.translate(VIEW_W / 2, VIEW_H / 2);
   context.scale(camera.scale, -camera.scale);
   context.rotate(-camera.angle);
   context.translate(-camera.x, -camera.y);
 }
 
 function visibleWorldRadius() {
-  return Math.hypot(canvas.width, canvas.height) / (2 * camera.scale) + 180;
+  return Math.hypot(VIEW_W, VIEW_H) / (2 * camera.scale) + 180;
 }
 
+/**
+ * Night, in four flat shades. No gradients: the sky is one colour, the field
+ * behind the circuit is a hard chequer of two more, and the stars are single
+ * lit dots whose twinkle steps between three levels rather than fading.
+ */
 function drawNightGround() {
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.fillStyle = '#050505';
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  resetView();
+  context.fillStyle = '#07060c';
+  context.fillRect(0, 0, VIEW_W, VIEW_H);
 
+  const now = performance.now();
   NIGHT_STARS.forEach((star) => {
-    const twinkle = 0.18 + 0.4 * Math.abs(Math.sin(performance.now() / 1400 + star.phase * 6.28));
-    context.fillStyle = `rgba(255, 255, 255, ${twinkle.toFixed(2)})`;
-    context.fillRect(star.x, star.y, star.size, star.size);
+    const wave = Math.abs(Math.sin(now / 1400 + star.phase * 6.28));
+    const shade = wave > 0.72 ? '#e8e4f4' : wave > 0.36 ? '#5b4a9e' : '#241d3f';
+    context.fillStyle = shade;
+    context.fillRect(star.x, star.y, star.size * PIXEL, star.size * PIXEL);
   });
 
   applyCamera();
@@ -451,7 +578,7 @@ function drawNightGround() {
   const startX = Math.floor((camera.x - radius) / cell) * cell;
   const startY = Math.floor((camera.y - radius) / cell) * cell;
 
-  context.fillStyle = 'rgba(255, 255, 255, .012)';
+  context.fillStyle = '#0c0a18';
   for (let x = startX; x < camera.x + radius; x += cell) {
     for (let y = startY; y < camera.y + radius; y += cell) {
       if (((Math.round(x / cell) + Math.round(y / cell)) & 1) === 0) continue;
@@ -460,26 +587,38 @@ function drawNightGround() {
   }
 }
 
+/**
+ * The Eifel treeline as sprites rather than shading: a flat canopy square, one
+ * lighter square catching the moon on the same side every time, and a trunk.
+ * Two tints, three shades, no anti-aliased rim — the same trees a handheld
+ * would have had in ROM.
+ */
 function drawForest() {
   const radius = visibleWorldRadius();
   for (const item of scenery) {
     if (Math.abs(item.x - camera.x) > radius || Math.abs(item.y - camera.y) > radius) continue;
 
     if (item.kind === 'rock') {
-      context.fillStyle = '#1a1a1a';
-      context.beginPath();
-      context.arc(item.x, item.y, item.size * 0.36, 0, Math.PI * 2);
-      context.fill();
+      const size = item.size * 0.42;
+      context.fillStyle = '#252230';
+      context.fillRect(item.x - size, item.y - size * 0.7, size * 2, size * 1.4);
+      context.fillStyle = '#3a3548';
+      context.fillRect(item.x - size, item.y, size, size * 0.7);
       continue;
     }
 
-    context.fillStyle = item.tint > 0.5 ? '#0b1f1a' : '#0a1a16';
+    // A canopy and one lit crescent on the moon side, both flat. Two shades
+    // apart from the ground and no more: the treeline is texture, not scenery
+    // that competes with the road.
+    const canopy = item.size * 0.6;
+    const light = item.tint > 0.5;
+    context.fillStyle = light ? '#131029' : '#0f0c20';
     context.beginPath();
-    context.arc(item.x, item.y, item.size * 0.6, 0, Math.PI * 2);
+    context.arc(item.x, item.y, canopy, 0, Math.PI * 2);
     context.fill();
-    context.fillStyle = item.tint > 0.5 ? '#12362c' : '#0f2b23';
+    context.fillStyle = light ? '#1d1840' : '#171234';
     context.beginPath();
-    context.arc(item.x - item.size * 0.19, item.y + item.size * 0.19, item.size * 0.32, 0, Math.PI * 2);
+    context.arc(item.x - canopy * 0.22, item.y + canopy * 0.22, canopy * 0.52, 0, Math.PI * 2);
     context.fill();
   }
 }
@@ -499,8 +638,14 @@ function strokeCentreline(from, to, width, color, dash = null) {
   if (dash) context.setLineDash([]);
 }
 
-const ASPHALT_COLOR = '#1c1c1c';
-const KERB_WIDTH = 8;
+const ASPHALT_COLOR = '#1a1820';
+/**
+ * Kerb and lane widths are in world units and the widest sector windows squeeze
+ * the circuit to about a third scale, so both are sized to survive that trip
+ * down onto the dot grid: anything thinner than a game pixel there stops
+ * existing at all.
+ */
+const KERB_WIDTH = 11;
 const KERB_BLOCK = 17;
 const KERB_ENTER = 0.0024;
 const KERB_EXIT = 0.0014;
@@ -551,8 +696,8 @@ function drawKerbs(from, to) {
     // Red and white run the same dashed path a block out of phase, so they
     // interlock into one continuous kerb.
     context.setLineDash([KERB_BLOCK, KERB_BLOCK]);
-    band(start, end, ROAD_HALF_WIDTH * 2, '#c8493c', 0);
-    band(start, end, ROAD_HALF_WIDTH * 2, '#d8d8d8', KERB_BLOCK);
+    band(start, end, ROAD_HALF_WIDTH * 2, '#e60012', 0);
+    band(start, end, ROAD_HALF_WIDTH * 2, '#e8e4f4', KERB_BLOCK);
     context.setLineDash([]);
     // Overrun by a sample at each end: sharing the band's cap plane would leave
     // a half-covered hairline of kerb colour drawn across the road.
@@ -579,7 +724,7 @@ function drawFinishLine() {
 
   for (let column = 0; column < squares; column += 1) {
     for (let row = 0; row < 2; row += 1) {
-      context.fillStyle = ((column + row) & 1) === 0 ? '#e9e9e9' : '#111111';
+      context.fillStyle = ((column + row) & 1) === 0 ? '#e8e4f4' : '#0a0a0d';
       const across = -ROAD_HALF_WIDTH + column * step;
       const along = row * step;
       context.beginPath();
@@ -598,7 +743,7 @@ function drawSectorGate(sector, color) {
   const nx = -Math.sin(point.angle);
   const ny = Math.cos(point.angle);
   context.strokeStyle = color;
-  context.lineWidth = 5;
+  context.lineWidth = 9;
   context.setLineDash([15, 13]);
   context.beginPath();
   context.moveTo(point.x - nx * ROAD_HALF_WIDTH, point.y - ny * ROAD_HALF_WIDTH);
@@ -607,76 +752,178 @@ function drawSectorGate(sector, color) {
   context.setLineDash([]);
 }
 
+/**
+ * The car is a sprite, so it is authored as one: a grid of whole game pixels,
+ * six across and ten down, laid out from the middle. Nothing here is allowed a
+ * fractional coordinate.
+ */
+const CAR_SPRITE = [
+  ['#07060c', -3, -3, 1, 3], // wheels
+  ['#07060c', 2, -3, 1, 3],
+  ['#07060c', -3, 1, 1, 3],
+  ['#07060c', 2, 1, 1, 3],
+  ['body', -2, -5, 4, 10], // shell
+  ['#0f0d18', -2, -3, 4, 2], // glass
+  ['#0f0d18', -2, 2, 4, 2],
+  ['#ffd98a', -2, -6, 1, 1], // headlamps
+  ['#ffd98a', 1, -6, 1, 1],
+];
+
+/**
+ * A handheld held a fixed number of frames of a rotating car, so the heading is
+ * quantised to 32 of them. It also stops a sprite this small shimmering as the
+ * camera swings between sectors.
+ */
+const CAR_ANGLE_STEPS = 32;
+
 function drawCar(worldX, worldY, worldHeading, color, label) {
   const screen = worldToScreen(worldX, worldY);
-  if (screen.x < -70 || screen.x > canvas.width + 70) return;
-  if (screen.y < -70 || screen.y > canvas.height + 70) return;
+  if (screen.x < -70 || screen.x > VIEW_W + 70) return;
+  if (screen.y < -70 || screen.y > VIEW_H + 70) return;
 
-  context.setTransform(1, 0, 0, 1, 0, 0);
+  const step = (Math.PI * 2) / CAR_ANGLE_STEPS;
+  const angle = Math.round((camera.angle - worldHeading + Math.PI / 2) / step) * step;
+  const x = snap(screen.x);
+  const y = snap(screen.y);
+
+  resetView();
   context.save();
-  context.translate(screen.x, screen.y);
-  context.rotate(camera.angle - worldHeading + Math.PI / 2);
+  context.translate(x, y);
+  context.rotate(angle);
 
-  context.fillStyle = 'rgba(0, 0, 0, .5)';
-  context.fillRect(-8, -12, 16, 26);
-  context.fillStyle = '#0a0a0a';
-  context.fillRect(-10, -9, 3, 7);
-  context.fillRect(7, -9, 3, 7);
-  context.fillRect(-10, 4, 3, 7);
-  context.fillRect(7, 4, 3, 7);
-  context.fillStyle = color;
-  context.fillRect(-7, -13, 14, 25);
-  context.fillStyle = '#1c1c1c';
-  context.fillRect(-5, -8, 10, 6);
-  context.fillRect(-5, 2, 10, 6);
-  context.fillStyle = '#fff1b1';
-  context.fillRect(-5, -15, 3, 2);
-  context.fillRect(2, -15, 3, 2);
+  // Body under-shadow first, one pixel out on every side.
+  context.fillStyle = '#000000';
+  context.fillRect(-3 * PIXEL, -5 * PIXEL, 6 * PIXEL, 11 * PIXEL);
+  for (const [shade, left, top, width, height] of CAR_SPRITE) {
+    context.fillStyle = shade === 'body' ? color : shade;
+    context.fillRect(left * PIXEL, top * PIXEL, width * PIXEL, height * PIXEL);
+  }
   context.restore();
 
-  context.font = `400 8px ${retroFont}`;
+  // Nameplate: a solid tile box on the grid, clear of the sprite, with a single
+  // lit pixel row under it pointing back down at the car.
+  context.font = pixelFont(6);
   context.textAlign = 'center';
-  const width = context.measureText(label).width + 10;
-  context.fillStyle = 'rgba(0, 0, 0, .78)';
-  context.fillRect(screen.x - width / 2, screen.y - 31, width, 12);
+  context.textBaseline = 'alphabetic';
+  const width = snap(context.measureText(label).width + 4 * PIXEL);
+  const boxX = snap(x - width / 2);
+  const boxY = y - 19 * PIXEL;
+  context.fillStyle = '#000000';
+  context.fillRect(boxX, boxY, width, 9 * PIXEL);
   context.fillStyle = color;
-  context.fillText(label, screen.x, screen.y - 22);
+  context.fillRect(boxX, boxY + 9 * PIXEL, width, PIXEL);
+  context.fillText(label, boxX + width / 2, boxY + 7 * PIXEL);
+}
+
+/**
+ * The status panel is a tile box: a hard one-pixel frame on flat black, type on
+ * the 8×8 grid, and a shadow that is a solid offset block rather than a blur.
+ */
+function drawPanel(x, y, width, height, accent) {
+  context.fillStyle = '#000000';
+  context.fillRect(x + PIXEL, y + PIXEL, width, height);
+  context.fillStyle = accent;
+  context.fillRect(x, y, width, height);
+  context.fillStyle = '#000000';
+  context.fillRect(x + PIXEL, y + PIXEL, width - 2 * PIXEL, height - 2 * PIXEL);
+}
+
+/**
+ * Paint the corner map: the lap as a dim dot trace, the sector you are being
+ * shown lit on top of it, then one blip per car. A blip is drawn on a black
+ * pad so it can never be lost inside the trace it is sitting on.
+ */
+function drawMinimap() {
+  const sector = track.sectors[activeSector];
+  drawPanel(minimap.left, minimap.top, minimap.size, minimap.size, '#5b4a9e');
+
+  context.fillStyle = '#3a3548';
+  minimap.cells.forEach((cell) => context.fillRect(cell.x, cell.y, PIXEL, PIXEL));
+
+  context.fillStyle = '#7b68ee';
+  for (let index = sector.startSample; index <= sector.endSample; index += 1) {
+    const cell = minimap.cells[index];
+    context.fillRect(cell.x, cell.y, PIXEL, PIXEL);
+  }
+
+  const line = minimap.cells[0];
+  context.fillStyle = '#e8e4f4';
+  context.fillRect(line.x, line.y, PIXEL, PIXEL);
+
+  const blips = RACERS.map((racer) => {
+    const pose = racer.kind === 'replay' ? racer.pose : pointAtDistance(racer.distance);
+    return { cell: minimap.project(pose.x, pose.y), color: racer.color };
+  });
+  // Yours blinks, so it reads as the live one among three otherwise equal dots.
+  blips.push({
+    cell: minimap.project(player.x, player.y),
+    color: Math.sin(performance.now() / 220) > 0 ? '#e60012' : '#e8e4f4',
+  });
+
+  // Every pad first, then every dot: on the grid three cars start a metre apart,
+  // and a pad laid down after a neighbour's dot would swallow it.
+  context.fillStyle = '#07060c';
+  blips.forEach(({ cell }) => context.fillRect(cell.x - PIXEL, cell.y - PIXEL, 4 * PIXEL, 4 * PIXEL));
+  blips.forEach(({ cell, color }) => {
+    context.fillStyle = color;
+    context.fillRect(cell.x, cell.y, 2 * PIXEL, 2 * PIXEL);
+  });
 }
 
 function drawHud() {
-  context.setTransform(1, 0, 0, 1, 0, 0);
+  resetView();
   const sector = track.sectors[activeSector];
+  const lines = [
+    ['#ffb000', `SECTOR ${String(activeSector + 1).padStart(2, '0')}/${track.sectors.length}`],
+    ['#8a849f', `${(player.distance / 1000).toFixed(2)}/20.83KM`],
+    [player.offTrack ? '#e60012' : '#2ed573', player.offTrack ? 'OFF TRACK' : 'ON TRACK'],
+  ];
 
-  context.fillStyle = 'rgba(0, 0, 0, .82)';
-  context.fillRect(13, 13, 272, 44);
-  context.fillStyle = '#e6e6e6';
-  context.font = `400 11px ${retroFont}`;
+  // Three short lines stacked rather than one wide row: on a panel this small,
+  // a status box that runs half the width of the screen is the screen.
+  context.font = pixelFont(6);
   context.textAlign = 'left';
-  context.fillText(`SECTOR ${String(activeSector + 1).padStart(2, '0')}/${track.sectors.length}  ${sector.name}`, 24, 32);
+  context.textBaseline = 'alphabetic';
 
-  context.font = `400 8px ${retroFont}`;
-  context.fillStyle = '#8d8d8d';
-  context.fillText(`${(player.distance / 1000).toFixed(2)} / 20.83 KM`, 24, 48);
-  context.fillStyle = player.offTrack ? '#ff6b6b' : '#5eead4';
-  context.textAlign = 'right';
-  context.fillText(player.offTrack ? 'OFF TRACK' : 'ON TRACK', 274, 48);
+  const inner = Math.max(...lines.map(([, text]) => context.measureText(text).width));
+  const boxWidth = snap(inner + 10 * PIXEL);
+  const boxHeight = 33 * PIXEL;
+  const left = 5 * PIXEL;
+  const top = 5 * PIXEL;
 
+  drawPanel(left, top, boxWidth, boxHeight, '#5b4a9e');
+
+  lines.forEach(([shade, text], index) => {
+    context.fillStyle = shade;
+    context.fillText(text, left + 5 * PIXEL, top + (11 + index * 9) * PIXEL);
+  });
+
+  /**
+   * Sector call-out. It used to be set across the middle of the screen, which
+   * is exactly where you are driving — so it now sits in the bottom-left corner
+   * as a text box, the way a handheld names a stage without taking the road
+   * away from you. Same panel, same 6px type as the status box.
+   */
   if (sectorFlash > 0) {
-    context.globalAlpha = Math.min(1, sectorFlash / 0.85);
-    context.textAlign = 'center';
-    context.fillStyle = '#5eead4';
-    context.font = `400 20px ${retroFont}`;
-    context.fillText(sector.name, canvas.width / 2, 96);
-    context.fillStyle = '#a8a8a8';
-    context.font = `400 9px ${retroFont}`;
-    context.fillText(sector.note.toUpperCase(), canvas.width / 2, 116);
-    context.globalAlpha = 1;
+    const note = sector.note.toUpperCase();
+    const boxWidth = snap(Math.max(
+      context.measureText(sector.name).width,
+      context.measureText(note).width,
+    ) + 10 * PIXEL);
+    const boxHeight = 24 * PIXEL;
+    const boxTop = VIEW_H - boxHeight - 5 * PIXEL;
+
+    drawPanel(5 * PIXEL, boxTop, boxWidth, boxHeight, '#7b68ee');
+    context.fillStyle = '#7b68ee';
+    context.fillText(sector.name, 10 * PIXEL, boxTop + 10 * PIXEL);
+    context.fillStyle = '#8a849f';
+    context.fillText(note, 10 * PIXEL, boxTop + 19 * PIXEL);
   }
 
-  if (grassFlash > 0) {
-    context.fillStyle = `rgba(255, 107, 107, ${grassFlash * 0.3})`;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-  }
+  drawMinimap();
+
+  // Off the asphalt: the panel is tinted by dropping every other dot to red.
+  if (grassFlash > 0) ditherFill('#e60012', Math.min(1, grassFlash / 0.4) * 0.55);
 }
 
 function drawScene() {
@@ -687,28 +934,32 @@ function drawScene() {
   const from = Math.max(0, sector.startSample - 150);
   const to = Math.min(track.points.length - 1, sector.endSample + 150);
 
-  context.save();
-  context.shadowColor = 'rgba(94, 234, 212, .5)';
-  context.shadowBlur = 14;
-  strokeCentreline(from, to, ROAD_HALF_WIDTH * 2 + 12, '#2a9d8f');
-  context.restore();
-  strokeCentreline(from, to, ROAD_HALF_WIDTH * 2 + 6, '#0a0a0a');
+  /**
+   * The road is stacked bands, not a glow. A blurred shadow would resolve to a
+   * smear of in-between colours the panel cannot hold, so the light spilling
+   * off the circuit is spelled out as three hard rings that step down in
+   * brightness — dark verge, lit rim, black gutter — and then the asphalt.
+   */
+  strokeCentreline(from, to, ROAD_HALF_WIDTH * 2 + 34, '#0e0b1e');
+  strokeCentreline(from, to, ROAD_HALF_WIDTH * 2 + 22, '#241d3f');
+  strokeCentreline(from, to, ROAD_HALF_WIDTH * 2 + 13, '#5b4a9e');
+  strokeCentreline(from, to, ROAD_HALF_WIDTH * 2 + 6, '#07060c');
   strokeCentreline(from, to, ROAD_HALF_WIDTH * 2, ASPHALT_COLOR);
   // Kerbs repaint the middle of the road, so the lane dashes go on top.
   drawKerbs(from, to);
-  strokeCentreline(from, to, 3.5, 'rgba(255, 255, 255, .16)', [26, 30]);
+  strokeCentreline(from, to, 6, '#3a3548', [26, 30]);
 
   track.sectors.forEach((entry, index) => {
     if (index === track.sectors.length - 1) return;
     if (entry.endSample < from || entry.endSample > to) return;
-    drawSectorGate(entry, index < activeSector ? 'rgba(94, 234, 212, .5)' : 'rgba(255, 255, 255, .22)');
+    drawSectorGate(entry, index < activeSector ? 'rgba(123, 104, 238, .55)' : 'rgba(255, 255, 255, .22)');
   });
 
   if (from === 0 || to >= track.points.length - 2) drawFinishLine();
 
   RACERS.forEach((racer) => {
     if (racer.kind === 'replay') {
-      drawCar(racer.pose.x, racer.pose.y, racer.pose.heading, racer.color, racer.label);
+      drawCar(racer.pose.x, racer.pose.y, racer.pose.heading, racer.color, racer.tag);
       return;
     }
     const point = pointAtDistance(racer.distance);
@@ -717,11 +968,11 @@ function drawScene() {
       point.y + Math.cos(point.angle) * racer.lateral,
       point.angle,
       racer.color,
-      racer.label,
+      racer.tag,
     );
   });
 
-  drawCar(player.x, player.y, player.heading, '#ff6b6b', 'YOU');
+  drawCar(player.x, player.y, player.heading, '#e60012', 'YOU');
   drawHud();
 }
 
