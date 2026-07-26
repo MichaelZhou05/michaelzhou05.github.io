@@ -51,7 +51,7 @@ const STEP = { BEANS: 0, GRIND: 1, DOSE: 2, TAMP: 3, LOCK: 4, PULL: 5, SERVE: 6 
 const HINTS = [
   'click the bean sack — scoop the beans',
   'hold the grinder — crank it',
-  'click the portafilter — take it to the grinder',
+  'click the portafilter — to the grinder',
   'click again — tamp it flat',
   'click the group head — lock it in',
   'hold the lever — pull the shot',

@@ -686,19 +686,148 @@ function shootingStars() {
 
 /**
  * The button asks to be left alone, which is the most reliable way ever found
- * to get a button pressed. It opens in a new tab on purpose — the joke is only
- * funny if it does not take the page away from you, and a `window.open` from
- * inside the click keeps the destination out of the status bar on the way in.
+ * to get a button pressed. It takes three presses to go off: each one swaps
+ * the card's copy for a sterner warning and escalates the hazard dressing,
+ * and the third opens the payoff in a new tab — the joke is only funny if it
+ * does not take the page away from you, and a `window.open` from inside the
+ * click keeps the destination out of the status bar on the way in. Afterwards
+ * the button is simply broken — grey, dead, smoking. State lives here, not in
+ * storage, so a refresh rearms it from the top.
  */
 function wireDoNotPress() {
   const button = document.getElementById('dnp-button');
   if (!button) return;
+  const block = button.closest('.dnp-block');
+  const status = block?.querySelector('.dnp-status');
+  const copy = block?.querySelector('.dnp-copy');
+  const note = block?.querySelector('.dnp-note');
+
+  const STAGES = [
+    {
+      status: 'system armed',
+      copy: 'There is nothing good behind this button. Go and find one of the secrets instead.',
+      label: 'DO NOT PRESS',
+      note: 'authorized personnel only',
+    },
+    {
+      status: 'breach detected',
+      copy: 'Hey! Don’t press it again.',
+      label: 'DO NOT PRESS AGAIN',
+      note: 'this is your only warning',
+    },
+    {
+      status: 'final warning',
+      copy: 'I’m warning you. DO NOT PRESS ME AGAIN.',
+      label: 'STOP. PRESSING. ME.',
+      note: 'security has been notified',
+    },
+    {
+      status: 'system offline',
+      copy: 'I told you..... (¬_¬)',
+      label: 'OUT OF ORDER',
+      note: 'you broke it. well done',
+    },
+  ];
+
+  const setStage = (stage) => {
+    if (status) status.innerHTML = '<i aria-hidden="true"></i>' + stage.status;
+    if (copy) copy.textContent = stage.copy;
+    if (note) note.textContent = stage.note;
+    button.textContent = stage.label;
+  };
+
+  const shake = () => {
+    if (!block) return;
+    block.classList.remove('is-shaking');
+    void block.offsetWidth; // restart the shake if it is already running
+    block.classList.add('is-shaking');
+  };
+
+  let presses = 0;
 
   button.addEventListener('click', () => {
     const rect = button.getBoundingClientRect();
-    burst(rect.left + rect.width / 2, rect.top, ['#e60012', '#ffb000'], 12, ['note', 'note']);
+    const x = rect.left + rect.width / 2;
+    presses += 1;
+    shake();
+
+    if (presses === 1) {
+      setStage(STAGES[1]);
+      block?.classList.add('is-warned');
+      burst(x, rect.top, '#ffb000', 8);
+      return;
+    }
+
+    if (presses === 2) {
+      setStage(STAGES[2]);
+      block?.classList.add('is-critical');
+      burst(x, rect.top, ['#e60012', '#ffb000'], 10);
+      return;
+    }
+
+    // Strike three: it blows on the spot. One frame of glitch and confetti,
+    // and by the time the page steadies the button is already a grey brick —
+    // cracked, cobwebbed, venting smoke. A refresh is the only repair.
+    button.disabled = true;
+    document.body.classList.add('is-glitching');
+    setTimeout(() => document.body.classList.remove('is-glitching'), 460);
+    burst(x, rect.top, ['#e60012', '#ffb000'], 14, ['note', 'note']);
     window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'noopener');
+
+    block?.classList.remove('is-warned', 'is-critical');
+    block?.classList.add('is-broken');
+    setStage(STAGES[3]);
+    wreckButton(block);
   });
+}
+
+/**
+ * The wreck dressing: cracks across the button's face, cobwebs claiming the
+ * housing's corners, two sparks that still short across the fissure, and a
+ * chimney of sprite-frame smoke puffs. Each puff stacks the four smoke frames
+ * and lets CSS flip through them while the whole thing rises — the classic
+ * blob / cloud / ring / debris cycle every 8-bit explosion used.
+ */
+function wreckButton(block) {
+  const housing = block?.querySelector('.dnp-housing');
+  if (!housing || housing.querySelector('.dnp-wreck')) return;
+
+  const web = () =>
+    spriteSvg('cobweb', { scale: 3, color: '#6f6a86', outline: null, palette: { e: '#b0a8c8' } });
+  const crack = () => spriteSvg('crack', { scale: 3, color: '#16141d', outline: null });
+
+  const wreck = document.createElement('span');
+  wreck.className = 'dnp-wreck';
+  wreck.setAttribute('aria-hidden', 'true');
+  wreck.innerHTML =
+    `<i class="dnp-crack dnp-crack-a">${crack()}</i>` +
+    `<i class="dnp-crack dnp-crack-b">${crack()}</i>` +
+    `<i class="dnp-web dnp-web-l">${web()}</i>` +
+    `<i class="dnp-web dnp-web-r">${web()}</i>` +
+    '<i class="dnp-spark dnp-spark-a"></i>' +
+    '<i class="dnp-spark dnp-spark-b"></i>' +
+    '<span class="dnp-smoke"></span>';
+  housing.appendChild(wreck);
+
+  const smoke = wreck.querySelector('.dnp-smoke');
+  const frames = ['smokePuffA', 'smokePuffB', 'smokePuffC', 'smokePuffD'];
+  const spawnPuff = () => {
+    if (!smoke.isConnected) return;
+    const puff = document.createElement('span');
+    puff.className = 'dnp-puff';
+    // Puffs vent from the crack's mouth, wandering a little like a bad flue.
+    puff.style.left = `${26 + Math.random() * 16}%`;
+    puff.innerHTML = frames
+      .map((name) => spriteSvg(name, { scale: 2, color: '#8a849f', palette: { s: '#55506a' } }))
+      .join('');
+    puff.addEventListener('animationend', (event) => {
+      if (event.target === puff) puff.remove();
+    });
+    smoke.appendChild(puff);
+  };
+
+  spawnPuff();
+  if (!reduceMotion) setInterval(spawnPuff, 1150);
 }
 
 /* -------------------------------------------------------- loose cartridge */

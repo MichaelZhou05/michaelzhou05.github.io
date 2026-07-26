@@ -288,7 +288,7 @@ if (card) {
 
   function toggle() {
     wide = !wide;
-    hint.textContent = wide ? 'the whole world — click to zoom back in' : 'click the screen for the whole world';
+    hint.textContent = wide ? 'click back' : 'click for the whole world';
     render();
   }
 

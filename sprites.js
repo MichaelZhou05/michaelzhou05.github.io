@@ -844,6 +844,33 @@ export const SPRITES = {
     ],
   },
 
+  /**
+   * Map pin. The kit already had a chequered flag and a broadcast tower, and
+   * both were spoken for — the flag is the racetrack, the tower is the contact
+   * form — so the location card needed the one shape nobody mistakes for
+   * anything else: a dot on a map, with somebody standing under it.
+   *
+   * The hole is drawn rather than left transparent: at title size the renderer's
+   * outline would close over a gap this small and the pin would read as a
+   * solid blob with a bite out of it.
+   */
+  pin: {
+    grid: [
+      '..fffff..',
+      '.fffffff.',
+      'fffdddfff',
+      'fffdddfff',
+      'fffdddfff',
+      '.fffffff.',
+      '..fffff..',
+      '...fff...',
+      '...fff...',
+      '....f....',
+      '....f....',
+      '....f....',
+    ],
+  },
+
   /* ------------------------------------------------------------ pickups */
 
   key: {
@@ -959,6 +986,111 @@ export const SPRITES = {
       'yyyyyyyyy',
       'yyyydyyyy',
       'yyyyyyyyy',
+    ],
+  },
+
+  /**
+   * Smoke, the way the 8-bit consoles animated it: four frames on one canvas —
+   * a dense newborn blob, a fat cloud, a ring tearing open, and drifting
+   * debris. A puff plays them once, bottom of the stack to the top, and dies.
+   */
+  smokePuffA: {
+    grid: [
+      '..........',
+      '..........',
+      '..........',
+      '....ff....',
+      '...ffff...',
+      '...ffff...',
+      '..fsffsf..',
+      '...ssss...',
+      '..........',
+      '..........',
+    ],
+  },
+
+  smokePuffB: {
+    grid: [
+      '..........',
+      '...ff.....',
+      '..ffff.f..',
+      '.ffffffff.',
+      '.ffffffff.',
+      '..sffffs..',
+      '.fsffffsf.',
+      '..ssffss..',
+      '...s..s...',
+      '..........',
+    ],
+  },
+
+  smokePuffC: {
+    grid: [
+      '...ff.....',
+      '..f..ff...',
+      '.f.....f..',
+      '.f......f.',
+      'f........f',
+      '.f......f.',
+      '.s..ss..f.',
+      '..s....s..',
+      '...ssss...',
+      '..........',
+    ],
+  },
+
+  smokePuffD: {
+    grid: [
+      '.f...ff...',
+      '..........',
+      'f...s...f.',
+      '..........',
+      '...f....s.',
+      '.s........',
+      '....s..f..',
+      '..........',
+      '..f...s...',
+      '..........',
+    ],
+  },
+
+  /** A fissure for the dead button's face — one long fault line with branches. */
+  crack: {
+    grid: [
+      '....f.....',
+      '....f.....',
+      '...ff.....',
+      '...f......',
+      '..ff......',
+      '..f.ff....',
+      '..f...f...',
+      '.ff....f..',
+      '.f.....f..',
+      '.f........',
+      'ff........',
+      '.f........',
+      '.ff.......',
+      '..f.......',
+    ],
+  },
+
+  /**
+   * A corner cobweb: spokes off the anchor, two saggy arc threads, and a
+   * spider (`e`) dangling off the outermost strand. Anchored top-left; mirror
+   * with scaleX(-1) for the other corner.
+   */
+  cobweb: {
+    grid: [
+      'ffffffffff..',
+      'ff..f...f.f.',
+      'f.ff....f.f.',
+      'f.ff...f..f.',
+      'ff..f..f.ee.',
+      'f....ff..ee.',
+      'f.....f.....',
+      'f......f....',
+      'f...........',
+      'f...........',
     ],
   },
 };

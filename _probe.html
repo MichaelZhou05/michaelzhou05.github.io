@@ -592,5 +592,5 @@
     <script type="module" src="./swimmer.js"></script>
     <script type="module" src="./location.js"></script>
     <script type="module" src="./espresso.js"></script>
-  </body>
+  <script>window.addEventListener("load",()=>{setTimeout(()=>{try{const btn=document.getElementById("dnp-button");btn.click();btn.click();btn.click();setTimeout(()=>{try{const s=document.querySelector(".dnp-spark-a");if(!s){document.title="SPK missing";return}const anims=s.getAnimations();let err="";anims.forEach(a=>{try{a.currentTime=1400+3800*0.905}catch(e){err=e.message}});const cs=getComputedStyle(s);document.title="SPK n:"+anims.length+" op:"+cs.opacity+" anim:"+cs.animationName+" err:"+err}catch(e){document.title="SPK inner-err "+e.message}},600)}catch(e){document.title="SPK outer-err "+e.message}},300)});</script></body>
 </html>

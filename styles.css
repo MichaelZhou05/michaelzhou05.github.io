@@ -1031,9 +1031,9 @@ main section {
 .gauge {
   display: grid;
   grid-template-rows: auto auto 10px auto;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
-  padding: var(--s4) var(--s4) 15px;
+  padding: var(--s2) var(--s4) var(--s2);
   border-left: 2px solid var(--edge);
 }
 
@@ -1167,7 +1167,7 @@ main section {
   display: flex;
   align-items: center;
   gap: var(--s4);
-  padding: 11px var(--s3);
+  padding: 6px var(--s3);
   border-top: 2px solid var(--edge);
   border-radius: 0 0 var(--r-sm) var(--r-sm);
   /* Colour and image split: `--matrix` is two layers, and a shorthand may only
@@ -1899,159 +1899,6 @@ main section {
 }
 
 /**
- * The neon sign. It hangs in the top-right corner of the about panel off a
- * mounting bar and two pixel chains, tilted the degree nobody ever straightens
- * and swaying just enough to prove it is on a chain rather than screwed to the
- * wall.
- *
- * It is built the way a real one is: a glass tube bent into a rounded
- * rectangle (the border, lit from both faces by box-shadow), the word burning
- * inside it, and a bloom of colour thrown onto the panel behind. Every colour
- * routes through the tokens, so DMG mode turns it into a green phosphor sign
- * and arcade mode into a pink one.
- */
-.neon-hang {
-  position: absolute;
-  top: 0;
-  right: var(--s6);
-  z-index: 2;
-  width: 184px;
-  padding-top: 26px;
-  text-align: center;
-  transform: rotate(-1.6deg);
-  transform-origin: 50% 2px;
-  animation: sign-sway 7s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-/* The light the sign spills onto the panel behind it. */
-.neon-hang::before {
-  content: "";
-  position: absolute;
-  inset: 20px -30px -30px;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(
-    50% 50% at 50% 50%,
-    color-mix(in srgb, var(--indigo-lit) 24%, transparent),
-    transparent 72%
-  );
-  filter: blur(9px);
-  animation: neon-bloom 6.5s ease-in-out infinite;
-}
-
-/* The mount: a bar bolted to the panel's top edge, chains hanging off it. */
-.neon-rig {
-  position: absolute;
-  top: 0;
-  left: 14%;
-  right: 14%;
-  height: 3px;
-  background: linear-gradient(180deg, var(--bezel-lit), var(--bezel));
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
-}
-
-/* The chains: dashed 2px links from the bar down to the sign's top corners. */
-.neon-rig::before,
-.neon-rig::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  width: 2px;
-  height: 24px;
-  background: repeating-linear-gradient(0deg, var(--bezel-lit) 0 3px, transparent 3px 6px);
-}
-
-.neon-rig::before { left: 0; }
-.neon-rig::after { right: 0; }
-
-@keyframes sign-sway {
-  from { transform: rotate(-2.2deg); }
-  to { transform: rotate(-0.9deg); }
-}
-
-/**
- * The tube itself. The border is the glass: a hot near-white line, haloed
- * outward in three rings of colour and inward onto the dark backing so the
- * inside of the sign reads as glass rather than as a card.
- */
-.neon-hang .neon-sign {
-  position: relative;
-  margin: 0;
-  padding: 12px 8px 10px;
-  border: 2px solid color-mix(in srgb, var(--indigo-lit) 62%, #ffffff);
-  border-radius: 13px;
-  background:
-    radial-gradient(
-      120% 150% at 50% 0%,
-      color-mix(in srgb, var(--indigo-lit) 15%, transparent),
-      transparent 68%
-    ),
-    rgba(6, 5, 14, 0.62);
-  box-shadow:
-    0 0 5px color-mix(in srgb, var(--indigo-lit) 75%, transparent),
-    0 0 16px color-mix(in srgb, var(--indigo-lit) 45%, transparent),
-    0 0 40px color-mix(in srgb, var(--indigo-lit) 20%, transparent),
-    inset 0 0 12px color-mix(in srgb, var(--indigo-lit) 26%, transparent),
-    inset 0 0 2px rgba(255, 255, 255, 0.5);
-  animation: neon-hum 6.5s ease-in-out infinite;
-}
-
-.neon-word {
-  display: block;
-  padding-left: 0.3em; /* recentres what the trailing letter-spacing steals */
-  color: #ffffff;
-  font: 400 22px / 1 var(--display);
-  letter-spacing: 0.3em;
-  text-shadow:
-    0 0 2px #ffffff,
-    0 0 6px var(--indigo-lit),
-    0 0 14px var(--indigo-lit),
-    0 0 30px color-mix(in srgb, var(--indigo-lit) 70%, transparent),
-    0 0 60px color-mix(in srgb, var(--indigo-lit) 40%, transparent);
-  animation: neon-flicker 8s steps(1, end) infinite;
-}
-
-/* Two quick dips a cycle — a tired transformer, not a strobe. */
-@keyframes neon-flicker {
-  0%, 55.9%, 100% { opacity: 1; }
-  56% { opacity: 0.35; text-shadow: 0 0 2px color-mix(in srgb, var(--indigo-lit) 40%, transparent); }
-  56.6% { opacity: 1; }
-  57.4% { opacity: 0.5; text-shadow: 0 0 2px color-mix(in srgb, var(--indigo-lit) 40%, transparent); }
-  58.2% { opacity: 1; }
-}
-
-/* The tube and its spill breathe together, half a beat apart from the word. */
-@keyframes neon-hum {
-  0%, 100% { filter: brightness(1); }
-  47% { filter: brightness(0.93); }
-  62% { filter: brightness(1.05); }
-}
-
-@keyframes neon-bloom {
-  0%, 100% { opacity: 1; }
-  47% { opacity: 0.78; }
-  62% { opacity: 1.1; }
-}
-
-.neon-sub {
-  display: block;
-  margin-top: var(--s3);
-  color: color-mix(in srgb, var(--amber) 82%, #ffffff);
-  font: 400 6px / 1.8 var(--display);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-shadow:
-    0 0 4px var(--amber),
-    0 0 10px color-mix(in srgb, var(--amber) 65%, transparent);
-}
-
-/* The title has to stop before the sign rather than run under it. */
-#about .panel-title {
-  padding-right: 200px;
-}
-
-/**
  * The location card.
  *
  * It is built as the second screen in the rail — same moulded frame and same
@@ -2072,6 +1919,13 @@ main section {
   background-color: #000000;
   background-image: var(--matrix);
   box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.045), inset -1px -1px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* The one rail card that used to go untitled, which is exactly why it read as
+   a world map rather than as a person standing somewhere. Same margins as the
+   espresso card's title, so the two devices in the rail line up. */
+.locale-block .side-title {
+  margin: 3px 2px 9px;
 }
 
 .locale-bar {
@@ -2149,6 +2003,17 @@ main section {
   color: var(--muted) !important;
 }
 
+/* "i'm in Boston, MA" — the lead-in stays quiet prose and the place name keeps
+   the pixel type, so the line reads as a sentence rather than a field label
+   with a value after it. */
+.locale-where {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s2);
+  font: 400 15px / 1.4 var(--mono);
+}
+
 .locale-place {
   color: var(--bright);
   font: 400 8px / 1.6 var(--display);
@@ -2179,8 +2044,103 @@ main section {
 
 /**
  * The button that says not to press it, which is of course the only
- * instruction on this page anyone follows.
+ * instruction on this page anyone follows. Dressed after the Nostromo's
+ * emergency-destruct panel: hazard tape across both cut edges, an armed
+ * light, and the red button raised on its own striped housing, lit from
+ * within. The tape only marches while the cursor is inside the card, so
+ * the rail stays quiet until someone leans in.
  */
+.dnp-block {
+  padding-top: calc(var(--s5) + 12px);
+  padding-bottom: calc(var(--s5) + 12px);
+  border-color: color-mix(in srgb, var(--fami-red) 40%, var(--edge-soft));
+}
+
+.dnp-block::before,
+.dnp-block::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: repeating-linear-gradient(-45deg, var(--amber) 0 9px, #0b0a08 9px 18px);
+  border-block: 1px solid #000000;
+}
+
+.dnp-block::before { top: 0; }
+.dnp-block::after { bottom: 0; }
+
+/* One stripe period along a 45° gradient is 18px, which is 18px·√2 ≈ 25.5px
+   measured horizontally — anything else makes the loop stutter. The two bands
+   run opposite ways, like tape being pulled across the card from both sides. */
+.dnp-block:hover::before { animation: dnp-tape 1.6s linear infinite; }
+.dnp-block:hover::after { animation: dnp-tape 1.6s linear infinite reverse; }
+
+@keyframes dnp-tape {
+  to { background-position: 25.456px 0; }
+}
+
+/**
+ * The three-strike escalation, staged by friends.js. One press and the tape
+ * marches for good; two and the whole card goes to red alert — everything that
+ * was already moving just moves faster, which is how real panels panic.
+ */
+.dnp-block.is-warned::before { animation: dnp-tape 1.6s linear infinite; }
+.dnp-block.is-warned::after { animation: dnp-tape 1.6s linear infinite reverse; }
+.dnp-block.is-warned .dnp-status i { animation-duration: 0.7s; }
+
+.dnp-block.is-critical { border-color: var(--fami-red); }
+.dnp-block.is-critical::before { animation-duration: 0.55s; }
+.dnp-block.is-critical::after { animation-duration: 0.55s; }
+.dnp-block.is-critical .dnp-status i { animation-duration: 0.35s; }
+.dnp-block.is-critical .dnp-button { animation-duration: 0.9s; }
+
+/* The copy reserves its tallest stage's height so the button never moves —
+   the whole gag depends on the cursor already being on it. */
+.dnp-block .dnp-copy { min-height: 3lh; }
+
+/* Every press rattles the housing. */
+.dnp-block.is-shaking { animation: dnp-shake 220ms linear 2; }
+
+@keyframes dnp-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* The armed light. Same lamp as the map's you-are-here dot, slower blink —
+   a heartbeat, not an alarm. */
+.dnp-block .dnp-status {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+  color: var(--fami-red);
+  font: 400 8px / 1.6 var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dnp-status i {
+  width: 8px;
+  height: 8px;
+  background: var(--fami-red);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--fami-red) 80%, transparent);
+  animation: blink 1.4s steps(1) infinite;
+}
+
+/* The housing: a recessed well of worn painted striping the button sits
+   proud of, the way big red buttons are moulded into consoles. */
+.dnp-housing {
+  padding: 7px;
+  background:
+    repeating-linear-gradient(-45deg,
+      color-mix(in srgb, var(--amber) 34%, #0b0a08) 0 8px,
+      #0b0a08 8px 16px);
+  border: 1px solid #000000;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 -1px rgba(255, 255, 255, 0.05);
+}
+
 .dnp-button {
   display: block;
   width: 100%;
@@ -2188,11 +2148,19 @@ main section {
   color: #ffffff;
   background: var(--fami-red);
   border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
   border-bottom: 3px solid #7a000a;
   font: 400 9px / 1.6 var(--display);
   letter-spacing: 0.07em;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.45);
   cursor: pointer;
   transition: filter 120ms ease;
+  animation: dnp-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes dnp-breathe {
+  0%, 100% { box-shadow: 0 0 3px rgba(230, 0, 18, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(230, 0, 18, 0.55); }
 }
 
 .dnp-button:hover {
@@ -2208,6 +2176,208 @@ main section {
 .dnp-button:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
+}
+
+/**
+ * Three strikes and the button is scrap. Everything that blinked or breathed
+ * goes still and grey; the button jams in its pressed position, cracks across
+ * the face, and vents sprite-frame smoke while cobwebs move into the corners.
+ * The lamp and the label still sputter now and then — dead electronics are
+ * never quite dead. Only a refresh brings it back.
+ */
+.dnp-block.is-broken { border-color: var(--edge-soft); }
+
+.dnp-block.is-broken::before,
+.dnp-block.is-broken::after {
+  filter: grayscale(1) brightness(0.7);
+  animation: none;
+}
+
+.dnp-block.is-broken .dnp-status { color: #8a849f; }
+
+/* The armed lamp, mostly dead: a long dark hold broken by two weak red
+   sputters — a capacitor somewhere refuses to accept it. */
+.dnp-block.is-broken .dnp-status i {
+  background: #55506a;
+  box-shadow: none;
+  animation: dnp-lamp-sputter 6s steps(1) infinite;
+}
+
+@keyframes dnp-lamp-sputter {
+  0%, 100% { background: #55506a; box-shadow: none; }
+  71% { background: #7a2530; box-shadow: 0 0 4px rgba(230, 0, 18, 0.3); }
+  73% { background: #55506a; box-shadow: none; }
+  76% { background: #7a2530; box-shadow: 0 0 4px rgba(230, 0, 18, 0.3); }
+  77% { background: #55506a; box-shadow: none; }
+}
+
+.dnp-block.is-broken .dnp-housing {
+  background:
+    repeating-linear-gradient(-45deg,
+      color-mix(in srgb, #8a849f 24%, #0b0a08) 0 8px,
+      #0b0a08 8px 16px);
+}
+
+/* Jammed in the pressed position for good — the travel and the fat bottom
+   bevel are gone, so it reads stuck, not resting. The label flickers like a
+   dying fluorescent tube. */
+.dnp-block.is-broken .dnp-button {
+  color: #8a849f;
+  background: #3a3548;
+  border-top-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: #241f31;
+  border-bottom-width: 1px;
+  transform: translateY(2px);
+  text-shadow: none;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45);
+  cursor: not-allowed;
+  filter: none;
+  animation: dnp-dead-flicker 7s steps(1) infinite;
+}
+
+@keyframes dnp-dead-flicker {
+  0%, 100% { color: #8a849f; }
+  43% { color: #b0a8c8; text-shadow: 0 0 5px rgba(176, 168, 200, 0.4); }
+  45% { color: #8a849f; text-shadow: none; }
+  46% { color: #6f6a86; }
+  48% { color: #8a849f; }
+  81% { color: #6f6a86; }
+  84% { color: #8a849f; }
+}
+
+.dnp-block.is-broken .dnp-button:active { transform: translateY(2px); }
+
+/* -------- the wreck dressing (built by friends.js when the button dies) --- */
+
+.dnp-housing { position: relative; }
+
+.dnp-wreck {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The fault lines. The big one splits the face off-centre; the small one is
+   its echo near the right edge, flipped so they don't read as copies. */
+.dnp-crack {
+  position: absolute;
+  opacity: 0.9;
+}
+
+.dnp-crack svg {
+  width: auto;
+  height: 100%;
+  display: block;
+}
+
+.dnp-crack-a {
+  left: 30%;
+  top: 8px;
+  bottom: 9px;
+}
+
+.dnp-crack-b {
+  right: 16%;
+  top: 45%;
+  bottom: 9px;
+  transform: scaleX(-1);
+  opacity: 0.7;
+}
+
+/* Cobwebs take the top corners — they fade in late, because webs take time,
+   even in this economy. The right one is the left one mirrored. */
+.dnp-web {
+  position: absolute;
+  top: 2px;
+  opacity: 0;
+  animation: dnp-web-settle 1.6s ease 1.1s forwards;
+}
+
+.dnp-web svg { display: block; width: 38px; height: auto; }
+
+.dnp-web-l { left: 2px; }
+.dnp-web-r { right: 2px; transform: scaleX(-1); }
+
+@keyframes dnp-web-settle {
+  to { opacity: 0.75; }
+}
+
+/* Something in there still shorts across the big crack: two hot pixels that
+   flash for a frame or two on long, offset cycles. */
+.dnp-spark {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  opacity: 0;
+}
+
+.dnp-spark-a {
+  left: 33%;
+  top: 46%;
+  background: #ffb000;
+  animation: dnp-spark-flash 3.8s steps(1) 1.4s infinite;
+}
+
+.dnp-spark-b {
+  left: 30%;
+  top: 62%;
+  background: #fff6d8;
+  animation: dnp-spark-flash 5.9s steps(1) 3.2s infinite;
+}
+
+@keyframes dnp-spark-flash {
+  0%, 100% { opacity: 0; }
+  90% { opacity: 1; box-shadow: 0 0 6px #ffb000; }
+  92% { opacity: 0; box-shadow: none; }
+  94% { opacity: 1; }
+  95% { opacity: 0; }
+}
+
+/* The chimney. Each puff is friends.js stacking the four smoke frames; the
+   wrapper rises in chunky steps while the frames flip A→B→C→D underneath —
+   blob, cloud, ring, debris, gone. */
+.dnp-smoke {
+  position: absolute;
+  inset: 0;
+}
+
+.dnp-puff {
+  position: absolute;
+  top: -14px;
+  width: 24px;
+  height: 24px;
+  animation: dnp-puff-rise 1.8s steps(10) forwards;
+}
+
+.dnp-puff svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0;
+}
+
+.dnp-puff svg:nth-child(1) { animation: dnp-frame-1 1.8s steps(1) forwards; }
+.dnp-puff svg:nth-child(2) { animation: dnp-frame-2 1.8s steps(1) forwards; }
+.dnp-puff svg:nth-child(3) { animation: dnp-frame-3 1.8s steps(1) forwards; }
+.dnp-puff svg:nth-child(4) { animation: dnp-frame-4 1.8s steps(1) forwards; }
+
+@keyframes dnp-frame-1 { 0% { opacity: 1; } 26% { opacity: 0; } }
+@keyframes dnp-frame-2 { 0%, 26% { opacity: 0; } 27% { opacity: 1; } 54% { opacity: 0; } }
+@keyframes dnp-frame-3 { 0%, 54% { opacity: 0; } 55% { opacity: 1; } 80% { opacity: 0; } }
+@keyframes dnp-frame-4 { 0%, 80% { opacity: 0; } 81% { opacity: 0.8; } 100% { opacity: 0; } }
+
+@keyframes dnp-puff-rise {
+  0% { transform: translate(0, 0); }
+  55% { transform: translate(-5px, -24px); }
+  100% { transform: translate(3px, -44px); }
+}
+
+/* Stencilled under the housing, the way clearance notices are. */
+.dnp-block .dnp-note {
+  margin-top: var(--s3);
+  text-align: center;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 /* Dotted leaders, the way old spec sheets did it. */
@@ -2402,12 +2572,15 @@ main section {
   outline-offset: -2px;
 }
 
-/* The barista's order ticket: one instruction at a time, screen-lit. */
+/* The barista's order ticket: one instruction at a time, screen-lit. A single
+   fixed line — long instructions must never wrap and reshape the machine. */
 .espresso-hint {
+  overflow: hidden;
   margin: 7px 2px 0 !important;
   color: var(--muted) !important;
-  font: 400 15px / 1.4 var(--mono);
+  font: 400 13px / 1.6 var(--mono);
   text-align: center;
+  white-space: nowrap;
 }
 
 /* ------------------------- 12. marquee + footer + back to top */
@@ -3080,19 +3253,6 @@ body.arcade-mode .hero-name {
     padding: var(--s5);
   }
 
-  /* Too narrow to hang the sign beside the title, so it drops into the flow
-     under it and stops stealing the title's line. */
-  .neon-hang {
-    position: static;
-    width: 184px;
-    margin: 0 auto var(--s6);
-  }
-
-  #about .panel-title {
-    padding-right: 0;
-    margin-bottom: var(--s5);
-  }
-
   .work {
     grid-template-columns: 1fr;
   }
@@ -3230,7 +3390,7 @@ body.arcade-mode .hero-name {
   }
 
   .gauge {
-    padding: var(--s3) var(--s3) 12px;
+    padding: 6px var(--s3);
   }
 
   .gauge-value {
