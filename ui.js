@@ -4,6 +4,21 @@
  * Kept out of app.js so navigation still works if the race module fails to load.
  */
 
+/* -------------------------------------------------------- reload position */
+
+/**
+ * A reload should always start at the top. Left to its own devices the browser
+ * restores the previous scroll position, and any #fragment lingering in the URL
+ * from an index click re-anchors the page partway down. Fresh visits to a
+ * shared #fragment link still anchor normally.
+ */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+const navEntry = performance.getEntriesByType('navigation')[0];
+if (navEntry && navEntry.type !== 'navigate') {
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  window.scrollTo(0, 0);
+}
+
 const indexLinks = [...document.querySelectorAll('#site-index a[href^="#"]')];
 const sections = indexLinks
   .map((link) => ({ link, section: document.querySelector(link.getAttribute('href')) }))

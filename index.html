@@ -143,6 +143,22 @@
                 <button id="start-race" class="button primary" type="button">start lap</button>
               </div>
             </div>
+            <!--
+              Touch controls for the race. Hidden on hover-capable machines —
+              the keyboard is the controller there — and shown by the CSS only
+              when the pointer is a finger. app.js wires each pad straight into
+              the same key state the arrow keys set.
+            -->
+            <div class="race-touch" id="race-touch">
+              <div class="touch-cluster">
+                <button class="touch-key" type="button" data-control="left" aria-label="Steer left">&#9664;</button>
+                <button class="touch-key" type="button" data-control="right" aria-label="Steer right">&#9654;</button>
+              </div>
+              <div class="touch-cluster">
+                <button class="touch-key touch-brake" type="button" data-control="down" aria-label="Brake">brk</button>
+                <button class="touch-key touch-gas" type="button" data-control="up" aria-label="Accelerate">gas</button>
+              </div>
+            </div>
             <div class="race-readout">
               <div class="gauge you-gauge">
                 <span class="gauge-label"><i class="dot-you"></i> you</span>

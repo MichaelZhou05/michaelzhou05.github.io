@@ -375,6 +375,41 @@ window.addEventListener('keyup', (event) => {
 
 window.addEventListener('blur', () => Object.keys(keys).forEach((key) => { keys[key] = false; }));
 
+/**
+ * Touch controls. The pads below the screen (revealed by the stylesheet on
+ * coarse pointers) drive the same `keys` state the keyboard does, so the
+ * physics cannot tell a thumb from an arrow key. Each press captures its own
+ * pointer: you can hold GAS with one thumb and steer with the other, and a
+ * finger that slides off a pad still releases it.
+ */
+const touchPad = $('#race-touch');
+if (touchPad) {
+  touchPad.querySelectorAll('[data-control]').forEach((pad) => {
+    const control = pad.dataset.control;
+    const engage = (event) => {
+      event.preventDefault();
+      // Capture so the release lands here even after the thumb wanders off the
+      // pad. Failing to capture must not eat the press itself.
+      try { pad.setPointerCapture(event.pointerId); } catch { /* still held */ }
+      keys[control] = true;
+      pad.classList.add('is-held');
+    };
+    const disengage = () => {
+      keys[control] = false;
+      pad.classList.remove('is-held');
+    };
+    pad.addEventListener('pointerdown', engage);
+    pad.addEventListener('pointerup', disengage);
+    pad.addEventListener('pointercancel', disengage);
+  });
+  // A long-pressed pad is a held pedal, not a request for the context menu.
+  touchPad.addEventListener('contextmenu', (event) => event.preventDefault());
+}
+
+/** What the overlay tells you to drive with — thumbs or keys. */
+const COARSE_POINTER = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+const CONTROLS_NOTE = COARSE_POINTER ? 'STEER AND GAS BELOW THE SCREEN' : 'ARROW KEYS OR WASD';
+
 /* ---------------------------------- flow ---------------------------------- */
 
 function primeRace() {
@@ -395,7 +430,7 @@ function resetRace() {
 
   ui.overlay.querySelector('.overlay-title').textContent = 'NORDSCHLEIFE';
   const lines = ui.overlay.querySelectorAll('p:not(.overlay-title)');
-  lines[0].textContent = `20.832 KM · ${track.sectors.length} SECTORS · ARROW KEYS OR WASD`;
+  lines[0].textContent = `20.832 KM · ${track.sectors.length} SECTORS · ${CONTROLS_NOTE}`;
   lines[1].textContent = 'THE WINDOW SHIFTS EACH SECTOR · GRASS COSTS YOU';
   ui.start.textContent = 'START LAP';
   ui.overlay.classList.remove('hidden');

@@ -182,6 +182,41 @@ body {
 }
 
 /**
+ * A finger is not a cursor. Every button and screen on the case is a control:
+ * a long press on one must never open the text loupe, pop the copy/share
+ * callout, or start a selection that spills into the card around it — and a
+ * double tap must not zoom the console out from under the game.
+ */
+button,
+canvas {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Taps on controls act immediately — never held back for a double-tap zoom.
+   (The espresso canvas tightens this to `none` for its hold-and-crank moves.) */
+button,
+canvas {
+  touch-action: manipulation;
+}
+
+/**
+ * The playable cards, whole. Cranking the grinder or holding the lever keeps a
+ * thumb pressed inside these frames, and nothing in them is prose — so none of
+ * it may light up as selected text while you play.
+ */
+.race-window,
+.espresso-frame,
+.locale-screen,
+.dnp-housing {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/**
  * Page-wide scanlines are off: in this theme they belong to screens, and the
  * document is plastic. The one exception is DMG mode, where the whole page
  * becomes the handheld's LCD — that rule turns this on.
@@ -946,6 +981,70 @@ main section {
   height: 100%;
   outline: none;
   image-rendering: pixelated;
+}
+
+/**
+ * The touch pads: steering under one thumb, pedals under the other, moulded
+ * into the case between the screen and the telemetry. Only a machine whose
+ * pointer is a finger gets them — on a desktop the keyboard is the controller
+ * and the strip never exists.
+ */
+.race-touch {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .race-touch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s4);
+    padding: var(--s3);
+    background-color: #000000;
+    background-image: var(--matrix);
+  }
+}
+
+.touch-cluster {
+  display: flex;
+  flex: 1;
+  gap: var(--s3);
+}
+
+/* The pads split the strip evenly: the fattest targets the case can afford,
+   and still four-across on a 320px screen. */
+.touch-key {
+  flex: 1;
+  min-width: 44px;
+  min-height: 54px;
+  padding: 0 var(--s3);
+  border: 2px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: linear-gradient(145deg, var(--bezel-lit), var(--bezel));
+  color: var(--fg);
+  box-shadow: var(--emboss);
+  font: 400 10px / 1 var(--display);
+  text-transform: uppercase;
+  cursor: pointer;
+  /* A held pedal is not a scroll, a zoom, or a double tap. */
+  touch-action: none;
+}
+
+.touch-gas {
+  color: var(--green);
+}
+
+.touch-brake {
+  color: var(--red);
+}
+
+/* Pressed: the button sinks flush and lights amber, like the start button. */
+.touch-key.is-held {
+  border-color: var(--amber);
+  background: var(--shell-grey-2);
+  color: var(--amber);
+  box-shadow: none;
+  transform: translateY(2px);
 }
 
 .game-overlay {

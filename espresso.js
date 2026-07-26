@@ -48,6 +48,9 @@ const C = {
 
 const STEP = { BEANS: 0, GRIND: 1, DOSE: 2, TAMP: 3, LOCK: 4, PULL: 5, SERVE: 6 };
 
+/** On a phone nobody clicks — the ticket says tap, the verb a thumb knows. */
+const COARSE_POINTER = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
 const HINTS = [
   'click the bean sack — scoop the beans',
   'hold the grinder — crank it',
@@ -56,7 +59,7 @@ const HINTS = [
   'click the group head — lock it in',
   'hold the lever — pull the shot',
   'shot’s ready — click the cup',
-];
+].map((hint) => (COARSE_POINTER ? hint.replace('click', 'tap') : hint));
 
 /** One rectangle of permission per station, plus where the hint arrow bobs. */
 const HOTSPOTS = [
@@ -323,7 +326,11 @@ function init() {
     if (inside(toGame(event), hotspot())) press();
   });
   window.addEventListener('pointerup', release);
+  window.addEventListener('pointercancel', release);
   canvas.addEventListener('pointerleave', release);
+  // Holding the lever is a pull, not a long-press: no context menu, and no
+  // text-selection spilling out of the screen into the card around it.
+  canvas.addEventListener('contextmenu', (event) => event.preventDefault());
   canvas.addEventListener('pointermove', (event) => {
     canvas.style.cursor = inside(toGame(event), hotspot()) ? 'pointer' : 'default';
   });
