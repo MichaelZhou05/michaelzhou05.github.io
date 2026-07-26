@@ -13,15 +13,15 @@ const STORE_KEY = 'mz.secrets';
  * print and the lights.
  */
 const SECRETS = [
-  { id: 'cat', icon: 'catSit', color: '#e8e4f4', label: 'THE CAT PURRS', hint: 'someone naps at the edges' },
-  { id: 'moon', icon: 'moon', color: '#ffb000', label: 'LIGHTS OUT, STARS ON', hint: 'the moon is a switch' },
-  { id: 'star', icon: 'star', color: '#ffb000', label: 'WISH GRANTED', hint: 'one star is clickable' },
-  { id: 'cursor', icon: 'crt', color: '#8a849f', label: 'SECRET BOOT LOG', hint: 'the name ends in a button' },
+  { id: 'cat', icon: 'catSit', color: '#e8e4f4', label: 'THE CAT PURRS' },
+  { id: 'moon', icon: 'moon', color: '#ffb000', label: 'LIGHTS OUT, STARS ON' },
+  { id: 'star', icon: 'star', color: '#ffb000', label: 'WISH GRANTED' },
+  { id: 'cursor', icon: 'crt', color: '#8a849f', label: 'SECRET BOOT LOG' },
   { id: 'konami', icon: 'dpad', color: '#e60012', label: 'ARCADE MODE', hint: '↑↑↓↓←→←→ B A' },
-  { id: 'cart', icon: 'cartridge', color: '#b0a8c8', label: 'BLEW THE DUST OUT', hint: 'a cartridge sits loose' },
-  { id: 'sound', icon: 'note', color: '#7b68ee', label: 'SOUND TEST', hint: 'the footer can sing' },
-  { id: 'espresso', icon: 'coffeeCup', color: '#e8e4f4', label: 'GOD SHOT', hint: 'the sidebar makes coffee' },
-  { id: 'koi', icon: 'fish', color: '#7cc7f5', label: 'THE SCREEN HOLDS WATER', hint: 'tap the dot matrix glass' },
+  { id: 'cart', icon: 'cartridge', color: '#b0a8c8', label: 'BLEW THE DUST OUT' },
+  { id: 'sound', icon: 'note', color: '#7b68ee', label: 'SOUND TEST' },
+  { id: 'espresso', icon: 'coffeeCup', color: '#e8e4f4', label: 'GOD SHOT' },
+  { id: 'koi', icon: 'fish', color: '#7cc7f5', label: 'THE SCREEN HOLDS WATER' },
 ];
 
 const found = new Set(JSON.parse(localStorage.getItem(STORE_KEY) || '[]'));
@@ -33,14 +33,15 @@ function renderSecrets() {
   if (!list) return;
   list.innerHTML = SECRETS.map((secret) => {
     const isFound = found.has(secret.id);
-    // Unfound secrets all wear the same "?" block, so the list reads as a
-    // collection with gaps in it rather than a list of spoilers.
+    // Unfound secrets all wear the same "?" block and "???" text, so the list
+    // reads as a collection with gaps in it rather than a list of spoilers.
+    // The konami entry is the one deliberate hint.
     const icon = isFound
       ? spriteSvg(secret.icon, { scale: 2, color: secret.color })
       : spriteSvg('mystery', { scale: 2, palette: { y: '#2e2a3a', d: '#14121b' } });
     return `<li class="${isFound ? 'is-found' : ''}">
       <i class="secret-icon">${icon}</i>
-      <span>${isFound ? secret.label : secret.hint}</span>
+      <span>${isFound ? secret.label : (secret.hint || '???')}</span>
     </li>`;
   }).join('');
 
@@ -1060,8 +1061,8 @@ function greet() {
   const art = [
     '',
     '   /\\_/\\   michael zhou // portfolio',
-    '  ( o.o )  there are 10 secrets on this page.',
-    '   > ^ <   konami code. pet the cat. blow on the cartridge.',
+    '  ( o.o )  there are 9 secrets on this page.',
+    '   > ^ <   try the konami code. the rest is on you.',
     '',
   ].join('\n');
   console.log(`%c${art}`, 'color:#7b68ee;font-family:monospace;font-size:12px');

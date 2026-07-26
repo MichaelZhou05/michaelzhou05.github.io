@@ -3207,6 +3207,164 @@ body.arcade-mode .hero-name {
   animation: rainbow-text 3s linear infinite;
 }
 
+/**
+ * The neon sign. An arcade-mode exclusive: it stays dark until the konami
+ * code flips the cabinet on, then hangs in the top-right corner of the about
+ * panel off a mounting bar and two pixel chains, tilted the degree nobody
+ * ever straightens and swaying just enough to prove it is on a chain rather
+ * than screwed to the wall.
+ *
+ * It is built the way a real one is: a glass tube bent into a rounded
+ * rectangle (the border, lit from both faces by box-shadow), the word burning
+ * inside it, and a bloom of colour thrown onto the panel behind. Every colour
+ * routes through the tokens, so arcade mode's candy palette lights it pink.
+ */
+.neon-hang {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: var(--s6);
+  z-index: 2;
+  width: 184px;
+  padding-top: 26px;
+  text-align: center;
+  transform: rotate(-1.6deg);
+  transform-origin: 50% 2px;
+  animation: sign-sway 7s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+body.arcade-mode .neon-hang {
+  display: block;
+}
+
+/* The title has to stop before the sign rather than run under it. */
+body.arcade-mode #about .panel-title {
+  padding-right: 200px;
+}
+
+/* The light the sign spills onto the panel behind it. */
+.neon-hang::before {
+  content: "";
+  position: absolute;
+  inset: 20px -30px -30px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    color-mix(in srgb, var(--indigo-lit) 24%, transparent),
+    transparent 72%
+  );
+  filter: blur(9px);
+  animation: neon-bloom 6.5s ease-in-out infinite;
+}
+
+/* The mount: a bar bolted to the panel's top edge, chains hanging off it. */
+.neon-rig {
+  position: absolute;
+  top: 0;
+  left: 14%;
+  right: 14%;
+  height: 3px;
+  background: linear-gradient(180deg, var(--bezel-lit), var(--bezel));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* The chains: dashed 2px links from the bar down to the sign's top corners. */
+.neon-rig::before,
+.neon-rig::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  width: 2px;
+  height: 24px;
+  background: repeating-linear-gradient(0deg, var(--bezel-lit) 0 3px, transparent 3px 6px);
+}
+
+.neon-rig::before { left: 0; }
+.neon-rig::after { right: 0; }
+
+@keyframes sign-sway {
+  from { transform: rotate(-2.2deg); }
+  to { transform: rotate(-0.9deg); }
+}
+
+/**
+ * The tube itself. The border is the glass: a hot near-white line, haloed
+ * outward in three rings of colour and inward onto the dark backing so the
+ * inside of the sign reads as glass rather than as a card.
+ */
+.neon-hang .neon-sign {
+  position: relative;
+  margin: 0;
+  padding: 12px 8px 10px;
+  border: 2px solid color-mix(in srgb, var(--indigo-lit) 62%, #ffffff);
+  border-radius: 13px;
+  background:
+    radial-gradient(
+      120% 150% at 50% 0%,
+      color-mix(in srgb, var(--indigo-lit) 15%, transparent),
+      transparent 68%
+    ),
+    rgba(6, 5, 14, 0.62);
+  box-shadow:
+    0 0 5px color-mix(in srgb, var(--indigo-lit) 75%, transparent),
+    0 0 16px color-mix(in srgb, var(--indigo-lit) 45%, transparent),
+    0 0 40px color-mix(in srgb, var(--indigo-lit) 20%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--indigo-lit) 26%, transparent),
+    inset 0 0 2px rgba(255, 255, 255, 0.5);
+  animation: neon-hum 6.5s ease-in-out infinite;
+}
+
+.neon-word {
+  display: block;
+  padding-left: 0.3em; /* recentres what the trailing letter-spacing steals */
+  color: #ffffff;
+  font: 400 22px / 1 var(--display);
+  letter-spacing: 0.3em;
+  text-shadow:
+    0 0 2px #ffffff,
+    0 0 6px var(--indigo-lit),
+    0 0 14px var(--indigo-lit),
+    0 0 30px color-mix(in srgb, var(--indigo-lit) 70%, transparent),
+    0 0 60px color-mix(in srgb, var(--indigo-lit) 40%, transparent);
+  animation: neon-flicker 8s steps(1, end) infinite;
+}
+
+/* Two quick dips a cycle — a tired transformer, not a strobe. */
+@keyframes neon-flicker {
+  0%, 55.9%, 100% { opacity: 1; }
+  56% { opacity: 0.35; text-shadow: 0 0 2px color-mix(in srgb, var(--indigo-lit) 40%, transparent); }
+  56.6% { opacity: 1; }
+  57.4% { opacity: 0.5; text-shadow: 0 0 2px color-mix(in srgb, var(--indigo-lit) 40%, transparent); }
+  58.2% { opacity: 1; }
+}
+
+/* The tube and its spill breathe together, half a beat apart from the word. */
+@keyframes neon-hum {
+  0%, 100% { filter: brightness(1); }
+  47% { filter: brightness(0.93); }
+  62% { filter: brightness(1.05); }
+}
+
+@keyframes neon-bloom {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 0.78; }
+  62% { opacity: 1.1; }
+}
+
+.neon-sub {
+  display: block;
+  margin-top: var(--s3);
+  color: color-mix(in srgb, var(--amber) 82%, #ffffff);
+  font: 400 6px / 1.8 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 4px var(--amber),
+    0 0 10px color-mix(in srgb, var(--amber) 65%, transparent);
+}
+
 /* ------------------------------------------------------ 14. responsive */
 
 @media (max-width: 1180px) {
@@ -3251,6 +3409,19 @@ body.arcade-mode .hero-name {
   .panel,
   .side-block {
     padding: var(--s5);
+  }
+
+  /* Too narrow to hang the sign beside the title, so it drops into the flow
+     under it and stops stealing the title's line. */
+  .neon-hang {
+    position: static;
+    width: 184px;
+    margin: 0 auto var(--s6);
+  }
+
+  body.arcade-mode #about .panel-title {
+    padding-right: 0;
+    margin-bottom: var(--s5);
   }
 
   .work {
