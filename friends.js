@@ -958,55 +958,25 @@ function wireKonami() {
 /* ------------------------------------------------------------------ boot */
 
 /**
- * A delight that fires on every hover stops being one. First hover always
- * lands — the discovery — then each re-hover is a one-in-four roll, and a
- * four-second breather per element keeps rapid passes quiet either way.
- */
-const lastDelight = new WeakMap();
-function occasional(fn) {
-  return (event) => {
-    const element = event.currentTarget;
-    const seen = lastDelight.has(element);
-    const now = performance.now();
-    if (seen && (now - lastDelight.get(element) < 4000 || Math.random() > 0.25)) return;
-    lastDelight.set(element, now);
-    fn(event);
-  };
-}
-
-/**
- * Ambient treats on the outbound links — hearts for mail, blue birds for the
- * bird site, contribution greens for GitHub, coffee cups for the dream
- * machine. Not secrets, just hospitality.
+ * Ambient treats on the three links in the intro list that opt in by hand —
+ * hearts for the say-hi mail, blue birds for the say-hi Twitter, coffee cups
+ * for the dream machine. Hooks only: every other mailto, twitter.com and
+ * github.com link on the page (the bio's @MichaelZhou50, the contact buttons,
+ * the footer) stays quiet on purpose. Fires every hover, as often as asked.
  */
 function hoverDelights() {
-  const wire = (elements, fire) => {
-    new Set(elements).forEach((element) => {
-      element.addEventListener('pointerenter', occasional(() => {
+  const wire = (selector, fire) => {
+    document.querySelectorAll(selector).forEach((element) => {
+      element.addEventListener('pointerenter', () => {
         const rect = element.getBoundingClientRect();
         fire(rect.left + rect.width / 2, rect.top + 6);
-      }));
+      });
     });
   };
 
-  // mailto matches too, in case a markup pass ever drops the data-hearts hook
-  wire(
-    document.querySelectorAll('[data-hearts], a[href^="mailto:"]'),
-    (x, y) => burst(x, y, '#ff9ecd', 5),
-  );
-  wire(
-    document.querySelectorAll('a[href*="twitter.com"], a[href^="https://x.com"], a[href^="https://www.x.com"]'),
-    (x, y) => burst(x, y, ['#1DA1F2', '#7cc7f5'], 8, ['bird', 'bird']),
-  );
-  wire(
-    document.querySelectorAll('a[href*="github.com"]'),
-    (x, y) => burst(x, y, ['#39d353', '#26a641', '#006d32'], 9, ['commitSquare', 'commitSquare']),
-  );
-  // lamarzocco matches too, in case a markup pass ever drops the data-coffee hook
-  wire(
-    document.querySelectorAll('[data-coffee], a[href*="lamarzocco"]'),
-    (x, y) => burst(x, y, ['#f2f0fa', '#f2c49b'], 8, ['coffeeCup', 'coffeeCup']),
-  );
+  wire('[data-hearts]', (x, y) => burst(x, y, '#ff9ecd', 5));
+  wire('[data-birds]', (x, y) => burst(x, y, ['#1DA1F2', '#7cc7f5'], 8, ['bird', 'bird']));
+  wire('[data-coffee]', (x, y) => burst(x, y, ['#f2f0fa', '#f2c49b'], 8, ['coffeeCup', 'coffeeCup']));
 }
 
 /** An honest-to-goodness 90s hit counter. It counts your visits, not the world's. */
