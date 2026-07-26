@@ -49,9 +49,9 @@ const C = {
 const STEP = { BEANS: 0, GRIND: 1, DOSE: 2, TAMP: 3, LOCK: 4, PULL: 5, SERVE: 6 };
 
 const HINTS = [
-  'click the bean sack — load the hopper',
+  'click the bean sack — scoop the beans',
   'hold the grinder — crank it',
-  'click the portafilter — dose the grounds',
+  'click the portafilter — take it to the grinder',
   'click again — tamp it flat',
   'click the group head — lock it in',
   'hold the lever — pull the shot',
@@ -116,9 +116,65 @@ const FONT = {
 /** The star that pops in when a level is cleared, 5×5. */
 const STAR = ['00100', '01110', '11111', '01110', '00100'];
 
+/**
+ * The tamp, as a fraction of the whole move: down, held against the puck,
+ * back up. The strokes keep their old speed; the dwell in the middle is the
+ * ~0.2s where you are actually leaning on it.
+ */
+const TAMP_DIP = 0.355;
+const tamperTravel = (t) => {
+  if (t < TAMP_DIP) return Math.sin((t / TAMP_DIP) * (Math.PI / 2));
+  if (t < 1 - TAMP_DIP) return 1;
+  return Math.sin(((1 - t) / TAMP_DIP) * (Math.PI / 2));
+};
+
 const easeOut = (k) => 1 - (1 - k) ** 3;
 /** Overshoots by a hair on the way in, so things land instead of stopping. */
 const easeOutBack = (k) => 1 + 2.2 * (k - 1) ** 3 + 1.4 * (k - 1) ** 2;
+/** Everything that travels across the counter leaves and arrives gently. */
+const easeInOut = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
+const lerp = (a, b, k) => a + (b - a) * k;
+
+/**
+ * The bean scoop, three poses deep: upright, halfway over, and tipped out.
+ * S is steel, L its lit edge, D the inside — which is beans when the scoop is
+ * loaded and shadow when it isn't.
+ */
+const SCOOP_UP = [
+  '.......SS',
+  '......SS.',
+  'LLLLLLL..',
+  'SDDDDDS..',
+  'SDDDDDS..',
+  '.SSSSS...',
+];
+const SCOOP_MID = [
+  '.....SS',
+  '....SS.',
+  '..LLS..',
+  '.LDDS..',
+  'LDDDS..',
+  '.SSS...',
+];
+const SCOOP_POUR = [
+  '.....SS',
+  '....SS.',
+  'LSSSS..',
+  '.DDDS..',
+  '.DDDS..',
+  'LSSSS..',
+];
+
+/** Where the scoop rests, digs, and tips out. */
+const SCOOP_REST = [42, 56];
+const SCOOP_DIP = [42, 61];
+const SCOOP_POUR_AT = [23, 26];
+const SCOOP_TIMES = { dip: 0.3, lift: 0.5, pour: 0.65, back: 0.45 };
+
+/** The portafilter's three addresses: the counter, the grinder, the group. */
+const PF_REST = [61, 82];
+const PF_DOCK = [17, 82]; // between the grinder's legs, under its chute
+const PF_GROUP = [85, 66];
 
 const canvas = document.getElementById('espresso-canvas');
 const hintEl = document.getElementById('espresso-hint');
@@ -136,11 +192,15 @@ function init() {
     crank: -1.1, // crank arm angle, radians
     hopper: 0, // beans in the glass, 0..1
     grind: 0, // crank progress, 0..1
-    drawer: 0, // grounds in the drawer, 0..1
+    mill: 0, // ground coffee waiting in the mill's window, 0..1
     mound: 0, // grounds in the basket, 0..1
     tamped: false,
     tamper: 0, // tamper travel, 0..1, out-and-back
-    lock: 0, // portafilter travel to the group, 0..1
+    scoop: { phase: 'rest', t: 0, load: 0, x: SCOOP_REST[0], y: SCOOP_REST[1] },
+    pf: { x: PF_REST[0], y: PF_REST[1] }, // the portafilter goes to the coffee
+    pfTween: null, // { fx, fy, tx, ty, t, dur, next }
+    dosing: null, // null | 'travel' | 'fill' | 'back'
+    locked: false, // clamped into the group head
     lever: 0, // lever travel, 0 up .. 1 pulled
     pour: 0, // extraction, 0..1
     cine: null, // the victory lap: { phase, t, star, cheer }
@@ -216,7 +276,8 @@ function init() {
       case STEP.BEANS:
         state.busy = true;
         beep(520, 0, 0.05);
-        flyBeans();
+        state.scoop.phase = 'dip'; // the scoop takes it from here
+        state.scoop.t = 0;
         break;
       case STEP.GRIND:
       case STEP.PULL:
@@ -225,7 +286,11 @@ function init() {
       case STEP.DOSE:
         state.busy = true;
         beep(520, 0, 0.05);
-        flyGrounds();
+        state.dosing = 'travel';
+        movePf(PF_DOCK, 0.65, () => {
+          state.dosing = 'fill';
+          beep(220, 0, 0.05, 'square', 0.026);
+        });
         break;
       case STEP.TAMP:
         state.busy = true;
@@ -234,7 +299,12 @@ function init() {
       case STEP.LOCK:
         state.busy = true;
         beep(300, 0, 0.05);
-        break; // so does the portafilter's trip to the group
+        movePf(PF_GROUP, 0.7, () => {
+          state.locked = true;
+          beep(150, 0, 0.06, 'square', 0.03);
+          advance(STEP.PULL);
+        });
+        break;
       case STEP.SERVE:
         serve();
         break;
@@ -291,32 +361,83 @@ function init() {
     beep(880, 0.06, 0.05);
   }
 
-  /** A scoop of beans arcs from the sack into the hopper glass. */
-  function flyBeans() {
-    for (let i = 0; i < 9; i += 1) {
-      particles.push({
-        kind: 'bean',
-        from: [45 + (i % 3) * 2, 63],
-        to: [22 + (i % 5), 40],
-        peak: 18,
-        t: -i * 0.06,
-        dur: 0.55,
-      });
+  /** Slide the portafilter to an address on the counter, then do the thing. */
+  function movePf(to, dur, next) {
+    state.pfTween = { fx: state.pf.x, fy: state.pf.y, tx: to[0], ty: to[1], t: 0, dur, next };
+  }
+
+  /**
+   * The scoop's round trip: dig into the sack, carry it up, tip it into the
+   * hopper, come back. Each leg eases in and out, so it reads as a hand
+   * moving rather than a sprite teleporting.
+   */
+  function updateScoop(dt) {
+    const s = state.scoop;
+    s.t += dt;
+    const k = Math.min(1, s.t / SCOOP_TIMES[s.phase]);
+    const e = easeInOut(k);
+
+    if (s.phase === 'dip') {
+      s.x = lerp(SCOOP_REST[0], SCOOP_DIP[0], e);
+      s.y = lerp(SCOOP_REST[1], SCOOP_DIP[1], e);
+      s.load = Math.min(1, k * 1.5);
+      if (state.time - lastTick > 0.09) {
+        lastTick = state.time;
+        beep(70 + Math.random() * 30, 0, 0.04, 'square', 0.02); // beans shifting
+      }
+      if (k >= 1) {
+        s.phase = 'lift';
+        s.t = 0;
+      }
+    } else if (s.phase === 'lift') {
+      s.x = lerp(SCOOP_DIP[0], SCOOP_POUR_AT[0], e);
+      s.y = lerp(SCOOP_DIP[1], SCOOP_POUR_AT[1], e) - Math.sin(k * Math.PI) * 5;
+      if (k >= 1) {
+        s.phase = 'pour';
+        s.t = 0;
+      }
+    } else if (s.phase === 'pour') {
+      [s.x, s.y] = SCOOP_POUR_AT;
+      s.load = 1 - k;
+      state.hopper = k;
+      if (k < 0.92) {
+        particles.push({
+          kind: 'fall',
+          color: C.bean,
+          x: 23 + Math.random() * 3,
+          y: 30,
+          vy: 26,
+          t: 0,
+          dur: 0.22,
+        });
+        if (state.time - lastTick > 0.07) {
+          lastTick = state.time;
+          beep(240 + Math.random() * 160, 0, 0.03, 'square', 0.018); // rattle
+        }
+      }
+      if (k >= 1) {
+        s.phase = 'back';
+        s.t = 0;
+      }
+    } else if (s.phase === 'back') {
+      s.x = lerp(SCOOP_POUR_AT[0], SCOOP_REST[0], e);
+      s.y = lerp(SCOOP_POUR_AT[1], SCOOP_REST[1], e) - Math.sin(k * Math.PI) * 4;
+      if (k >= 1) {
+        s.phase = 'rest';
+        s.t = 0;
+        beep(880, 0, 0.04, 'square', 0.016); // the scoop back in the beans
+        advance(STEP.GRIND);
+      }
     }
   }
 
-  /** The drawer's grounds hop over to the waiting basket. */
-  function flyGrounds() {
-    for (let i = 0; i < 10; i += 1) {
-      particles.push({
-        kind: 'grounds',
-        from: [22 + (i % 5), 82],
-        to: [65 + (i % 7), 80],
-        peak: 56,
-        t: -i * 0.05,
-        dur: 0.5,
-      });
-    }
+  /** Which of the three scoop poses this moment in the trip wants. */
+  function scoopSprite() {
+    const s = state.scoop;
+    if (s.phase === 'pour') return SCOOP_POUR;
+    if (s.phase === 'lift' && s.t / SCOOP_TIMES.lift > 0.72) return SCOOP_MID;
+    if (s.phase === 'back' && s.t / SCOOP_TIMES.back < 0.22) return SCOOP_MID;
+    return SCOOP_UP;
   }
 
   function serve() {
@@ -383,11 +504,15 @@ function init() {
       holding: false,
       hopper: 0,
       grind: 0,
-      drawer: 0,
+      mill: 0,
       mound: 0,
       tamped: false,
       tamper: 0,
-      lock: 0,
+      scoop: { phase: 'rest', t: 0, load: 0, x: SCOOP_REST[0], y: SCOOP_REST[1] },
+      pf: { x: PF_REST[0], y: PF_REST[1] },
+      pfTween: null,
+      dosing: null,
+      locked: false,
       lever: 0,
       pour: 0,
       cine: null,
@@ -445,17 +570,26 @@ function init() {
 
     if (state.cine) updateCinematic(dt);
 
-    // Beans in flight own the BEANS → GRIND transition.
-    if (state.step === STEP.BEANS && state.busy && !particles.some((p) => p.kind === 'bean')) {
-      state.hopper = 1;
-      advance(STEP.GRIND);
+    // The scoop owns the BEANS → GRIND transition; the tween owns the rest.
+    if (state.scoop.phase !== 'rest') updateScoop(dt);
+
+    if (state.pfTween) {
+      const m = state.pfTween;
+      m.t += dt;
+      const k = Math.min(1, m.t / m.dur);
+      state.pf.x = lerp(m.fx, m.tx, easeInOut(k));
+      state.pf.y = lerp(m.fy, m.ty, easeInOut(k));
+      if (k >= 1) {
+        state.pfTween = null;
+        m.next?.();
+      }
     }
 
     if (state.step === STEP.GRIND && state.holding) {
       state.crank += dt * 9;
       state.grind = Math.min(1, state.grind + dt / 2.4);
       state.hopper = 1 - state.grind;
-      state.drawer = state.grind;
+      state.mill = state.grind;
       if (state.time - lastTick > 0.11) {
         lastTick = state.time;
         beep(85 + Math.random() * 20, 0, 0.03, 'square', 0.028);
@@ -466,32 +600,44 @@ function init() {
       }
     }
 
-    if (state.step === STEP.DOSE && state.busy) {
-      if (!particles.some((p) => p.kind === 'grounds')) {
-        state.mound = 1;
-        state.drawer = 0;
-        advance(STEP.TAMP);
-      } else {
-        state.drawer = Math.max(0, state.drawer - dt * 2.2);
+    // Docked under the chute: the mill empties into the basket.
+    if (state.dosing === 'fill') {
+      const rate = dt / 0.9;
+      state.mill = Math.max(0, state.mill - rate);
+      state.mound = Math.min(1, state.mound + rate);
+      particles.push({
+        kind: 'fall',
+        color: C.grounds,
+        x: 22 + Math.random() * 4,
+        y: 75,
+        vy: 30,
+        t: 0,
+        dur: 0.2,
+      });
+      if (state.time - lastTick > 0.08) {
+        lastTick = state.time;
+        beep(110 + Math.random() * 40, 0, 0.03, 'square', 0.02);
+      }
+      if (state.mound >= 1) {
+        state.dosing = 'back';
+        movePf(PF_REST, 0.65, () => {
+          state.dosing = null;
+          advance(STEP.TAMP);
+        });
       }
     }
 
-    // The tamper drops in, presses, and leaves. Out fast, back slower.
+    // The tamper drops in, leans on the puck, and leaves.
     if (state.step === STEP.TAMP && state.busy) {
-      state.tamper = Math.min(1, state.tamper + dt * 2.6);
-      if (state.tamper >= 1) {
+      state.tamper = Math.min(1, state.tamper + dt * 1.45);
+      // the puck goes flat the moment the tamper reaches it, not on the way out
+      if (state.tamper >= TAMP_DIP && !state.tamped) {
         state.tamped = true;
-        state.tamper = 0;
-        particles.push({ kind: 'spark', x: 69, y: 76, vx: 0, vy: -18, t: 0, dur: 0.45 });
-        advance(STEP.LOCK);
+        particles.push({ kind: 'spark', x: state.pf.x + 7, y: state.pf.y - 4, vx: 0, vy: -18, t: 0, dur: 0.45 });
       }
-    }
-
-    if (state.step === STEP.LOCK && state.busy) {
-      state.lock = Math.min(1, state.lock + dt * 2.4);
-      if (state.lock >= 1) {
-        beep(150, 0, 0.06, 'square', 0.03);
-        advance(STEP.PULL);
+      if (state.tamper >= 1) {
+        state.tamper = 0;
+        advance(STEP.LOCK);
       }
     }
 
@@ -605,24 +751,34 @@ function init() {
     px(20, 47, 9, 4, C.brass);
     px(20, 47, 9, 1, C.brassDark);
 
-    // the mill box
-    px(15, 51, 19, 29, C.wood);
+    // the mill box, stopping short so the stand can hold it up
+    px(15, 51, 19, 18, C.wood);
     px(15, 51, 19, 1, C.burlap);
-    px(32, 51, 2, 29, C.woodDark);
-    px(15, 79, 19, 1, C.woodDeep);
-    px(23, 62, 3, 3, C.indigo); // the decal every heirloom grinder earns
-    px(24, 61, 1, 5, C.indigo);
-    px(22, 63, 5, 1, C.indigo);
+    px(32, 51, 2, 18, C.woodDark);
+    px(15, 68, 19, 1, C.woodDeep);
+    px(17, 58, 3, 3, C.indigo); // the decal every heirloom grinder earns
+    px(18, 57, 1, 5, C.indigo);
+    px(16, 59, 5, 1, C.indigo);
 
-    // drawer: grounds heap up over its lip as the crank does its work
-    px(17, 80, 15, 8, C.woodDeep);
-    px(17, 80, 15, 1, C.outline);
-    px(23, 83, 3, 2, C.brass);
-    if (state.drawer > 0) {
-      const width = Math.round(11 * state.drawer);
-      px(24 - Math.floor(width / 2), 79, width, 2, C.grounds);
-      if (state.drawer > 0.5) px(22, 78, 5, 1, C.grounds);
+    // the window on the front, where ground coffee waits its turn
+    px(22, 56, 10, 9, C.woodDark);
+    px(23, 57, 8, 7, C.woodDeep);
+    if (state.mill > 0) {
+      const depth = Math.max(1, Math.round(7 * state.mill));
+      px(23, 64 - depth, 8, depth, C.grounds);
+      px(23, 64 - depth, 8, 1, C.bean);
     }
+
+    // chute and stand: the gap between the legs is a portafilter wide
+    px(20, 69, 9, 2, C.brassDark);
+    px(21, 69, 7, 1, C.brass);
+    px(23, 71, 3, 4, C.brassDark);
+    px(23, 71, 3, 1, C.brass);
+    px(15, 69, 2, 19, C.woodDark);
+    px(32, 69, 2, 19, C.woodDark);
+    px(15, 69, 2, 1, C.wood);
+    px(32, 69, 2, 1, C.wood);
+    px(14, 86, 21, 2, C.woodDeep); // the base the portafilter parks on
 
     // crank: a brass hub, a steel arm, a wooden knob going around
     const arm = 9;
@@ -688,13 +844,12 @@ function init() {
 
   /** The portafilter lives three lives: counter, in transit, locked in. */
   function drawPortafilter() {
-    const t = state.lock;
-    const bx = Math.round(61 + (85 - 61) * t);
-    const by = Math.round(82 + (66 - 82) * t);
+    const bx = Math.round(state.pf.x);
+    const by = Math.round(state.pf.y);
 
     px(bx, by, 14, 4, C.steel);
     px(bx + 1, by + 4, 12, 2, C.plasticLit);
-    if (t >= 1) {
+    if (state.locked) {
       // locked: spouts down, handle swung out to the left
       px(bx + 3, by + 6, 2, 2, C.steel);
       px(bx + 8, by + 6, 2, 2, C.steel);
@@ -705,28 +860,53 @@ function init() {
       px(bx + 14, by + 1, 7, 1, C.plasticLit);
     }
 
-    // what's in the basket: nothing, a mound, or a tamped puck
+    // what's in the basket: nothing, a mound heaping up, or a tamped puck
     if (state.mound > 0) {
       if (state.tamped) {
         px(bx + 2, by, 10, 1, C.grounds);
       } else {
         px(bx + 2, by - 1, 10, 1, C.grounds);
-        px(bx + 4, by - 2, 6, 1, C.grounds);
-        px(bx + 6, by - 3, 2, 1, C.grounds);
+        if (state.mound > 0.4) px(bx + 4, by - 2, 6, 1, C.grounds);
+        if (state.mound > 0.8) px(bx + 6, by - 3, 2, 1, C.grounds);
       }
     }
 
     // the tamper only exists for the half second it is needed
     if (state.step === STEP.TAMP && state.busy) {
-      const travel = Math.sin(Math.min(1, state.tamper) * Math.PI); // down and back
-      const ty = by - 14 + Math.round(travel * 10);
+      const ty = by - 14 + Math.round(tamperTravel(Math.min(1, state.tamper)) * 10);
       px(bx + 5, ty - 4, 4, 4, C.wood);
       px(bx + 3, ty, 8, 2, C.steel);
     }
   }
 
+  /**
+   * The scoop, wherever it is on its round trip. Its inside fills with beans
+   * from the bottom up, so a half-dug scoop looks half-dug.
+   */
+  function drawScoop() {
+    const s = state.scoop;
+    const sprite = scoopSprite();
+    const x = Math.round(s.x);
+    const y = Math.round(s.y);
+
+    const inside = sprite.map((row, i) => (row.includes('D') ? i : -1)).filter((i) => i >= 0);
+    const full = Math.round(s.load * inside.length);
+    const loaded = new Set(inside.slice(inside.length - full));
+
+    sprite.forEach((row, r) => {
+      for (let c = 0; c < row.length; c += 1) {
+        const ch = row[c];
+        if (ch === '.') continue;
+        let color = C.steel;
+        if (ch === 'L') color = C.steelLit;
+        else if (ch === 'D') color = loaded.has(r) ? C.bean : C.plastic;
+        px(x + c, y + r, 1, 1, color);
+      }
+    });
+  }
+
   function drawCup() {
-    if (state.lock < 1) return; // the cup arrives with the portafilter
+    if (!state.locked) return; // the cup arrives with the portafilter
     if (state.cine) return; // …and leaves the counter once you pick it up
     // demitasse, cutaway view so the shot has somewhere visible to go
     px(86, 76, 2, 8, C.cream);
@@ -886,11 +1066,9 @@ function init() {
     particles.forEach((p) => {
       if (p.t < 0 || Boolean(p.top) !== top) return;
       const k = Math.min(1, p.t / p.dur);
-      if (p.kind === 'bean' || p.kind === 'grounds') {
-        const x = p.from[0] + (p.to[0] - p.from[0]) * k;
-        const base = p.from[1] + (p.to[1] - p.from[1]) * k;
-        const y = base - Math.sin(k * Math.PI) * (p.from[1] - p.peak);
-        px(x, y, 2, 2, p.kind === 'bean' ? C.bean : C.grounds);
+      if (p.kind === 'fall') {
+        // beans off the scoop lip, grounds out of the chute: straight down
+        px(p.x, p.y + p.vy * p.t + 60 * p.t * p.t, 2, 2, p.color);
       } else if (p.kind === 'steam') {
         const size = p.size || 2;
         ctx.globalAlpha = 0.55 * (1 - k);
@@ -938,6 +1116,7 @@ function init() {
     drawBackdrop();
     drawSack();
     drawGrinder();
+    drawScoop();
     drawMachine();
     drawCup();
     drawPortafilter();

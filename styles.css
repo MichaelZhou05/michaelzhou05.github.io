@@ -74,8 +74,8 @@
 
   /**
    * Legacy names, kept as aliases rather than renamed through 2,000 lines.
-   * They resolve through the tokens above, so `body.dmg-mode` and
-   * `body.arcade-mode` only need to restate the real colours.
+   * They resolve through the tokens above, so `body.arcade-mode` only needs
+   * to restate the real colours.
    */
   --ink: var(--shell);
   /* Panels sit barely above the page — the background must not appear to
@@ -420,96 +420,28 @@ main section {
 /**
  * The lead-in under a section title runs wider than the body measure. It is
  * two sentences of setup, not something anyone reads a column of, so it takes
- * the width the panel actually has instead of leaving half of it empty.
+ * the full width of the panel instead of leaving a gap on the right. The main
+ * column is already capped by .page-shell, so no measure of its own is needed.
  */
 .section-intro {
-  max-width: 94ch;
+  max-width: none; /* opt out of the 68ch measure the base p rule sets */
   margin-bottom: var(--s5);
   color: var(--muted);
-}
-
-/**
- * Disclosure for the long version. The intro states the point in two lines and
- * everything that justifies it — methodology, caveats, credit — folds in here,
- * so the section leads with the thing you can play rather than a wall of prose.
- */
-.brief {
-  margin-bottom: var(--s5);
-  border: 1px solid var(--edge-soft);
-  border-radius: var(--r-sm);
-  background: rgba(10, 13, 11, 0.6);
-}
-
-.brief summary {
-  display: flex;
-  align-items: center;
-  gap: var(--s2);
-  padding: var(--s3) var(--s4);
-  color: var(--plate);
-  cursor: pointer;
-  list-style: none;
-  font-family: var(--display);
-  font-size: 8px;
-  line-height: 1.6;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.brief summary::-webkit-details-marker {
-  display: none;
-}
-
-.brief summary:hover {
-  color: var(--green);
-}
-
-/* Caret drawn in CSS so the marker matches the phosphor rather than the OS. */
-.brief-cue {
-  width: 0;
-  height: 0;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 6px solid currentColor;
-  transition: transform 140ms ease;
-}
-
-.brief[open] summary {
-  color: var(--green);
-  border-bottom: 1px solid var(--edge-soft);
-}
-
-.brief[open] .brief-cue {
-  transform: rotate(90deg);
-}
-
-.brief-body {
-  padding: var(--s4) var(--s4) var(--s2);
-  color: var(--muted);
-  font-size: 17px;
-}
-
-.brief-body p {
-  margin-bottom: var(--s3);
-}
-
-.brief-body code {
-  color: var(--teal-dark);
-  font-size: 0.92em;
-}
-
-.brief-credit {
-  padding-left: var(--s3);
-  border-left: 1px solid var(--edge-strong);
-  color: var(--dim);
 }
 
 /* ------------------------------------------------------------ 5. hero */
 
+/**
+ * The unit is 3:4 rather than square, and the column starts at the top of the
+ * copy instead of centring against it. Between them that reclaims the two dead
+ * patches the square left behind: the strip above the portrait beside the
+ * eyebrow, and the taller one below it beside the quick facts.
+ */
 .hero {
   display: grid;
-  grid-template-columns: 168px minmax(0, 1fr);
+  grid-template-columns: 208px minmax(0, 1fr);
   gap: var(--s6);
-  align-items: center;
+  align-items: start;
 }
 
 /**
@@ -611,10 +543,12 @@ main section {
   75% { opacity: 1; }
 }
 
+/* Pinned to the bottom lip rather than measured down from the top, so the
+   screen can change shape without the seal drifting off it. */
 .portrait-seal {
   position: absolute;
   right: -10px;
-  top: 148px;
+  bottom: 38px;
   display: grid;
   width: 32px;
   height: 32px;
@@ -664,33 +598,38 @@ main section {
   text-shadow: 3px 3px 0 var(--shell);
 }
 
+/**
+ * The full stop is the button now. A blinking amber block sat next to the name
+ * and pulled the eye off it every second, which is a lot to ask of a heading
+ * you have to read past — the secret it opened moved onto the punctuation,
+ * where it waits to be noticed instead of demanding it.
+ */
 .accent {
-  color: var(--teal);
-}
-
-/* The blinking block is a leftover terminal cursor — and one of the secrets. */
-.cursor-block {
-  display: inline-block;
-  width: 0.4em;
-  height: 0.76em;
-  margin-left: 0.16em;
   padding: 0;
-  vertical-align: -0.06em;
   border: 0;
-  font: inherit; /* so the em sizing above tracks the heading, not the button default */
-  background: var(--amber);
-  box-shadow: 0 0 14px rgba(255, 176, 0, 0.55);
-  animation: blink 1.05s steps(1) infinite;
+  color: var(--teal);
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
 
-@keyframes blink {
-  50% { opacity: 0; }
+.accent:hover,
+.accent:focus-visible {
+  color: var(--amber);
+  text-shadow: 0 0 12px rgba(255, 176, 0, 0.6);
 }
 
 .lede {
   color: var(--bright);
   font-size: 21px;
   line-height: 1.5;
+}
+
+/* The hero copy already sits in a column the portrait has narrowed, so the
+   68ch measure only wraps it a second time and leaves a wedge of dead space
+   down the right. The column is the measure here. */
+.hero-copy p {
+  max-width: none;
 }
 
 /* The intro's last paragraph hands off to the facts lead; the lead's own
@@ -721,32 +660,93 @@ main section {
 }
 
 /**
- * Quick facts: one accent for the things worth pausing on. The list used to
- * carry four competing colours, which meant none of them read as emphasis.
+ * Quick facts, as a star chart. A disc bullet says "list item" and nothing
+ * else; here each fact gets its own square of glass with a pixel glyph behind
+ * it — a floppy, a star, a ball on a tee — and a dotted line wires it to the
+ * next station down its column. The glyph carries what the fact is about, so
+ * the chart is doing work rather than decorating.
+ *
+ * The two gaps are deliberately different sizes: lines that wrap inside one
+ * fact are set tighter than the body text, and the space between facts is four
+ * times that. Which line belongs to which fact is then a matter of looking,
+ * not of reading.
  */
 .facts-lead {
-  margin: var(--s4) 0 var(--s2);
+  margin: var(--s4) 0 var(--s3);
   color: var(--text);
 }
 
 .quick-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s1) var(--s6);
+  gap: var(--s4) var(--s6);
   max-width: none;
   margin: 0;
-  padding-left: var(--s5);
-  list-style: disc;
+  padding-left: 0;
+  list-style: none;
 }
 
 .quick-facts li {
-  display: list-item;
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--s3);
+  align-items: start;
   margin-bottom: 0;
   color: var(--text);
+  line-height: 1.32;
 }
 
-.quick-facts li::marker {
-  color: var(--green-deep);
+/* The wire to the next station in the same column. The last two items are the
+   feet of their columns — with five facts, one column ends a row early, and
+   both ends have to stop rather than trail into the gap. */
+.quick-facts li::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 30px;
+  bottom: calc(var(--s4) * -1);
+  border-left: 1px dashed var(--edge-strong);
+}
+
+.quick-facts li:nth-last-child(-n + 2)::before {
+  content: none;
+}
+
+/* A pane of the same black glass the portrait is behind, at 28px. */
+.fact-mark {
+  position: relative;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--edge);
+  background: #000000 var(--scanlines);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Standing in for the sprite until `friends.js` fills the tile — and staying
+   put if it never does. */
+.fact-mark:empty::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--indigo-lit);
+}
+
+.fact-mark svg {
+  display: block;
+}
+
+.quick-facts li:hover .fact-mark {
+  border-color: var(--indigo-lit);
+  box-shadow:
+    inset 0 0 0 1px rgba(123, 104, 238, 0.25),
+    0 0 12px rgba(123, 104, 238, 0.35);
+}
+
+.quick-facts li:hover .fact-mark svg {
+  filter: drop-shadow(0 0 5px currentColor);
 }
 
 .hl-lang,
@@ -1053,7 +1053,7 @@ main section {
   overflow: hidden;
   color: var(--plate);
   font-family: var(--display);
-  /* 7px, not 8: `USV GPT 5.6 XHIGH` is the longest name the strip has to carry
+  /* 7px, not 8: `USV GPT 5.6 SOL XHIGH` is the longest name the strip has to carry
      and a fixed-width pixel face gives it no room to negotiate. */
   font-size: 7px;
   line-height: 1.5;
@@ -1193,22 +1193,22 @@ main section {
 
 /**
  * Each job is a disclosure, not a card. Collapsed, it is the story only — no
- * numbers — laid across the full width of the column: a date rail on the left,
- * the name and role beside it, and the plain-English version of the job running
- * out to the right margin. Opening one unfolds the detail underneath.
+ * numbers — laid across the full width of the column: a sprite of the employer's
+ * mark on the left, the name taking every pixel it wants beside it, and the
+ * plain-English version of the job running out to the right margin. Opening one
+ * unfolds the detail underneath.
  *
- * The rail width is one token because the summary and the body are separate
- * grids that have to line up down a single edge.
+ * The badge column is one token because the summary and the body are separate
+ * grids that have to line up down a single edge. The badges are also the only
+ * left rail the section needs — there is no timeline rule behind them.
  */
 .logs {
-  --rail: 156px;
-  padding-left: var(--s5);
-  border-left: 1px solid var(--edge-soft);
+  --badge: 46px;
 }
 
 .log {
   position: relative;
-  margin-bottom: var(--s5);
+  margin-bottom: var(--s4);
   padding-bottom: var(--s5);
   border-bottom: 1px solid var(--edge-soft);
 }
@@ -1219,31 +1219,12 @@ main section {
   border-bottom: 0;
 }
 
-/* The timeline bead, absolutely positioned so it never becomes a grid item. */
-.log::before {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  left: calc(var(--s5) * -1 - 4px);
-  top: 11px;
-  width: 7px;
-  height: 7px;
-  background: var(--indigo);
-  transition: background 160ms ease, box-shadow 160ms ease;
-}
-
-.log:hover::before,
-.log[open]::before {
-  background: var(--indigo-lit);
-  box-shadow: 0 0 10px rgba(123, 104, 238, 0.55);
-}
-
 /* --- the collapsed row ------------------------------------------------- */
 
 .log-head {
   display: grid;
-  grid-template-columns: var(--rail) minmax(0, 1fr);
-  gap: var(--s2) var(--s5);
+  grid-template-columns: var(--badge) minmax(0, 1fr);
+  gap: var(--s2) var(--s4);
   align-items: start;
   padding: var(--s1) 0;
   cursor: pointer;
@@ -1254,17 +1235,57 @@ main section {
   display: none;
 }
 
-.log-rail {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s2);
-  padding-top: 5px;
+/**
+ * The employer's mark, drawn on a 16×16 grid and blown up whole-pixel onto an
+ * unlit cell — a sprite in a tile, which is the only way this page knows how to
+ * show a logo. Each carries its own hue; everything else about the tile is the
+ * same bezel the rest of the hardware uses.
+ */
+.log-badge {
+  display: grid;
+  place-items: center;
+  /* `span 2`, not `1 / -1`: the grid has no explicit rows, so `-1` would
+     resolve back to line 1 and the badge would inflate the title row. */
+  grid-row: 1 / span 2;
+  width: var(--badge);
+  height: var(--badge);
+  border: 1px solid var(--edge-soft);
+  background-color: #000000;
+  background-image: var(--matrix);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
+.log-badge svg {
+  width: 30px;
+  height: 30px;
+  /* Whole pixels only — no antialiasing softening the 2px-per-cell blocks. */
+  shape-rendering: crispEdges;
+}
+
+.px-lit { fill: var(--logo); }
+.px-mid { fill: color-mix(in srgb, var(--logo) 55%, #000000); }
+.px-dim { fill: color-mix(in srgb, var(--logo) 32%, #000000); }
+/* Second hue for two-tone marks (the DraftKings crown over the D). */
+.px-crown { fill: var(--logo-alt, var(--logo)); }
+.px-crown-mid { fill: color-mix(in srgb, var(--logo-alt, var(--logo)) 55%, #000000); }
+
+.log-badge[data-logo="draftkings"] { --logo: #2ed573; --logo-alt: #ff8a1e; }
+.log-badge[data-logo="duke"]       { --logo: #5b7cfa; }
+.log-badge[data-logo="army"]       { --logo: #ffb000; }
+.log-badge[data-logo="gmu"]        { --logo: #7ab648; }
+
+.log-head:hover .log-badge,
+.log[open] .log-badge {
+  border-color: color-mix(in srgb, var(--logo) 60%, transparent);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 12px color-mix(in srgb, var(--logo) 28%, transparent);
+}
+
+/* Now a timestamp at the end of the title row rather than a column of its own. */
 .log-date {
-  color: var(--teal);
-  font-size: 15.5px;
+  color: var(--dim);
+  font-size: 15px;
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
@@ -1285,10 +1306,17 @@ main section {
  * is the whole affordance for "there is more inside this".
  */
 .log-ident {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  gap: var(--s1) var(--s3);
+  align-items: baseline;
+}
+
+.log-title {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--s1) var(--s3);
+  gap: var(--s2);
 }
 
 /**
@@ -1296,9 +1324,14 @@ main section {
  * face. They are proper nouns of varying length — "GMU Wireless Cyber Center"
  * in pixel type would wrap three times — so they get Plex Mono bold, which is
  * exactly what GBA Eval does with its post titles.
+ *
+ * On a log it is a `b[role=heading]` rather than an `h3`, because `<summary>`
+ * only admits phrasing content and the name has to live inside the click
+ * target. ARIA puts the heading back in the accessibility tree.
  */
-.log h3,
+.log-name,
 .work-body h3 {
+  color: var(--bright);
   font-family: var(--mono);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1306,13 +1339,13 @@ main section {
   text-shadow: none;
 }
 
-.log h3 {
+.log-name {
   font-size: clamp(22px, 2.1vw, 27px);
   transition: color 160ms ease;
 }
 
-.log-head:hover h3,
-.log[open] h3 {
+.log-head:hover .log-name,
+.log[open] .log-name {
   color: var(--indigo-lit);
 }
 
@@ -1321,51 +1354,43 @@ main section {
   font-size: 16px;
 }
 
-.log-cue {
+/* Date and caret ride together at the far end of the title row. */
+.log-when {
   display: flex;
   align-items: center;
-  gap: var(--s2);
-  margin-left: auto;
-  color: var(--faint);
-  font-family: var(--display);
-  font-size: 7px;
-  line-height: 1.6;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  justify-self: end;
+  gap: var(--s3);
   white-space: nowrap;
-  transition: color 160ms ease;
 }
 
 /* Caret drawn in CSS so the marker matches the phosphor rather than the OS. */
-.log-cue i {
+.log-cue {
   width: 0;
   height: 0;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 6px solid currentColor;
-  transition: transform 160ms ease;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--faint);
+  transition: transform 160ms ease, border-left-color 160ms ease;
 }
 
 .log-head:hover .log-cue {
-  color: var(--amber);
+  border-left-color: var(--amber);
 }
 
 .log[open] .log-cue {
-  color: var(--indigo-lit);
-}
-
-.log[open] .log-cue i {
+  border-left-color: var(--indigo-lit);
   transform: rotate(90deg);
 }
 
 /**
- * The lede is the point of the collapsed state, so it gets the whole width of
- * the column rather than the reading measure — three wide lines instead of six
- * narrow ones, which is most of the vertical saving in this section.
+ * The lede is the point of the collapsed state, so it takes the whole width of
+ * the column and no reading measure at all — three wide lines instead of six
+ * narrow ones, which is most of the vertical saving in this section. The
+ * expanded prose below still sits at a proper measure; this is a blurb.
  */
 .log-lede {
   grid-column: 2;
-  max-width: 104ch;
+  max-width: none;
   color: var(--text);
   font-size: 17px;
   line-height: 1.65;
@@ -1379,7 +1404,7 @@ main section {
 /* --- the expanded detail ----------------------------------------------- */
 
 .log-body {
-  padding: var(--s4) 0 var(--s2) calc(var(--rail) + var(--s5));
+  padding: var(--s4) 0 var(--s2) calc(var(--badge) + var(--s4));
   animation: log-unfold 240ms ease-out;
 }
 
@@ -1389,20 +1414,18 @@ main section {
 }
 
 /**
- * Narrative on the left, numbers on the right. The stats column is the reason
- * the detail reads across rather than down — without it the prose would run to
- * the margin and the section would be tall again.
+ * The receipts come first and the prose second — `order` rather than markup
+ * order, so the document still reads narrative-then-numbers.
  */
 .log-detail {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(240px, 1fr);
-  gap: var(--s5) var(--s6);
-  align-items: start;
-  margin-bottom: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  margin-bottom: var(--s5);
 }
 
 .log-notes p {
-  max-width: 82ch;
+  max-width: 88ch;
   margin: 0 0 var(--s3);
   color: var(--muted);
   font-size: 16.5px;
@@ -1417,34 +1440,50 @@ main section {
   font-style: italic;
 }
 
+/**
+ * A readout strip, built like the telemetry under the race canvas: cells cut
+ * apart by hairlines over the unlit dot matrix. Laid across the full width it
+ * costs four lines of height for every number in the job, where a stacked list
+ * of the same content costs a screen.
+ */
 .log-stats {
+  order: -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--edge-soft);
+  border: 1px solid var(--edge-soft);
+  background-color: #000000;
+  background-image: var(--matrix);
 }
 
 .log-stats li {
-  display: grid;
-  grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
-  gap: var(--s3);
-  align-items: baseline;
-  padding: var(--s3) 0;
-  border-bottom: 1px solid var(--edge-soft);
+  min-width: 0;
+  padding: var(--s3) var(--s4) var(--s4);
+  border-left: 1px solid var(--edge-soft);
+}
+
+.log-stats li:first-child {
+  border-left: 0;
 }
 
 .log-stats b {
+  display: block;
+  margin-bottom: var(--s1);
   color: var(--amber);
-  font-size: 21px;
+  font-size: 25px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .log-stats span {
+  display: block;
   color: var(--muted);
-  font-size: 15.5px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.45;
 }
 
 /* Tech is a shelf of parts, not a sentence — chips read as a spec sticker. */
@@ -1673,6 +1712,11 @@ main section {
   animation: blink 1s steps(1) infinite;
 }
 
+/* Lives here now: the contact prompt is the last cursor on the page. */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
 .contact-headline {
   margin: var(--s4) 0 var(--s5);
   font-family: var(--display);
@@ -1695,11 +1739,6 @@ main section {
  * The rail scrolls with the page — no pinned, clipped column, and nothing
  * inside it sticks either.
  */
-/**
- * The rail stretches the full height of the reading column, and its tail —
- * the secrets panel — rides along sticky, so the right side of the page never
- * goes dark while you read the long half.
- */
 .sidebar {
   align-self: stretch;
   min-width: 0;
@@ -1707,8 +1746,6 @@ main section {
 }
 
 .rail-tail {
-  position: sticky;
-  top: var(--s5);
   margin-top: var(--s5);
 }
 
@@ -2014,51 +2051,163 @@ main section {
   padding-right: 200px;
 }
 
-/* The classic "I'm online!" brag box. */
-.online-shout {
-  margin: 0 0 var(--s4) !important;
-  color: var(--text) !important;
-  font: 400 10px / 1.6 var(--display);
-  letter-spacing: 0.06em;
+/**
+ * The location card.
+ *
+ * It is built as the second screen in the rail — same moulded frame and same
+ * black title bar as the espresso machine above it — but what is behind the
+ * glass is an original DMG rather than this console: four greens, no indigo,
+ * no amber. The four values are hard-coded here and in `location.js` rather
+ * than pulled from the tokens, because they are not this page's palette. They
+ * are a 1989 Game Boy's, and the point of the card is that you recognise it.
+ */
+/**
+ * The map is a screen, so the card is a screen: black glass and the unlit
+ * lattice, edge to edge, rather than the moulded plastic the other side blocks
+ * wear. It should not read as another card with a picture on it.
+ */
+.locale-block {
+  padding: 9px;
+  border-color: var(--edge);
+  background-color: #000000;
+  background-image: var(--matrix);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.045), inset -1px -1px 0 rgba(0, 0, 0, 0.55);
 }
 
-.online-shout b {
-  color: #2bff88;
-  text-shadow: 0 0 12px rgba(43, 255, 136, 0.55);
-  animation: pulse 2.4s ease-in-out infinite;
-}
-
-.player-card {
+.locale-bar {
   display: flex;
   align-items: center;
-  gap: var(--s3);
-  margin-bottom: var(--s4);
+  justify-content: space-between;
+  gap: var(--s1) var(--s3);
+  padding: 7px 9px;
+  color: var(--plate);
+  background-color: #000000;
+  background-image: var(--matrix);
+  font: 400 6px / 1.6 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.player-card img {
-  width: 50px;
-  image-rendering: pixelated;
-  border: 1px solid var(--edge);
-  border-radius: var(--r-sm);
-  transition: transform 200ms ease;
+.locale-bar i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: var(--s1);
+  background: #9bbc0f;
+  animation: blink-cell 1.6s steps(1, end) infinite;
 }
 
-.player-card:hover img {
-  transform: scale(1.06) rotate(-2deg);
+.locale-coords {
+  color: #8bac0f;
+  text-shadow: 2px 2px 0 #000000;
 }
 
-.player-card b {
+.locale-screen {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  /* Black behind the canvas, so any letterboxing beside a narrow map is glass
+     rather than a green band. */
+  background: #000000;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.65);
+}
+
+/**
+ * Scanlines rather than the full dot lattice every other screen wears. The
+ * lattice is a grid, the map is a grid, and laid over each other at this size
+ * the two beat against one another until the coastline stops reading. Lines
+ * in one direction still say "lit from behind" without arguing with the
+ * pixels underneath.
+ */
+.locale-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--scanlines), radial-gradient(transparent 62%, rgba(0, 0, 0, 0.38) 100%);
+}
+
+.locale-map {
   display: block;
+  outline: none;
+  cursor: pointer;
+  image-rendering: pixelated;
+}
+
+.locale-map:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: -2px;
+}
+
+.locale-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  margin: 8px 2px 6px !important;
+  color: var(--muted) !important;
+}
+
+.locale-place {
   color: var(--bright);
-  font: 400 9px / 1.6 var(--display);
+  font: 400 8px / 1.6 var(--display);
   letter-spacing: 0.04em;
 }
 
-.player-card .online {
-  display: block;
-  margin-top: var(--s1);
-  color: var(--teal);
+/* The clock is the one number on the card, so it gets the screen's brightest
+   green and the tabular figures that stop it twitching once a second. */
+.locale-clock-time {
+  color: #9bbc0f;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px rgba(155, 188, 15, 0.35);
+}
+
+.locale-clock-zone {
+  font-style: normal;
   font-size: 15px;
+  color: var(--dim);
+}
+
+.locale-hint {
+  margin: 7px 2px 0 !important;
+  color: var(--muted) !important;
+  font: 400 15px / 1.4 var(--mono);
+  text-align: center;
+}
+
+/**
+ * The button that says not to press it, which is of course the only
+ * instruction on this page anyone follows.
+ */
+.dnp-button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  color: #ffffff;
+  background: var(--fami-red);
+  border: 0;
+  border-bottom: 3px solid #7a000a;
+  font: 400 9px / 1.6 var(--display);
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.dnp-button:hover {
+  filter: brightness(1.14);
+}
+
+/* Pressed, it sinks into the card the way a moulded button does. */
+.dnp-button:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
+.dnp-button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
 }
 
 /* Dotted leaders, the way old spec sheets did it. */
@@ -2093,28 +2242,12 @@ main section {
   color: var(--text);
 }
 
-/* The quest line lives with the player card now — same sheet, one rule. */
-.quest-line {
-  margin: var(--s3) 0 var(--s2) !important;
-  padding-top: var(--s3);
-  border-top: 1px solid var(--edge-soft);
-  font-size: 15.5px;
-}
-
-.quest-bar,
 .secrets-meter {
   height: 6px;
   margin-bottom: var(--s2);
   overflow: hidden;
   border: 1px solid var(--edge);
   border-radius: 0;
-}
-
-.quest-bar span {
-  display: block;
-  width: 72%;
-  height: 100%;
-  background: repeating-linear-gradient(90deg, var(--teal) 0 8px, transparent 8px 10px);
 }
 
 .side-note {
@@ -2297,16 +2430,22 @@ main section {
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee 46s linear infinite;
+  /* The half that scrolls off is always replaced by an identical half, so the
+     text never runs out. ui.js overrides the duration to hold a fixed speed
+     once it knows how many copies it took to cover the viewport. */
+  animation: marquee 66s linear infinite;
+  will-change: transform;
 }
 
 /* Each span ends on a star, so the loop stitch matches the in-line gaps. */
 .marquee-track span {
+  flex: 0 0 auto;
   padding-right: 0.6em;
 }
 
 @keyframes marquee {
-  to { transform: translateX(-50%); }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
 }
 
 footer {
@@ -2794,93 +2933,6 @@ body.is-glitching .sidebar {
   100% { transform: translateX(0); filter: none; }
 }
 
-/* ------------------------------------------------------- the handheld */
-
-.gb-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2);
-  padding: 0;
-  color: var(--text);
-  border: 0;
-  background: none;
-  font: inherit;
-  line-height: 1;
-  cursor: pointer;
-  transition: color 140ms ease;
-}
-
-.gb-toggle svg {
-  image-rendering: pixelated;
-}
-
-.gb-toggle .title-icon {
-  width: 12px;
-  height: 16px;
-}
-
-.gb-toggle:hover,
-.gb-toggle:focus-visible {
-  color: var(--lime);
-}
-
-.gb-toggle:hover .title-icon {
-  filter: drop-shadow(0 0 8px rgba(255, 176, 0, 0.7));
-}
-
-/**
- * Four shades of swamp green, exactly like the original. The variables carry
- * the type and the frames; the filter carries everything that is a picture —
- * the avatar, the sprites, the racetrack canvas.
- */
-body.dmg-mode {
-  /* the plastic */
-  --shell: #0b1f0b;
-  --shell-grey: #0f380f;
-  --shell-grey-2: #17491a;
-  --bezel: #306230;
-  --bezel-lit: #8bac0f;
-
-  /* the print */
-  --fg: #9bbc0f;
-  --fg-dim: #6d8f10;
-  --plate: #8bac0f;
-
-  /* the lights — one screen, so they are all the same screen */
-  --indigo: #5f8412;
-  --indigo-lit: #9bbc0f;
-  --indigo-dim: #306230;
-  --amber: #9bbc0f;
-  --spark: #8bac0f;
-  --fami-red: #8bac0f;
-  --pcb: #8bac0f;
-
-  /* Three cars still have to be three things, so they take three of the four shades. */
-  --you: #9bbc0f;
-  --opus: #8bac0f;
-  --sol: #5f8412;
-
-  /* The two legacy aliases that are literals rather than pass-throughs. */
-  --sunken: #071807;
-  --pink: #9bbc0f;
-}
-
-body.dmg-mode img,
-body.dmg-mode canvas,
-body.dmg-mode .sprite svg,
-body.dmg-mode [data-doodle] svg,
-body.dmg-mode .title-icon svg,
-body.dmg-mode .nav-icon svg,
-body.dmg-mode .secret-icon svg,
-body.dmg-mode .cart-slot svg,
-body.dmg-mode .oneko {
-  filter: grayscale(1) sepia(1) hue-rotate(46deg) saturate(2.6) brightness(0.92);
-}
-
-body.dmg-mode::before {
-  opacity: 0.3;
-}
-
 /* ------------------------------------------------------- sound test */
 
 .sound-test {
@@ -2994,6 +3046,7 @@ body.arcade-mode .hero-name {
     grid-template-columns: 256px minmax(0, 1fr);
     gap: var(--s5);
   }
+
 }
 
 @media (max-width: 960px) {
@@ -3012,8 +3065,14 @@ body.arcade-mode .hero-name {
     padding-top: var(--s6);
   }
 
+  /* One column: every fact is now the station above another one, so only the
+     genuine last item drops its wire. */
   .quick-facts {
     grid-template-columns: 1fr;
+  }
+
+  .quick-facts li:nth-last-child(2)::before {
+    content: "";
   }
 
   .panel,
@@ -3074,23 +3133,60 @@ body.arcade-mode .hero-name {
   }
 
   .portrait {
-    width: 144px;
+    width: 168px;
   }
 
-  .portrait-seal {
-    top: 126px;
-  }
-
-  .quick-facts {
-    padding-left: var(--s4);
-  }
-
+  /**
+   * No room for a title row three items wide: the badge shrinks and keeps its
+   * place beside the name, while role and date stack underneath it.
+   */
   .logs {
-    padding-left: var(--s4);
+    --badge: 34px;
   }
 
-  .log::before {
-    left: calc(var(--s4) * -1 - 4px);
+  .log-head {
+    gap: var(--s3);
+  }
+
+  /* Sits on the name's line rather than centring against the stack below it. */
+  .log-badge {
+    grid-row: 1;
+    margin-top: 2px;
+  }
+
+  .log-badge svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .log-ident {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .log-when {
+    justify-self: start;
+  }
+
+  .log-lede {
+    grid-column: 1 / -1;
+  }
+
+  .log-body {
+    padding-left: 0;
+  }
+
+  /* One cell per row, so the hairlines that cut the strip have to turn. */
+  .log-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .log-stats li {
+    border-left: 0;
+    border-top: 1px solid var(--edge-soft);
+  }
+
+  .log-stats li:first-child {
+    border-top: 0;
   }
 
   /* Two columns of gauges before the labels start truncating. */

@@ -47,14 +47,15 @@
 
             <div class="hero-copy">
               <p class="eyebrow">hey, my name is</p>
-              <h2 class="hero-name">MICHAEL ZHOU<span class="accent">.</span><button
-                  class="cursor-block"
+              <h2 class="hero-name">MICHAEL<button
+                  class="accent"
                   type="button"
-                  aria-label="Blinking cursor — poke it"
-                ></button></h2>
+                  aria-label="The full stop — poke it"
+                  title="poke it"
+                >.</button></h2>
               <p class="lede">
-                I'm a student at <b>Duke University</b>, doubling in <b>Electrical &amp; Computer Engineering</b>
-                and <b>Computer Science</b> &mdash; so yeah, pretty obviously a student and a programmer.
+                I'm a student at <b>Duke University</b> studying <b>Electrical &amp; Computer Engineering</b>
+                and <b>Computer Science</b>.
               </p>
               <p>
                 In my free time I build random things, this website very much included. Treat it as my junk
@@ -68,15 +69,40 @@
           <pre class="boot-log" aria-live="polite" hidden></pre>
 
           <p class="facts-lead">Some quick facts:</p>
+          <!--
+            Each fact is a station on a star chart: a pixel glyph behind glass,
+            wired to the next one down its column. `data-glyph` names a sprite
+            from `sprites.js` and `friends.js` fills the tile in; without it the
+            tile keeps its own small lit dot, so nothing looks broken.
+          -->
           <ul class="quick-facts">
-            <li>Mostly <span class="hl-lang">C++</span>, <span class="hl-lang">Python</span> and <span class="hl-lang">C#</span>, plus <span class="hl-lang">Rust</span> when latency actually matters.</li>
-            <li>In 2025 I made it to <span class="hl-good">6 of the 7 continents</span>. Antarctica is still winning.</li>
-            <li>Golf, spikeball and pickleball on repeat &mdash; and I'm learning tennis, badly.</li>
-            <li>
-              I'm a <span class="hl-good">BIIIGG</span> espresso geek &mdash; someone please buy me my
-              <a href="https://home.lamarzoccousa.com/espresso-machines/linea-mini/" target="_blank" rel="noreferrer" data-coffee>dream espresso machine</a> plzz.
+            <li data-glyph="floppy" data-glyph-color="#b8a9ff">
+              <i class="fact-mark" aria-hidden="true"></i>
+              <span>I mostly code in <span class="hl-lang">C++</span>, <span class="hl-lang">Python</span> and <span class="hl-lang">C#</span>, plus <span class="hl-lang">Rust</span> when latency actually matters.</span>
             </li>
-            <li>Say hi about anything: <a href="mailto:michael.zhou@duke.edu" data-hearts>e-mail</a> or <a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer" data-birds>Twitter</a>.</li>
+            <li data-glyph="star" data-glyph-color="#ffb000">
+              <i class="fact-mark" aria-hidden="true"></i>
+              <span>In 2025 I made it to <span class="hl-good">6 of the 7 continents</span>. Antarctica is still winning.</span>
+            </li>
+            <li data-glyph="golfBall" data-glyph-color="#e8e4f4">
+              <i class="fact-mark" aria-hidden="true"></i>
+              <span>Golf, spikeball and pickleball on repeat &mdash; and I'm learning tennis, badly.</span>
+            </li>
+            <li data-glyph="coffeeCup" data-glyph-color="#e8e4f4">
+              <i class="fact-mark" aria-hidden="true"></i>
+              <span>
+                I'm a <span class="hl-good">BIIIGG</span> espresso geek &mdash; someone please buy me my
+                <a href="https://home.lamarzoccousa.com/espresso-machines/linea-mini/" target="_blank" rel="noreferrer" data-coffee>dream espresso machine</a> plzz.
+              </span>
+            </li>
+            <li data-glyph="envelope" data-glyph-color="#5eead4">
+              <i class="fact-mark" aria-hidden="true"></i>
+              <span>Say hi about anything: <a href="mailto:michael.zhou@duke.edu" data-hearts>e-mail</a> or <a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer" data-birds>Twitter</a>.</span>
+            </li>
+            <li data-glyph="bug" data-glyph-color="#ff6b6b">
+              <i class="fact-mark" aria-hidden="true"></i>
+              <span><span class="hl-good">Anthropic</span> needs new UI engineers cause their desktop app sucks&hellip;..</span>
+            </li>
           </ul>
         </section>
 
@@ -92,42 +118,9 @@
           <h2 class="section-title" data-icon="flag" data-icon-color="#e8e4f4">nordschleife eval</h2>
           <p class="section-intro">
             Two frontier models were sat down in front of a hand-drawn N&uuml;rburgring and told to drive it.
-            Neither is good at this. Take the keyboard and see if you are better.
+            Neither is good at this. Take the keyboard and see if you are better. Heavily inspired by
+            <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>.
           </p>
-
-          <details class="brief">
-            <summary>
-              <span class="brief-cue" aria-hidden="true"></span>
-              how this works &mdash; and why it exists
-            </summary>
-            <div class="brief-body">
-              <p>
-                This is not the real Nordschleife. It is a sketch of one: 84 control points pushed through a
-                spline, following the real circuit's order of named corners and rescaled so the centreline adds
-                up to the real 20.832 km. The corner shapes are drawn by eye, not surveyed, and the road is far
-                wider than the real 8&ndash;9 m of asphalt, because at the zoom a 20 km lap needs, a true-width
-                road is a hairline. Treat it as a caricature of the Ring, not a map of it.
-              </p>
-              <p>
-                You drive it one sector at a time &mdash; clear the window you are in and it shifts to the next
-                stretch of the Ring. Grass slows you down; the treeline is a wall.
-              </p>
-              <p>
-                <b>Neither model is a scripted pace car.</b> Both lines are recordings of laps
-                <b>claude-opus-5</b> and <b>gpt-5.6-sol xhigh</b> actually drove. Each was shown the sector
-                window the same way the page draws it for you &mdash; the road as a polyline, its car inside it,
-                the gate it has to reach &mdash; and replied with arrow-key programmes. Those key presses ran
-                through <code>race-sim.js</code>, the same physics function your keyboard drives. Same four keys,
-                same grass penalty, same treeline.
-              </p>
-              <p class="brief-credit">
-                Inspired by <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>, which
-                grades models by publishing what they built and letting you play it instead of asking you to
-                trust a score. Same idea at a much smaller scale: every number here is backed by a run you can
-                watch, and you can regenerate either lap yourself with <code>npm run opus-lap</code>.
-              </p>
-            </div>
-          </details>
 
           <div class="race-window">
             <div class="race-window-bar">
@@ -168,14 +161,14 @@
                 <span class="gauge-note" id="opus-lap-note"></span>
               </div>
               <div class="gauge gpt-stat">
-                <span class="gauge-label"><i class="dot-gpt"></i> usv gpt 5.6 xhigh</span>
+                <span class="gauge-label"><i class="dot-gpt"></i> usv gpt 5.6 sol xhigh</span>
                 <span class="gauge-value"><span id="gpt-distance">00</span><em>%</em></span>
                 <span class="progress-track"><span id="gpt-progress"></span></span>
                 <span class="gauge-note" id="sol-lap-note"></span>
               </div>
             </div>
             <div class="race-log">
-              <span id="race-log" aria-live="polite">USV OPUS 5 and USV GPT 5.6 XHIGH are waiting on the grid.</span>
+              <span id="race-log" aria-live="polite">USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.</span>
               <button id="restart-race" class="text-button" type="button">&#8635; reset</button>
             </div>
           </div>
@@ -184,21 +177,23 @@
         <section id="experience" class="panel">
           <h2 class="section-title" data-icon="book" data-icon-color="#ffb000">experience</h2>
           <p class="section-intro">
-            Four jobs, in plain English &mdash; what the problem actually was and what I actually did about it.
-            Open one for the long version, numbers included.
+            Four jobs in plain English. Open one for the long version, numbers included.
           </p>
 
           <div class="logs">
             <details class="log" name="worklog">
               <summary class="log-head">
-                <span class="log-rail">
-                  <span class="log-date">2026 &mdash; jun/aug</span>
-                  <span class="log-flag">latest</span>
-                </span>
+                <span class="log-badge" data-logo="draftkings"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-crown"><rect x="7" y="0" width="2" height="1"/><rect x="2" y="1" width="1" height="1"/><rect x="7" y="1" width="2" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="2" y="2" width="2" height="1"/><rect x="6" y="2" width="4" height="1"/><rect x="12" y="2" width="2" height="1"/><rect x="3" y="3" width="2" height="1"/><rect x="6" y="3" width="4" height="1"/><rect x="11" y="3" width="2" height="1"/><rect x="3" y="4" width="10" height="1"/><rect x="5" y="5" width="6" height="1"/></g><g class="px-crown-mid"><rect x="4" y="5" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/></g><g class="px-lit"><rect x="4" y="6" width="7" height="1"/><rect x="4" y="7" width="2" height="1"/><rect x="9" y="7" width="3" height="1"/><rect x="4" y="8" width="2" height="1"/><rect x="10" y="8" width="2" height="1"/><rect x="4" y="9" width="2" height="1"/><rect x="10" y="9" width="2" height="1"/><rect x="4" y="10" width="2" height="1"/><rect x="10" y="10" width="2" height="1"/><rect x="4" y="11" width="2" height="1"/><rect x="9" y="11" width="3" height="1"/><rect x="4" y="12" width="7" height="1"/><rect x="2" y="13" width="4" height="1"/><rect x="2" y="14" width="1" height="1"/></g><g class="px-mid"><rect x="11" y="6" width="1" height="1"/><rect x="3" y="12" width="1" height="1"/><rect x="3" y="14" width="1" height="1"/></g></svg></span>
                 <span class="log-ident">
-                  <h3>DraftKings</h3>
+                  <span class="log-title">
+                    <b class="log-name" role="heading" aria-level="3">DraftKings</b>
+                    <span class="log-flag">latest</span>
+                  </span>
                   <span class="log-role">software engineering intern &mdash; market making</span>
-                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                  <span class="log-when">
+                    <span class="log-date">2026 &middot; jun&ndash;aug</span>
+                    <i class="log-cue" aria-hidden="true"></i>
+                  </span>
                 </span>
                 <span class="log-lede">
                   Prediction markets &mdash; Kalshi, CME, Robinhood &mdash; turned sports into something you
@@ -230,22 +225,9 @@
                     </p>
                   </div>
                   <ul class="log-stats">
-                    <li>
-                      <b>+25%</b>
-                      <span>pipeline throughput &mdash; pulled overloaded Kafka topics apart and reworked the pricing
-                        flow, retiring roughly 20k lines of legacy code on the way through</span>
-                    </li>
-                    <li>
-                      <b>&minus;70%</b>
-                      <span>latency on the endpoint traders and backtests lean on, by swapping full-bucket S3 scans for
-                        keyed Snowflake lookups &mdash; which also killed a whole class of failures on malformed
-                        input</span>
-                    </li>
-                    <li>
-                      <b>78.7M</b>
-                      <span>warning logs a week, gone: the mapper now emits an explicit tombstone when a game state
-                        drops, so an alert firing means something again</span>
-                    </li>
+                    <li><b>+25%</b><span>pipeline throughput, and ~20k lines of legacy code retired</span></li>
+                    <li><b>&minus;70%</b><span>latency on the endpoint traders and backtests query</span></li>
+                    <li><b>78.7M</b><span>warning logs a week, silenced</span></li>
                   </ul>
                 </div>
                 <p class="log-tech"><span>c#</span><span>rust</span><span>kafka</span><span>snowflake</span></p>
@@ -254,13 +236,14 @@
 
             <details class="log" name="worklog">
               <summary class="log-head">
-                <span class="log-rail">
-                  <span class="log-date">2025/26 &mdash; nov/jun</span>
-                </span>
+                <span class="log-badge" data-logo="duke"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-lit"><rect x="0" y="1" width="8" height="1"/><rect x="9" y="1" width="5" height="1"/><rect x="1" y="2" width="6" height="1"/><rect x="10" y="2" width="5" height="1"/><rect x="2" y="3" width="5" height="1"/><rect x="11" y="3" width="5" height="1"/><rect x="2" y="4" width="4" height="1"/><rect x="11" y="4" width="5" height="1"/><rect x="2" y="5" width="4" height="1"/><rect x="11" y="5" width="5" height="1"/><rect x="2" y="6" width="4" height="1"/><rect x="11" y="6" width="5" height="1"/><rect x="2" y="7" width="4" height="1"/><rect x="11" y="7" width="5" height="1"/><rect x="2" y="8" width="4" height="1"/><rect x="11" y="8" width="5" height="1"/><rect x="2" y="9" width="4" height="1"/><rect x="11" y="9" width="5" height="1"/><rect x="2" y="10" width="4" height="1"/><rect x="11" y="10" width="5" height="1"/><rect x="2" y="11" width="4" height="1"/><rect x="11" y="11" width="5" height="1"/><rect x="2" y="12" width="5" height="1"/><rect x="11" y="12" width="5" height="1"/><rect x="1" y="13" width="6" height="1"/><rect x="10" y="13" width="5" height="1"/><rect x="0" y="14" width="8" height="1"/><rect x="9" y="14" width="5" height="1"/></g><g class="px-mid"><rect x="14" y="1" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="6" y="7" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="6" y="11" width="1" height="1"/><rect x="1" y="12" width="1" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="7" y="13" width="1" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/></g></svg></span>
                 <span class="log-ident">
-                  <h3>Duke School of Medicine</h3>
+                  <span class="log-title"><b class="log-name" role="heading" aria-level="3">Duke School of Medicine</b></span>
                   <span class="log-role">machine learning research assistant</span>
-                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                  <span class="log-when">
+                    <span class="log-date">2025/26 &middot; nov&ndash;jun</span>
+                    <i class="log-cue" aria-hidden="true"></i>
+                  </span>
                 </span>
                 <span class="log-lede">
                   Rats talk in ultrasound, and the way they talk changes when they get sick &mdash; before much else
@@ -291,15 +274,9 @@
                     </p>
                   </div>
                   <ul class="log-stats">
-                    <li>
-                      <b>&minus;85%</b>
-                      <span>manual annotation time, with 20+ vocalization syllable types detected automatically at 98%
-                        recall</span>
-                    </li>
-                    <li>
-                      <b>96%</b>
-                      <span>accuracy separating healthy from symptomatic animals on acoustic features alone</span>
-                    </li>
+                    <li><b>&minus;85%</b><span>manual annotation time, at 98% recall</span></li>
+                    <li><b>20+</b><span>vocalization syllable types found automatically</span></li>
+                    <li><b>96%</b><span>accuracy telling healthy from symptomatic</span></li>
                   </ul>
                 </div>
                 <p class="log-tech"><span>pytorch</span><span>matlab</span><span>cuda</span><span>faster r-cnn</span></p>
@@ -308,13 +285,14 @@
 
             <details class="log" name="worklog">
               <summary class="log-head">
-                <span class="log-rail">
-                  <span class="log-date">2025 &mdash; may/aug</span>
-                </span>
+                <span class="log-badge" data-logo="army"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-dim"><rect x="10" y="3" width="1" height="1"/><rect x="15" y="6" width="1" height="1"/><rect x="14" y="7" width="2" height="1"/><rect x="13" y="8" width="2" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="7" y="11" width="2" height="1"/><rect x="14" y="11" width="1" height="1"/><rect x="5" y="12" width="3" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="4" y="13" width="2" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="2" y="14" width="3" height="1"/><rect x="13" y="14" width="3" height="1"/></g><g class="px-lit"><rect x="7" y="1" width="2" height="1"/><rect x="6" y="2" width="4" height="1"/><rect x="6" y="3" width="4" height="1"/><rect x="5" y="4" width="6" height="1"/><rect x="0" y="5" width="16" height="1"/><rect x="1" y="6" width="14" height="1"/><rect x="2" y="7" width="12" height="1"/><rect x="3" y="8" width="10" height="1"/><rect x="3" y="9" width="10" height="1"/><rect x="2" y="10" width="12" height="1"/><rect x="2" y="11" width="5" height="1"/><rect x="9" y="11" width="5" height="1"/><rect x="1" y="12" width="4" height="1"/><rect x="11" y="12" width="4" height="1"/><rect x="1" y="13" width="3" height="1"/><rect x="12" y="13" width="3" height="1"/></g></svg></span>
                 <span class="log-ident">
-                  <h3>United States Army</h3>
+                  <span class="log-title"><b class="log-name" role="heading" aria-level="3">United States Army</b></span>
                   <span class="log-role">software engineering intern &mdash; resilient networks</span>
-                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                  <span class="log-when">
+                    <span class="log-date">2025 &middot; may&ndash;aug</span>
+                    <i class="log-cue" aria-hidden="true"></i>
+                  </span>
                 </span>
                 <span class="log-lede">
                   A swarm of palm-sized drones becomes a very expensive paperweight the moment somebody jams its radio.
@@ -346,19 +324,9 @@
                     </p>
                   </div>
                   <ul class="log-stats">
-                    <li>
-                      <b>95.3%</b>
-                      <span>of packets still delivered under both static and dynamic jamming</span>
-                    </li>
-                    <li>
-                      <b>&minus;30%</b>
-                      <span>blackout time once safe-RL risk constraints bounded which channels the swarm was allowed to
-                        gamble on</span>
-                    </li>
-                    <li>
-                      <b>JSSR</b>
-                      <span>publication co-authored, on mitigating communication risk with safe RL constraints</span>
-                    </li>
+                    <li><b>95.3%</b><span>packets delivered under static and dynamic jamming</span></li>
+                    <li><b>&minus;30%</b><span>blackout time, once safe-RL bounded the choices</span></li>
+                    <li><b>JSSR</b><span>publication co-authored</span></li>
                   </ul>
                 </div>
                 <p class="log-tech"><span>c++</span><span>python</span><span>bluetooth tsch</span><span>reinforcement learning</span></p>
@@ -367,13 +335,14 @@
 
             <details class="log" name="worklog">
               <summary class="log-head">
-                <span class="log-rail">
-                  <span class="log-date">2024 &mdash; jun/aug</span>
-                </span>
+                <span class="log-badge" data-logo="gmu"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-lit"><rect x="3" y="2" width="4" height="1"/><rect x="1" y="3" width="6" height="1"/><rect x="0" y="4" width="3" height="1"/><rect x="0" y="5" width="2" height="1"/><rect x="0" y="6" width="2" height="1"/><rect x="0" y="7" width="2" height="1"/><rect x="0" y="8" width="2" height="1"/><rect x="5" y="8" width="2" height="1"/><rect x="0" y="9" width="2" height="1"/><rect x="5" y="9" width="2" height="1"/><rect x="0" y="10" width="2" height="1"/><rect x="0" y="11" width="3" height="1"/><rect x="1" y="12" width="6" height="1"/><rect x="3" y="13" width="3" height="1"/></g><g class="px-mid"><rect x="7" y="4" width="2" height="1"/><rect x="14" y="4" width="2" height="1"/><rect x="7" y="5" width="2" height="1"/><rect x="14" y="5" width="2" height="1"/><rect x="7" y="6" width="3" height="1"/><rect x="13" y="6" width="3" height="1"/><rect x="7" y="7" width="4" height="1"/><rect x="12" y="7" width="4" height="1"/><rect x="7" y="8" width="2" height="1"/><rect x="10" y="8" width="3" height="1"/><rect x="14" y="8" width="2" height="1"/><rect x="7" y="9" width="2" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="14" y="9" width="2" height="1"/><rect x="7" y="10" width="2" height="1"/><rect x="14" y="10" width="2" height="1"/><rect x="7" y="11" width="2" height="1"/><rect x="14" y="11" width="2" height="1"/><rect x="7" y="12" width="2" height="1"/><rect x="14" y="12" width="2" height="1"/><rect x="7" y="13" width="2" height="1"/><rect x="14" y="13" width="2" height="1"/></g></svg></span>
                 <span class="log-ident">
-                  <h3>GMU Wireless Cyber Center</h3>
-                  <span class="log-role">cyber security lab intern &mdash; wireless security</span>
-                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                  <span class="log-title"><b class="log-name" role="heading" aria-level="3">GMU Wireless Cyber Center</b></span>
+                  <span class="log-role">cyber security lab intern</span>
+                  <span class="log-when">
+                    <span class="log-date">2024 &middot; jun&ndash;aug</span>
+                    <i class="log-cue" aria-hidden="true"></i>
+                  </span>
                 </span>
                 <span class="log-lede">
                   Consumer drones ship with radios that trust more or less anything that talks to them. Inside a closed
@@ -397,10 +366,8 @@
                     </p>
                   </div>
                   <ul class="log-stats">
-                    <li>
-                      <b>80%</b>
-                      <span>remote takeover rate across target UAVs in the lab</span>
-                    </li>
+                    <li><b>80%</b><span>remote takeover rate across target UAVs in the lab</span></li>
+                    <li><b>802.11</b><span>deauth path scripted end to end</span></li>
                   </ul>
                 </div>
                 <p class="log-tech"><span>python</span><span>c++</span><span>802.11</span><span>firmware re</span></p>
@@ -505,9 +472,9 @@
           </ul>
           <ul class="warp-list warp-list-away">
             <li><a href="/Michael_Zhou_2026_FSWE.pdf" target="_blank" rel="noreferrer" data-icon="page" data-icon-color="#e8e4f4">Resume &#8599;</a></li>
-            <li><a href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer" data-icon="floppy" data-icon-color="#8a849f">GitHub &#8599;</a></li>
-            <li><a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer" data-icon="ghost" data-icon-color="#7b68ee">Twitter &#8599;</a></li>
-            <li><a href="https://linkedin.com/in/michaelzhou05" target="_blank" rel="noreferrer" data-icon="briefcase">LinkedIn &#8599;</a></li>
+            <li><a href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer" data-icon="github" data-icon-color="#e8e4f4">GitHub &#8599;</a></li>
+            <li><a href="https://twitter.com/MichaelZhou50" target="_blank" rel="noreferrer" data-icon="twitter" data-icon-color="#1da1f2">Twitter &#8599;</a></li>
+            <li><a href="https://linkedin.com/in/michaelzhou05" target="_blank" rel="noreferrer" data-icon="linkedin" data-icon-color="#0a66c2">LinkedIn &#8599;</a></li>
             <li><a href="mailto:michael.zhou@duke.edu" data-icon="envelope" data-icon-color="#b8a9ff">E-mail &#9993;</a></li>
           </ul>
         </nav>
@@ -532,41 +499,48 @@
           </div>
         </section>
 
-        <section class="side-block online-block">
-          <p class="online-shout">I'm <b>ONLINE!</b></p>
-          <div class="player-card">
-            <img src="./assets/mz-avatar.svg" alt="" />
-            <div>
-              <b>Michael Zhou</b>
-              <span class="online"><i></i> open to building</span>
-            </div>
+        <!--
+          The location card. Everything the map and the clock read is on this
+          element, so moving is a one-line edit and no JavaScript:
+
+            data-place  the name printed under the screen
+            data-lat    decimal degrees, north positive
+            data-lon    decimal degrees, east positive
+            data-zoom   1 is the whole planet, each step up halves the span
+            data-tz     IANA zone the clock runs in
+        -->
+        <section
+          class="side-block locale-block"
+          data-locale
+          data-place="Boston, MA"
+          data-lat="42.3601"
+          data-lon="-71.0589"
+          data-zoom="14"
+          data-tz="America/New_York"
+        >
+          <div class="locale-bar">
+            <span><i></i> world map</span>
+            <span class="locale-coords">&mdash;</span>
           </div>
-          <dl class="player-stats">
-            <div><dt>class</dt><dd>engineer</dd></div>
-            <div><dt>level</dt><dd>student, duke '28</dd></div>
-            <div><dt>build</dt><dd>full-stack</dd></div>
-          </dl>
-          <p class="quest-line">current quest: side projects, better espresso shots, a tennis serve that lands.</p>
-          <div class="quest-bar"><span></span></div>
-          <p class="side-note">exp: always loading&hellip;</p>
+          <div class="locale-screen">
+            <canvas
+              class="locale-map"
+              tabindex="0"
+              role="img"
+              aria-label="A Game Boy-green world map, zoomed to New England — Cape Cod, Long Island and the Gulf of Maine — with a blinking marker on Boston, Massachusetts. Click or press enter to pull back to the whole world."
+            ></canvas>
+          </div>
+          <p class="locale-readout">
+            <b class="locale-place">&mdash;</b>
+            <span><b class="locale-clock-time">--:--:--</b> <i class="locale-clock-zone">&mdash;</i></span>
+          </p>
+          <p class="side-note locale-hint">click the screen for the whole world</p>
         </section>
 
-        <section class="side-block">
-          <h2 class="side-title" data-icon="crt" data-icon-color="#8a849f">system info</h2>
-          <dl class="player-stats">
-            <div><dt>local time</dt><dd id="local-time">--:--:--</dd></div>
-            <div>
-              <dt>screen</dt>
-              <dd>
-                <button class="gb-toggle" id="gb-toggle" type="button" title="there is another screen in here">
-                  <span class="gb-toggle-label">midnight</span>
-                </button>
-              </dd>
-            </div>
-            <div><dt>cat status</dt><dd id="cat-status">sleeping</dd></div>
-            <div><dt>coffee</dt><dd>espresso</dd></div>
-          </dl>
-          <p class="side-note ok">[ all systems operational ]</p>
+        <section class="side-block dnp-block">
+          <h2 class="side-title" data-icon="mystery" data-icon-color="#e60012">do not press</h2>
+          <p>There is nothing good behind this button. Go and find one of the secrets instead.</p>
+          <button class="dnp-button" id="dnp-button" type="button">DO NOT PRESS</button>
         </section>
 
         <div class="rail-tail">
@@ -575,7 +549,7 @@
           <p>Little things are hiding on this page. Go poke at them.</p>
           <ol class="secrets-list" id="secrets-list"></ol>
           <div class="secrets-meter"><span id="secrets-bar"></span></div>
-          <p class="side-note"><b id="secrets-count">0</b> / <b id="secrets-total">11</b> found</p>
+          <p class="side-note"><b id="secrets-count">0</b> / <b id="secrets-total">9</b> found</p>
         </section>
 
         </div>
@@ -583,9 +557,11 @@
     </div>
 
     <div class="marquee" aria-hidden="true">
+      <!-- Two copies is the minimum for a seamless loop; ui.js clones more when
+           one copy is narrower than the viewport, which is what left a gap. -->
       <div class="marquee-track">
-        <span>thanks for stopping by ★ no trackers, no popups ★ eleven secrets are hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ best viewed with the lights off ★</span>
-        <span>thanks for stopping by ★ no trackers, no popups ★ eleven secrets are hiding here ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ best viewed with the lights off ★</span>
+        <span>thanks for stopping by ★ no trackers, no popups ★ nine secrets are hiding here ★ why the fuck are you reading this? what's wrong with you? nobody reads this bs ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ best viewed with the lights off ★</span>
+        <span>thanks for stopping by ★ no trackers, no popups ★ nine secrets are hiding here ★ why the fuck are you reading this? what's wrong with you? nobody reads this bs ★ try the konami code ★ pet the cat ★ blow on the cartridge ★ best viewed with the lights off ★</span>
       </div>
     </div>
 
@@ -612,6 +588,7 @@
     <script type="module" src="./app.js"></script>
     <script type="module" src="./friends.js"></script>
     <script type="module" src="./swimmer.js"></script>
+    <script type="module" src="./location.js"></script>
     <script type="module" src="./espresso.js"></script>
   </body>
 </html>

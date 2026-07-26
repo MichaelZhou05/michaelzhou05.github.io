@@ -17,15 +17,8 @@ import { solLap } from './sol-lap.js';
 
 const $ = (selector) => document.querySelector(selector);
 
-const clock = $('#local-time');
-const updateClock = () => {
-  if (!clock) return;
-  clock.textContent = new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-  }).format(new Date());
-};
-updateClock();
-setInterval(updateClock, 1000);
+/* The clock moved to `location.js`, which owns the zone it has to run in — it
+   is Michael's time under the map, not the reader's. */
 
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -262,7 +255,7 @@ const RACERS = [
   },
   {
     id: 'gpt',
-    label: 'USV GPT 5.6 XHIGH',
+    label: 'USV GPT 5.6 SOL XHIGH',
     tag: 'GPT',
     color: '#2ed573',
     kind: 'replay',
@@ -406,7 +399,7 @@ function resetRace() {
   lines[1].textContent = 'THE WINDOW SHIFTS EACH SECTOR · GRASS COSTS YOU';
   ui.start.textContent = 'START LAP';
   ui.overlay.classList.remove('hidden');
-  setLog('USV OPUS 5 and USV GPT 5.6 XHIGH are waiting on the grid.');
+  setLog('USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.');
   updateUi();
 }
 

@@ -53,6 +53,47 @@ if (sections.length) {
   update();
 }
 
+/* -------------------------------------------------------------- marquee */
+
+/**
+ * The ticker loops by sliding the track half its own width, so the half that
+ * scrolls off is replaced by an identical half. That only reads as continuous
+ * while a half is at least as wide as the viewport — otherwise the tail runs
+ * out mid-sentence and you watch empty bar until the loop comes back around.
+ * The HTML only ships two copies, so wide windows get topped up here, and the
+ * duration is rewritten from the measured width to keep the speed constant.
+ */
+
+const marqueeTrack = document.querySelector('.marquee-track');
+
+if (marqueeTrack?.firstElementChild && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const unit = marqueeTrack.firstElementChild;
+  const SPEED = 31; // px per second, the pace the old fixed 46s loop scrolled at
+  let copiesPerHalf = 0;
+
+  const fill = () => {
+    const width = unit.getBoundingClientRect().width;
+    if (!width) return;
+
+    // One copy of slack past the viewport so the seam lands off-screen. Copies
+    // only ever get added — dropping them would jump the text mid-scroll.
+    const needed = Math.ceil(window.innerWidth / width) + 1;
+    if (needed > copiesPerHalf) {
+      copiesPerHalf = needed;
+      while (marqueeTrack.children.length < copiesPerHalf * 2) {
+        marqueeTrack.append(unit.cloneNode(true));
+      }
+    }
+
+    marqueeTrack.style.animationDuration = `${(copiesPerHalf * width) / SPEED}s`;
+  };
+
+  fill();
+  window.addEventListener('resize', fill);
+  // Webfonts land after first paint and change how wide a copy measures.
+  document.fonts?.ready.then(fill);
+}
+
 /* ----------------------------------------------------------- back to top */
 
 const toTop = document.getElementById('to-top');

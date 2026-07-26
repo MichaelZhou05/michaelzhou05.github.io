@@ -515,28 +515,6 @@ export const SPRITES = {
 
   /* ------------------------------------------------ hardware + inventory */
 
-  /** The handheld itself: screen, d-pad, two buttons, speaker grille. */
-  gbConsole: {
-    grid: [
-      '.ffffffffff.',
-      'ffffffffffff',
-      'ff.dddddd.ff',
-      'ff.dmmmmd.ff',
-      'ff.dmmmmd.ff',
-      'ff.dddddd.ff',
-      'ffffffffffff',
-      'ffffffffffff',
-      'ff.d.....pff',
-      'ffddd...p.ff',
-      'ff.d......ff',
-      'ffffffffffff',
-      'ffffff.s.sff',
-      'fffff.s.s.ff',
-      'ffffffffffff',
-      '.ffffffffff.',
-    ],
-  },
-
   /** Grey cartridge, label up, gold pins down. */
   cartridge: {
     grid: [
@@ -657,6 +635,21 @@ export const SPRITES = {
       'fffffffff',
       '.fffff...',
       'ffffffff.',
+    ],
+  },
+
+  /** A ball on its tee. The dimples are the only reason it isn't just a dot. */
+  golfBall: {
+    grid: [
+      '..fff..',
+      '.fffff.',
+      'fdfdfdf',
+      'fffffff',
+      'fdfdfdf',
+      '.fffff.',
+      '..fff..',
+      '..yyy..',
+      '...y...',
     ],
   },
 
@@ -783,6 +776,56 @@ export const SPRITES = {
       'ooooooooooo',
       'ooooooooooo',
       '.ooooooooo.',
+    ],
+  },
+
+  /* --------------------------------------------------------- brand marks */
+
+  /** The Octocat, demade: eared head, wide-set eyes, one curling tentacle. */
+  github: {
+    grid: [
+      '.ff......ff.',
+      '.fff....fff.',
+      'ffffffffffff',
+      'ffeeffffeeff',
+      'ffeeffffeeff',
+      'ffffffffffff',
+      'ffffffffffff',
+      '.ffffffffff.',
+      '..ffffffff..',
+      '....ff......',
+      '..fff.......',
+    ],
+  },
+
+  /** Larry the bird, beak east, tail feathers trailing off the back. */
+  twitter: {
+    grid: [
+      '......ffff..',
+      '.ff..ffefff.',
+      '..ffffffffff',
+      '...ffffffff.',
+      '....fffffff.',
+      '..fffffff...',
+      '....fffff...',
+      '.....fff....',
+    ],
+  },
+
+  /** The blue tile with "in" knocked out in white. */
+  linkedin: {
+    grid: [
+      'fffffffffff',
+      'fffffffffff',
+      'ffwffffffff',
+      'fffffffffff',
+      'ffwfwwwwfff',
+      'ffwfwffwfff',
+      'ffwfwffwfff',
+      'ffwfwffwfff',
+      'ffwfwffwfff',
+      'fffffffffff',
+      'fffffffffff',
     ],
   },
 

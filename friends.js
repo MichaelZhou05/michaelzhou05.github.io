@@ -1,7 +1,7 @@
 /**
  * The fun layer: a cat that follows your cursor, a pixel icon on every heading,
  * a moon that turns the stars on, a handheld hiding a second palette, and
- * eleven secrets to stumble into.
+ * nine secrets to stumble into.
  */
 import { SPRITES, spriteSvg } from './sprites.js';
 
@@ -10,16 +10,14 @@ const STORE_KEY = 'mz.secrets';
 
 /**
  * Icon colours are the console palette from `styles.css` — the plastic, the
- * print and the lights. The one deliberate exception is DMG mode, which wears
- * its own swamp green because that is the whole joke.
+ * print and the lights.
  */
 const SECRETS = [
   { id: 'cat', icon: 'catSit', color: '#e8e4f4', label: 'THE CAT PURRS', hint: 'someone naps at the edges' },
   { id: 'moon', icon: 'moon', color: '#ffb000', label: 'LIGHTS OUT, STARS ON', hint: 'the moon is a switch' },
   { id: 'star', icon: 'star', color: '#ffb000', label: 'WISH GRANTED', hint: 'one star is clickable' },
-  { id: 'cursor', icon: 'crt', color: '#8a849f', label: 'SECRET BOOT LOG', hint: 'poke the blinking block' },
+  { id: 'cursor', icon: 'crt', color: '#8a849f', label: 'SECRET BOOT LOG', hint: 'the name ends in a button' },
   { id: 'konami', icon: 'dpad', color: '#e60012', label: 'ARCADE MODE', hint: '↑↑↓↓←→←→ B A' },
-  { id: 'dmg', icon: 'gbConsole', color: '#9bbc0f', label: 'DMG MODE', hint: 'the screen has a second mode' },
   { id: 'cart', icon: 'cartridge', color: '#b0a8c8', label: 'BLEW THE DUST OUT', hint: 'a cartridge sits loose' },
   { id: 'sound', icon: 'note', color: '#7b68ee', label: 'SOUND TEST', hint: 'the footer can sing' },
   { id: 'espresso', icon: 'coffeeCup', color: '#e8e4f4', label: 'GOD SHOT', hint: 'the sidebar makes coffee' },
@@ -684,36 +682,22 @@ function shootingStars() {
   setTimeout(spawn, 14000 + Math.random() * 10000);
 }
 
-/* --------------------------------------------------------- the handheld */
+/* ------------------------------------------------------------ do not press */
 
 /**
- * The system-info panel says which screen you are looking at, and the answer is
- * a button. Flipping it drops the whole page into the original four-shade DMG
- * green — variables carry the type and frames, one filter carries the pictures.
+ * The button asks to be left alone, which is the most reliable way ever found
+ * to get a button pressed. It opens in a new tab on purpose — the joke is only
+ * funny if it does not take the page away from you, and a `window.open` from
+ * inside the click keeps the destination out of the status bar on the way in.
  */
-function wireGameboy() {
-  const button = document.getElementById('gb-toggle');
+function wireDoNotPress() {
+  const button = document.getElementById('dnp-button');
   if (!button) return;
-  const label = button.querySelector('.gb-toggle-label');
-  const slot = document.createElement('span');
-  slot.className = 'title-icon';
-  button.prepend(slot);
-
-  const apply = (on) => {
-    document.body.classList.toggle('dmg-mode', on);
-    slot.innerHTML = spriteSvg('gbConsole', { scale: 2, color: on ? '#9bbc0f' : '#b0a8c8' });
-    label.textContent = on ? 'dmg / four greens' : 'midnight / pure black';
-    button.setAttribute('aria-pressed', String(on));
-  };
-  apply(localStorage.getItem('mz.dmg') === 'on');
 
   button.addEventListener('click', () => {
-    const on = !document.body.classList.contains('dmg-mode');
-    apply(on);
-    localStorage.setItem('mz.dmg', on ? 'on' : 'off');
     const rect = button.getBoundingClientRect();
-    burst(rect.left + rect.width / 2, rect.top, on ? '#9bbc0f' : '#7b68ee', 8);
-    unlock('dmg');
+    burst(rect.left + rect.width / 2, rect.top, ['#e60012', '#ffb000'], 12, ['note', 'note']);
+    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'noopener');
   });
 }
 
@@ -813,12 +797,16 @@ function wireSoundTest() {
 
 /* -------------------------------------------------------- cursor + konami */
 
+/**
+ * The boot log used to hang off a blinking amber cursor parked beside the
+ * name. It blinked once a second forever, which is a lot of attention to spend
+ * on a heading you have to read past, so the secret moved onto the full stop
+ * at the end of the name — same three clicks, no flashing.
+ */
 function wireCursorBlock() {
-  const block = document.querySelector('.cursor-block');
+  const block = document.querySelector('.hero-name .accent');
   const log = document.querySelector('.boot-log');
   if (!block || !log) return;
-  block.style.cursor = 'pointer';
-  block.title = 'click me';
 
   const lines = [
     'boot: loading personality.dll ... ok',
@@ -898,6 +886,23 @@ function hoverDelights() {
   wire('[data-coffee]', (x, y) => burst(x, y, ['#f2f0fa', '#f2c49b'], 8, ['coffeeCup', 'coffeeCup']));
 }
 
+/**
+ * Fills the quick-facts star chart. Each fact names the sprite that says what
+ * it is about — a floppy for the languages, a ball on a tee for the sports —
+ * and gets it dropped behind its pane of glass. The tiles carry their own lit
+ * dot until this runs, so the chart is never a row of empty boxes.
+ */
+function paintFactGlyphs() {
+  document.querySelectorAll('.quick-facts li[data-glyph]').forEach((fact) => {
+    const tile = fact.querySelector('.fact-mark');
+    if (!tile || !SPRITES[fact.dataset.glyph]) return;
+    tile.innerHTML = spriteSvg(fact.dataset.glyph, {
+      scale: 2,
+      color: fact.dataset.glyphColor || '#b8a9ff',
+    });
+  });
+}
+
 /** An honest-to-goodness 90s hit counter. It counts your visits, not the world's. */
 function hitCounter() {
   const readout = document.getElementById('hit-counter');
@@ -934,11 +939,12 @@ function greet() {
 }
 
 paintIcons();
+paintFactGlyphs();
 renderSecrets();
 scatterDoodles();
 wireWishStar();
 wireMoon();
-wireGameboy();
+wireDoNotPress();
 wireCartridge();
 wireSoundTest();
 wireCursorBlock();

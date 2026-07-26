@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
+    "avatar": "node scripts/make-avatar.mjs",
+    "worldmap": "node scripts/make-worldmap.mjs",
     "benchmark": "node scripts/run-agent-benchmark.mjs",
     "opus-lap": "node scripts/run-opus-racer.mjs",
     "sol-lap": "node scripts/run-opus-racer.mjs --agent sol",
