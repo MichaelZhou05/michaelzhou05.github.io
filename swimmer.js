@@ -23,7 +23,6 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const GRID = 400;           // the creature's native canvas size
 const POINTS = 1e4;
 const PHASE_STEP = Math.PI / 80;   // per 60Hz-frame, scaled by real dt below
-const MAX_SWIMMERS = 3;
 
 /* ------------------------------------------------- the creature, verbatim */
 
@@ -137,13 +136,18 @@ function tick(now) {
 }
 
 function spawn() {
-  if (swimmers.length >= MAX_SWIMMERS) return;
+  // One at a time: the tap does nothing until the current crossing finishes.
+  if (swimmers.length) return;
   ensureLayer();
+  const size = Math.min(window.innerWidth, window.innerHeight) * (0.75 + Math.random() * 0.22);
+  const m = size * 0.75;
   swimmers.push({
-    p: 0,
+    // Start just outside the bottom-left corner — close enough that it swims
+    // into view right after the tap, not a full body-length away.
+    p: (m - size / 2) / (Math.min(window.innerWidth, window.innerHeight) + 2 * m),
     t: Math.random() * Math.PI * 2,
     duration: 15000 + Math.random() * 4000,
-    size: Math.min(window.innerWidth, window.innerHeight) * (0.5 + Math.random() * 0.15),
+    size,
     swayAmp: 30 + Math.random() * 30,
     swayCycles: 2 + Math.random() * 1.5,
     swayPhase: Math.random() * Math.PI * 2,

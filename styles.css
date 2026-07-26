@@ -159,6 +159,8 @@ html {
  * smaller than a modern mono at the same px.
  */
 body {
+  /* Anchor for the document-length starfield below. */
+  position: relative;
   margin: 0;
   min-width: 320px;
   overflow-x: hidden;
@@ -167,13 +169,14 @@ body {
    * The moulded shell: near-black plastic with a faint glow leaking in from
    * above the fold, and a tiling scatter of pixel doodles — invader, star,
    * heart, d-pad, cartridge — printed at ~2.5% white, texture you only notice
-   * when you look for it. Fixed, so the print stays registered to the window
-   * instead of sliding with the content.
+   * when you look for it. The print scrolls with the content — a fixed
+   * backdrop under moving cards reads as parallax, and parallax is modern.
+   * Only the ambient glow stays pinned; a gradient has no landmarks to slide.
    */
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='224' height='224'%3E%3Cg fill='%23ffffff' opacity='0.025'%3E%3Cg transform='translate(18 14)'%3E%3Crect x='4' y='0' width='2' height='2'/%3E%3Crect x='16' y='0' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='14' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='14' height='2'/%3E%3Crect x='2' y='6' width='4' height='2'/%3E%3Crect x='8' y='6' width='6' height='2'/%3E%3Crect x='16' y='6' width='4' height='2'/%3E%3Crect x='0' y='8' width='22' height='2'/%3E%3Crect x='0' y='10' width='2' height='2'/%3E%3Crect x='4' y='10' width='14' height='2'/%3E%3Crect x='20' y='10' width='2' height='2'/%3E%3Crect x='0' y='12' width='2' height='2'/%3E%3Crect x='4' y='12' width='2' height='2'/%3E%3Crect x='16' y='12' width='2' height='2'/%3E%3Crect x='20' y='12' width='2' height='2'/%3E%3Crect x='6' y='14' width='4' height='2'/%3E%3Crect x='12' y='14' width='4' height='2'/%3E%3C/g%3E%3Cg transform='translate(152 34)'%3E%3Crect x='4' y='0' width='2' height='2'/%3E%3Crect x='4' y='2' width='2' height='2'/%3E%3Crect x='0' y='4' width='10' height='2'/%3E%3Crect x='4' y='6' width='2' height='2'/%3E%3Crect x='4' y='8' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(88 96) rotate(90 7 6)'%3E%3Crect x='2' y='0' width='4' height='2'/%3E%3Crect x='8' y='0' width='4' height='2'/%3E%3Crect x='0' y='2' width='14' height='2'/%3E%3Crect x='0' y='4' width='14' height='2'/%3E%3Crect x='2' y='6' width='10' height='2'/%3E%3Crect x='4' y='8' width='6' height='2'/%3E%3Crect x='6' y='10' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(176 148)'%3E%3Crect x='6' y='0' width='6' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='10' y='2' width='2' height='2'/%3E%3Crect x='6' y='4' width='2' height='2'/%3E%3Crect x='10' y='4' width='2' height='2'/%3E%3Crect x='0' y='6' width='8' height='2'/%3E%3Crect x='10' y='6' width='8' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='16' y='8' width='2' height='2'/%3E%3Crect x='0' y='10' width='8' height='2'/%3E%3Crect x='10' y='10' width='8' height='2'/%3E%3Crect x='6' y='12' width='2' height='2'/%3E%3Crect x='10' y='12' width='2' height='2'/%3E%3Crect x='6' y='14' width='2' height='2'/%3E%3Crect x='10' y='14' width='2' height='2'/%3E%3Crect x='6' y='16' width='6' height='2'/%3E%3C/g%3E%3Cg transform='translate(34 172) rotate(270 8 9)'%3E%3Crect x='2' y='0' width='12' height='2'/%3E%3Crect x='0' y='2' width='16' height='2'/%3E%3Crect x='0' y='4' width='2' height='2'/%3E%3Crect x='4' y='4' width='8' height='2'/%3E%3Crect x='14' y='4' width='2' height='2'/%3E%3Crect x='0' y='6' width='2' height='2'/%3E%3Crect x='4' y='6' width='8' height='2'/%3E%3Crect x='14' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='4' y='8' width='8' height='2'/%3E%3Crect x='14' y='8' width='2' height='2'/%3E%3Crect x='0' y='10' width='16' height='2'/%3E%3Crect x='0' y='12' width='2' height='2'/%3E%3Crect x='6' y='12' width='4' height='2'/%3E%3Crect x='14' y='12' width='2' height='2'/%3E%3Crect x='0' y='14' width='2' height='2'/%3E%3Crect x='4' y='14' width='2' height='2'/%3E%3Crect x='10' y='14' width='2' height='2'/%3E%3Crect x='14' y='14' width='2' height='2'/%3E%3Crect x='0' y='16' width='16' height='2'/%3E%3C/g%3E%3Cg transform='translate(198 96) rotate(90 5 5)'%3E%3Crect x='4' y='0' width='2' height='2'/%3E%3Crect x='4' y='2' width='2' height='2'/%3E%3Crect x='0' y='4' width='10' height='2'/%3E%3Crect x='4' y='6' width='2' height='2'/%3E%3Crect x='4' y='8' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(120 200)'%3E%3Crect x='2' y='0' width='2' height='2'/%3E%3Crect x='0' y='2' width='6' height='2'/%3E%3Crect x='2' y='4' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(66 58)'%3E%3Crect x='2' y='0' width='2' height='2'/%3E%3Crect x='0' y='2' width='6' height='2'/%3E%3Crect x='2' y='4' width='2' height='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
     radial-gradient(ellipse at 50% -10%, #0e0d17 0%, var(--shell) 55%) var(--shell);
-  background-attachment: fixed;
+  background-attachment: scroll, fixed;
   font: 400 18px / 1.55 var(--mono);
   -webkit-font-smoothing: antialiased;
 }
@@ -346,7 +349,9 @@ main section {
   padding: var(--s5) var(--s6) var(--s5);
   border: 1px solid var(--edge-soft);
   border-radius: var(--r-md);
-  background: var(--surface);
+  /* Not quite opaque: bright things crossing the dark behind the page — the
+     portrait's swimmer, mostly — should ghost faintly through the cards. */
+  background: color-mix(in srgb, var(--surface) 87%, transparent);
   /* Platinum bevel: one pixel of light on the top-left, one of shade on the
      bottom-right, the way System 7 cut every window edge. */
   box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.045), inset -1px -1px 0 rgba(0, 0, 0, 0.55);
@@ -1186,15 +1191,25 @@ main section {
 
 /* ------------------------------------------------------ 8. work logs */
 
+/**
+ * Each job is a disclosure, not a card. Collapsed, it is the story only — no
+ * numbers — laid across the full width of the column: a date rail on the left,
+ * the name and role beside it, and the plain-English version of the job running
+ * out to the right margin. Opening one unfolds the detail underneath.
+ *
+ * The rail width is one token because the summary and the body are separate
+ * grids that have to line up down a single edge.
+ */
 .logs {
-  padding-left: var(--s6);
+  --rail: 156px;
+  padding-left: var(--s5);
   border-left: 1px solid var(--edge-soft);
 }
 
 .log {
   position: relative;
-  margin-bottom: var(--s6);
-  padding-bottom: var(--s6);
+  margin-bottom: var(--s5);
+  padding-bottom: var(--s5);
   border-bottom: 1px solid var(--edge-soft);
 }
 
@@ -1204,26 +1219,57 @@ main section {
   border-bottom: 0;
 }
 
+/* The timeline bead, absolutely positioned so it never becomes a grid item. */
 .log::before {
   content: "";
   position: absolute;
-  left: calc(var(--s6) * -1 - 4px);
-  top: 10px;
+  z-index: 1;
+  left: calc(var(--s5) * -1 - 4px);
+  top: 11px;
   width: 7px;
   height: 7px;
+  background: var(--indigo);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.log:hover::before,
+.log[open]::before {
   background: var(--indigo-lit);
   box-shadow: 0 0 10px rgba(123, 104, 238, 0.55);
 }
 
+/* --- the collapsed row ------------------------------------------------- */
+
+.log-head {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: var(--s2) var(--s5);
+  align-items: start;
+  padding: var(--s1) 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.log-head::-webkit-details-marker {
+  display: none;
+}
+
+.log-rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  padding-top: 5px;
+}
+
 .log-date {
-  margin: 0 0 var(--s1);
   color: var(--teal);
   font-size: 15.5px;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .log-flag {
-  margin-left: var(--s2);
   padding: 4px 7px 3px;
   color: var(--shell);
   border-radius: 0;
@@ -1231,7 +1277,18 @@ main section {
   font: 400 7px / 1 var(--display);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  vertical-align: 1px;
+}
+
+/**
+ * Name, role and the open-cue share one baseline row. The cue is pushed to the
+ * far margin so the eye has something to land on at the end of the line — that
+ * is the whole affordance for "there is more inside this".
+ */
+.log-ident {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s1) var(--s3);
 }
 
 /**
@@ -1250,48 +1307,160 @@ main section {
 }
 
 .log h3 {
-  font-size: clamp(24px, 2.5vw, 30px);
+  font-size: clamp(22px, 2.1vw, 27px);
+  transition: color 160ms ease;
+}
+
+.log-head:hover h3,
+.log[open] h3 {
+  color: var(--indigo-lit);
 }
 
 .log-role {
-  margin: var(--s1) 0 var(--s3);
   color: var(--muted);
   font-size: 16px;
 }
 
-.log-points {
-  max-width: var(--measure);
-  margin: 0 0 var(--s3);
-  padding: 0;
-  list-style: none;
+.log-cue {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-left: auto;
+  color: var(--faint);
+  font-family: var(--display);
+  font-size: 7px;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 160ms ease;
 }
 
-.log-points li {
-  position: relative;
-  margin-bottom: var(--s1);
-  padding-left: var(--s5);
+/* Caret drawn in CSS so the marker matches the phosphor rather than the OS. */
+.log-cue i {
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid currentColor;
+  transition: transform 160ms ease;
+}
+
+.log-head:hover .log-cue {
+  color: var(--amber);
+}
+
+.log[open] .log-cue {
+  color: var(--indigo-lit);
+}
+
+.log[open] .log-cue i {
+  transform: rotate(90deg);
+}
+
+/**
+ * The lede is the point of the collapsed state, so it gets the whole width of
+ * the column rather than the reading measure — three wide lines instead of six
+ * narrow ones, which is most of the vertical saving in this section.
+ */
+.log-lede {
+  grid-column: 2;
+  max-width: 104ch;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.log-lede em {
+  color: var(--bright);
+  font-style: italic;
+}
+
+/* --- the expanded detail ----------------------------------------------- */
+
+.log-body {
+  padding: var(--s4) 0 var(--s2) calc(var(--rail) + var(--s5));
+  animation: log-unfold 240ms ease-out;
+}
+
+@keyframes log-unfold {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/**
+ * Narrative on the left, numbers on the right. The stats column is the reason
+ * the detail reads across rather than down — without it the prose would run to
+ * the margin and the section would be tall again.
+ */
+.log-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(240px, 1fr);
+  gap: var(--s5) var(--s6);
+  align-items: start;
+  margin-bottom: var(--s4);
+}
+
+.log-notes p {
+  max-width: 82ch;
+  margin: 0 0 var(--s3);
   color: var(--muted);
   font-size: 16.5px;
 }
 
-.log-points li::before {
-  content: "▸";
-  position: absolute;
-  left: 0;
-  color: var(--teal-dark);
+.log-notes p:last-child {
+  margin-bottom: 0;
 }
 
-.log-points b {
-  margin-right: var(--s1);
+.log-notes em {
+  color: var(--plate);
+  font-style: italic;
+}
+
+.log-stats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--edge-soft);
+}
+
+.log-stats li {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
+  gap: var(--s3);
+  align-items: baseline;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.log-stats b {
   color: var(--amber);
+  font-size: 21px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
+.log-stats span {
+  color: var(--muted);
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+
+/* Tech is a shelf of parts, not a sentence — chips read as a spec sticker. */
 .log-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  max-width: none;
   margin: 0;
+}
+
+.log-tech span {
+  padding: 4px 9px 3px;
   color: var(--dim);
-  font-size: 15px;
+  border: 1px solid var(--edge-soft);
+  font-size: 14px;
   letter-spacing: 0.05em;
 }
 
@@ -2019,12 +2188,25 @@ main section {
  * sidebar scale: moulded bezel, a title bar with a blinking power cell, the
  * dot-matrix sheet over the glass. The canvas is 128×104 game pixels and the
  * CSS blows it up to whatever the rail affords, exactly like the Ring.
+ *
+ * The rail block *is* the machine — there is no inner card. The block's own
+ * panel surface is swapped for the moulded bezel, the heading is silkscreened
+ * straight onto the case, and the frame is dissolved so the title bar, glass
+ * and ticket sit edge to edge inside it.
  */
-.espresso-frame {
-  padding: 5px 5px 7px;
-  border-radius: var(--r-lg);
+.side-block.espresso-block {
+  padding: 9px;
+  border-color: var(--edge-strong);
   background: linear-gradient(145deg, var(--bezel-lit), var(--bezel));
   box-shadow: var(--mould);
+}
+
+.espresso-block .side-title {
+  margin: 3px 2px 9px;
+}
+
+.espresso-frame {
+  display: contents;
 }
 
 .espresso-bar {
@@ -2357,8 +2539,10 @@ footer {
   filter: grayscale(0.85) brightness(0.6);
 }
 
+/* Painted onto the full document, not the window — the sky scrolls with the
+   page like everything else, one flat surface, no parallax. */
 .starfield {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
@@ -2419,8 +2603,9 @@ body.stars-on .starfield {
 }
 
 .oneko {
-  position: fixed;
-  z-index: 60;
+  /* Lives in the page itself — document coordinates, scrolls with the cards. */
+  position: absolute;
+  z-index: 2;
   top: 0;
   left: 0;
   cursor: pointer;
@@ -2430,7 +2615,9 @@ body.stars-on .starfield {
 
 .oneko-body {
   line-height: 0;
-  /* No standing transition: the walk cycle writes a fresh transform every
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  /* No standing transition: the walk cycle repositions the sheet every
      frame, and easing between those frames turns the gait into soup. */
 }
 
@@ -2441,8 +2628,8 @@ body.stars-on .starfield {
 
 /* A pixel "z" that floats up off the sleeping cat. */
 .oneko-z {
-  position: fixed;
-  z-index: 61;
+  position: absolute;
+  z-index: 2;
   color: #8a849f;
   font: 700 13px/1 var(--mono);
   pointer-events: none;
@@ -2686,8 +2873,7 @@ body.dmg-mode .title-icon svg,
 body.dmg-mode .nav-icon svg,
 body.dmg-mode .secret-icon svg,
 body.dmg-mode .cart-slot svg,
-body.dmg-mode .oneko,
-body.dmg-mode .wild-bug {
+body.dmg-mode .oneko {
   filter: grayscale(1) sepia(1) hue-rotate(46deg) saturate(2.6) brightness(0.92);
 }
 
@@ -2747,81 +2933,6 @@ body.dmg-mode::before {
 @keyframes eq-bounce {
   0%, 100% { height: 3px; background: var(--teal-dark); }
   50% { height: 12px; background: var(--lime); }
-}
-
-/* ------------------------------------------- the bug and its battle box */
-
-.wild-bug {
-  position: fixed;
-  z-index: 65;
-  bottom: 14px;
-  left: -40px;
-  padding: 0;
-  border: 0;
-  background: none;
-  line-height: 0;
-  cursor: pointer;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.7));
-  animation: skitter 15s linear forwards;
-}
-
-.wild-bug svg {
-  image-rendering: pixelated;
-}
-
-.wild-bug:hover {
-  filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.8));
-}
-
-@keyframes skitter {
-  from { transform: translateX(0) rotate(0deg); }
-  25% { transform: translateX(28vw) rotate(-4deg); }
-  50% { transform: translateX(52vw) rotate(3deg); }
-  to { transform: translateX(105vw) rotate(0deg); }
-}
-
-/* The dialogue box every 8-bit RPG opened a fight with. */
-.battle-box {
-  position: fixed;
-  z-index: 210;
-  left: 50%;
-  bottom: var(--s6);
-  width: min(420px, calc(100% - var(--s6)));
-  padding: var(--s4) var(--s5);
-  color: var(--bright);
-  border: 3px solid var(--bright);
-  border-radius: var(--r-sm);
-  background: #05040a;
-  box-shadow: 0 0 0 3px #05040a, 0 10px 34px rgba(0, 0, 0, 0.85);
-  font: 400 8px / 2.1 var(--display);
-  letter-spacing: 0.06em;
-  transform: translate(-50%, 150%);
-  transition: transform 320ms cubic-bezier(.2, .9, .3, 1.25), opacity 260ms ease;
-}
-
-.battle-box.is-in {
-  transform: translate(-50%, 0);
-}
-
-.battle-box.is-out {
-  opacity: 0;
-}
-
-.battle-box p {
-  margin: 0;
-  max-width: none;
-  min-height: 2.4em;
-  color: inherit;
-}
-
-/* The little blinking ▼ that means "press A". */
-.battle-box .battle-cue {
-  display: block;
-  margin-top: var(--s2);
-  color: var(--lime);
-  font-size: 12px;
-  text-align: right;
-  animation: pulse 900ms steps(2, end) infinite;
 }
 
 /**
@@ -3070,6 +3181,4 @@ body.arcade-mode .hero-name {
   .reveal-item { opacity: 1; transform: none; }
   .doodle, .starfield i { opacity: 1; }
   .marquee-track { animation: none; }
-  /* The bug still crosses the page, it just does it without the scuttle. */
-  .wild-bug { animation: none; left: 12vw; }
 }

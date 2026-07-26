@@ -183,64 +183,229 @@
 
         <section id="experience" class="panel">
           <h2 class="section-title" data-icon="book" data-icon-color="#ffb000">experience</h2>
+          <p class="section-intro">
+            Four jobs, in plain English &mdash; what the problem actually was and what I actually did about it.
+            Open one for the long version, numbers included.
+          </p>
 
           <div class="logs">
-            <article class="log">
-              <p class="log-date">2026 &mdash; jun/aug <span class="log-flag">latest</span></p>
-              <h3>DraftKings</h3>
-              <p class="log-role">software engineering intern &mdash; market making</p>
-              <p>
-                Shipped production infrastructure for a sports-pricing platform, turning legacy market-making workflows
-                into faster, more reliable systems.
-              </p>
-              <ul class="log-points">
-                <li><b>+25%</b> pipeline throughput after decomposing Kafka topics and refactoring pricing flows</li>
-                <li><b>&minus;70%</b> API latency by replacing full S3 scans with keyed Snowflake queries</li>
-                <li><b>78.7M</b> weekly warnings eliminated with precise tombstone events for dropped game states</li>
-              </ul>
-              <p class="log-tech">c# &middot; rust &middot; kafka &middot; snowflake</p>
-            </article>
+            <details class="log" name="worklog">
+              <summary class="log-head">
+                <span class="log-rail">
+                  <span class="log-date">2026 &mdash; jun/aug</span>
+                  <span class="log-flag">latest</span>
+                </span>
+                <span class="log-ident">
+                  <h3>DraftKings</h3>
+                  <span class="log-role">software engineering intern &mdash; market making</span>
+                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                </span>
+                <span class="log-lede">
+                  Prediction markets &mdash; Kalshi, CME, Robinhood &mdash; turned sports into something you
+                  <em>trade</em> rather than something you bet on. DraftKings had a decade of pricing models built to
+                  run a sportsbook, and I worked on the plumbing that turned them into a market maker: quoting both
+                  sides of a contract, continuously, fast enough that an exchange will actually take the price.
+                </span>
+              </summary>
+              <div class="log-body">
+                <div class="log-detail">
+                  <div class="log-notes">
+                    <p>
+                      A sportsbook and a market maker look similar from the outside and are not the same job. A book
+                      posts a line and waits for you. A market maker has to hold a live bid <em>and</em> a live offer on
+                      every contract, move both as the game moves, and be there whenever someone wants to trade &mdash;
+                      that is what "providing liquidity" means, and it is a far harder ask of the systems underneath.
+                    </p>
+                    <p>
+                      Underneath is where I worked. The pricing pipeline carried a decade of sportsbook-shaped
+                      assumptions: message topics still fanning out to consumers that no longer existed, an API
+                      answering one question by re-reading whole S3 buckets, a mapper that went quiet when a game
+                      dropped out instead of saying so. All of that is survivable at sportsbook cadence and a real
+                      problem when an exchange is waiting on your quote.
+                    </p>
+                    <p>
+                      I also built an agentic service catalog for the platform, because the on-call engineer at 3am and
+                      the new hire in week one turn out to be asking the same questions &mdash; and now something
+                      answers them.
+                    </p>
+                  </div>
+                  <ul class="log-stats">
+                    <li>
+                      <b>+25%</b>
+                      <span>pipeline throughput &mdash; pulled overloaded Kafka topics apart and reworked the pricing
+                        flow, retiring roughly 20k lines of legacy code on the way through</span>
+                    </li>
+                    <li>
+                      <b>&minus;70%</b>
+                      <span>latency on the endpoint traders and backtests lean on, by swapping full-bucket S3 scans for
+                        keyed Snowflake lookups &mdash; which also killed a whole class of failures on malformed
+                        input</span>
+                    </li>
+                    <li>
+                      <b>78.7M</b>
+                      <span>warning logs a week, gone: the mapper now emits an explicit tombstone when a game state
+                        drops, so an alert firing means something again</span>
+                    </li>
+                  </ul>
+                </div>
+                <p class="log-tech"><span>c#</span><span>rust</span><span>kafka</span><span>snowflake</span></p>
+              </div>
+            </details>
 
-            <article class="log">
-              <p class="log-date">2025/26 &mdash; nov/jun</p>
-              <h3>Duke School of Medicine</h3>
-              <p class="log-role">machine learning research assistant &mdash; applied ml</p>
-              <p>
-                Built a bioacoustic ML pipeline that converts raw ultrasonic recordings into research-ready signal,
-                accelerating the study of respiratory symptoms in animal models.
-              </p>
-              <ul class="log-points">
-                <li><b>85%</b> less manual annotation across 20+ vocalization syllables at 98% recall</li>
-                <li><b>96%</b> classification accuracy using MFCC and spectral-entropy features</li>
-              </ul>
-              <p class="log-tech">pytorch &middot; matlab &middot; cuda &middot; faster r-cnn</p>
-            </article>
+            <details class="log" name="worklog">
+              <summary class="log-head">
+                <span class="log-rail">
+                  <span class="log-date">2025/26 &mdash; nov/jun</span>
+                </span>
+                <span class="log-ident">
+                  <h3>Duke School of Medicine</h3>
+                  <span class="log-role">machine learning research assistant</span>
+                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                </span>
+                <span class="log-lede">
+                  Rats talk in ultrasound, and the way they talk changes when they get sick &mdash; before much else
+                  does. I trained models to hear that change: neural networks and random forest classifiers that pick
+                  out early-stage Krabbe disease from recordings a person would need weeks to label by hand.
+                </span>
+              </summary>
+              <div class="log-body">
+                <div class="log-detail">
+                  <div class="log-notes">
+                    <p>
+                      Krabbe disease is degenerative, so the whole study is a race: the earlier you can tell whether a
+                      treatment is doing anything, the more of the animal's window you still have to work in. The
+                      standard read-outs arrive late. Vocalization changes arrive early &mdash; but reading them meant a
+                      researcher scrolling through hours of audio drawing boxes around squeaks, one at a time.
+                    </p>
+                    <p>
+                      So the first job was making the data usable at all: a pipeline that turns raw ultrasonic audio
+                      into high-resolution sonograms, with adaptive thresholding and Gaussian noise reduction so a faint
+                      call doesn't disappear into room noise. Then a Faster R-CNN detector to find the calls and sort
+                      them into twenty-odd syllable types, and neural network and random forest classifiers on top of
+                      the acoustic features &mdash; MFCCs, spectral entropy &mdash; to tell a healthy animal from a
+                      symptomatic one.
+                    </p>
+                    <p>
+                      The accuracy number was never really the point. The point is that a study which used to be gated
+                      on annotation time stopped being gated on annotation time.
+                    </p>
+                  </div>
+                  <ul class="log-stats">
+                    <li>
+                      <b>&minus;85%</b>
+                      <span>manual annotation time, with 20+ vocalization syllable types detected automatically at 98%
+                        recall</span>
+                    </li>
+                    <li>
+                      <b>96%</b>
+                      <span>accuracy separating healthy from symptomatic animals on acoustic features alone</span>
+                    </li>
+                  </ul>
+                </div>
+                <p class="log-tech"><span>pytorch</span><span>matlab</span><span>cuda</span><span>faster r-cnn</span></p>
+              </div>
+            </details>
 
-            <article class="log">
-              <p class="log-date">2025 &mdash; may/aug</p>
-              <h3>United States Army</h3>
-              <p class="log-role">software engineering intern &mdash; resilient networks</p>
-              <p>
-                Engineered resilient communication protocols for nano-drone swarms operating in contested, dynamically
-                jammed environments.
-              </p>
-              <ul class="log-points">
-                <li><b>95.3%</b> packet delivery under static and dynamic jamming via adaptive channel hopping</li>
-                <li><b>&minus;30%</b> network blackout time using safe-RL risk constraints; co-authored a JSSR publication</li>
-              </ul>
-              <p class="log-tech">c++ &middot; python &middot; bluetooth tsch &middot; safe rl</p>
-            </article>
+            <details class="log" name="worklog">
+              <summary class="log-head">
+                <span class="log-rail">
+                  <span class="log-date">2025 &mdash; may/aug</span>
+                </span>
+                <span class="log-ident">
+                  <h3>United States Army</h3>
+                  <span class="log-role">software engineering intern &mdash; resilient networks</span>
+                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                </span>
+                <span class="log-lede">
+                  A swarm of palm-sized drones becomes a very expensive paperweight the moment somebody jams its radio.
+                  I worked on the Crazyflie nano-drone platform, building swarm channel-hopping that <em>learns</em> its
+                  way around a jammer instead of guessing at it.
+                </span>
+              </summary>
+              <div class="log-body">
+                <div class="log-detail">
+                  <div class="log-notes">
+                    <p>
+                      Jamming isn't a wall so much as a moving one. Something parks on a slice of the spectrum and
+                      shifts around; the swarm's only real defence is to keep changing which channel it talks on, faster
+                      than the jammer can follow &mdash; and to have every drone agree on where to hop next, because a
+                      swarm that hops out of sync has jammed itself.
+                    </p>
+                    <p>
+                      That's two problems. Timing first: a Bluetooth TSCH clock-sync protocol, so the swarm shares a
+                      schedule tight enough to hop together. Then the choosing &mdash; which channel next? That is a
+                      <a href="https://en.wikipedia.org/wiki/Multi-armed_bandit" target="_blank" rel="noreferrer">multi-armed bandit problem</a>:
+                      you pick repeatedly between options whose payoff you only learn by trying them, trading off
+                      exploiting the channel that has been clean lately against exploring one that might be cleaner.
+                      Reinforcement learning does the choosing, with safe-RL risk constraints bounding it so the swarm
+                      can never explore its way into a blackout.
+                    </p>
+                    <p>
+                      That last constraint is what became the paper &mdash; a JSSR publication I co-authored on bounding
+                      communication risk with safe reinforcement learning.
+                    </p>
+                  </div>
+                  <ul class="log-stats">
+                    <li>
+                      <b>95.3%</b>
+                      <span>of packets still delivered under both static and dynamic jamming</span>
+                    </li>
+                    <li>
+                      <b>&minus;30%</b>
+                      <span>blackout time once safe-RL risk constraints bounded which channels the swarm was allowed to
+                        gamble on</span>
+                    </li>
+                    <li>
+                      <b>JSSR</b>
+                      <span>publication co-authored, on mitigating communication risk with safe RL constraints</span>
+                    </li>
+                  </ul>
+                </div>
+                <p class="log-tech"><span>c++</span><span>python</span><span>bluetooth tsch</span><span>reinforcement learning</span></p>
+              </div>
+            </details>
 
-            <article class="log">
-              <p class="log-date">2024 &mdash; jun/aug</p>
-              <h3>GMU Wireless Cyber Center</h3>
-              <p class="log-role">cyber security lab intern &mdash; wireless security</p>
-              <p>
-                Prototyped wireless security tooling and reverse-engineered embedded drone firmware, achieving an 80%
-                remote takeover rate in controlled research environments.
-              </p>
-              <p class="log-tech">python &middot; c++ &middot; 802.11 &middot; embedded</p>
-            </article>
+            <details class="log" name="worklog">
+              <summary class="log-head">
+                <span class="log-rail">
+                  <span class="log-date">2024 &mdash; jun/aug</span>
+                </span>
+                <span class="log-ident">
+                  <h3>GMU Wireless Cyber Center</h3>
+                  <span class="log-role">cyber security lab intern &mdash; wireless security</span>
+                  <span class="log-cue"><i aria-hidden="true"></i>the long version</span>
+                </span>
+                <span class="log-lede">
+                  Consumer drones ship with radios that trust more or less anything that talks to them. Inside a closed
+                  lab, I built the tooling that proves it &mdash; knocking a drone off its controller and flying it away
+                  &mdash; so the failure mode is documented rather than theoretical.
+                </span>
+              </summary>
+              <div class="log-body">
+                <div class="log-detail">
+                  <div class="log-notes">
+                    <p>
+                      Two halves to it. The first was a network penetration tool in Python driving the Aircrack-ng suite
+                      against 802.11: find the link between a drone and its controller, force a deauthentication, and be
+                      the thing it reconnects to. Across the target UAVs on the bench that worked about four times in
+                      five.
+                    </p>
+                    <p>
+                      The second half was slower and more interesting &mdash; taking apart the Parrot Bebop's firmware
+                      to find a remote exploit path that didn't depend on the radio trick at all. All of it ran inside
+                      the lab, on hardware we owned, which is the only place work like this belongs.
+                    </p>
+                  </div>
+                  <ul class="log-stats">
+                    <li>
+                      <b>80%</b>
+                      <span>remote takeover rate across target UAVs in the lab</span>
+                    </li>
+                  </ul>
+                </div>
+                <p class="log-tech"><span>python</span><span>c++</span><span>802.11</span><span>firmware re</span></p>
+              </div>
+            </details>
           </div>
         </section>
 

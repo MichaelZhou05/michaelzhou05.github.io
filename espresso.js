@@ -3,7 +3,7 @@
  * one card under the index. Seven stations, one shot:
  *
  *   beans → crank the grinder → dose the portafilter → tamp → lock it in →
- *   pull the lever → drink.
+ *   pull the lever → drink, and the café clears the level for you.
  *
  * Everything is painted into a 128×104 canvas, one game pixel per canvas
  * pixel, and blown up by CSS exactly like the racetrack. No sprite sheets —
@@ -39,7 +39,11 @@ const C = {
   grounds: '#5a3a22',
   espresso: '#2f1b0e',
   crema: '#d29a55',
+  cremaLit: '#e8b877',
   cream: '#f2e6d0',
+  cupShade: '#c9b79a',
+  cupDark: '#8f7f68',
+  cupHollow: '#6b5c4a', // the shadow that pools in the bottom of an empty cup
 };
 
 const STEP = { BEANS: 0, GRIND: 1, DOSE: 2, TAMP: 3, LOCK: 4, PULL: 5, SERVE: 6 };
@@ -68,6 +72,54 @@ const HOTSPOTS = [
 const STORE_KEY = 'mz.espresso.shots';
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/**
+ * The reward: once the shot is pulled the camera forgets the café, the cup
+ * comes at you and swells until it owns the frame, then flashes out and the
+ * screen hands you a level-clear card. Seconds per beat, plus where the big
+ * cup parks.
+ */
+const CINE = { approach: 0.8, hold: 0.45, clear: 2.1, x: 64, y: 78, s: 4.6 };
+
+/** What the café shouts at you when the shot lands. */
+const CHEERS = [
+  { word: 'PERFETTO!', hint: 'perfetto — that’s a proper shot.' },
+  { word: 'BUONISSIMO!', hint: 'buonissimo. crema like velvet.' },
+  { word: 'DELIZIOSO!', hint: 'delizioso. the machine agrees.' },
+  { word: 'MAGNIFICO!', hint: 'magnifico. nonna would approve.' },
+  { word: 'SQUISITO!', hint: 'squisito. one more? always.' },
+  { word: 'BRAVISSIMO!', hint: 'bravissimo, barista.' },
+];
+
+/**
+ * A 4×5 pixel alphabet, one string of 20 bits per glyph, read left to right,
+ * top to bottom. Four wide rather than three purely so N keeps its diagonal
+ * and stops reading as M.
+ */
+const GLYPH_W = 4;
+const FONT = {
+  A: '01101001111110011001', B: '11101001111010011110', C: '01111000100010000111',
+  D: '11101001100110011110', E: '11111000111010001111', F: '11111000111010001000',
+  G: '01111000101110010111', H: '10011001111110011001', I: '11100100010001001110',
+  J: '00110001000110010110', K: '10011010110010101001', L: '10001000100010001111',
+  M: '10011111111110011001', N: '10011101111110111001', O: '01101001100110010110',
+  P: '11101001111010001000', Q: '01101001100110110111', R: '11101001111010101001',
+  S: '01111000011000011110', T: '11110100010001000100', U: '10011001100110010110',
+  V: '10011001100110100100', W: '10011001111111111001', X: '10011001011010011001',
+  Y: '10011001011001000100', Z: '11110001011010001111', '!': '01000100010000000100',
+  ' ': '0'.repeat(20),
+  0: '01101001100110010110', 1: '01001100010001001110', 2: '11100001011010001111',
+  3: '11100001011000011110', 4: '10101010111100100010', 5: '11111000111000011110',
+  6: '01101000111010010110', 7: '11110001001001000100', 8: '01101001011010010110',
+  9: '01101001011100010110',
+};
+
+/** The star that pops in when a level is cleared, 5×5. */
+const STAR = ['00100', '01110', '11111', '01110', '00100'];
+
+const easeOut = (k) => 1 - (1 - k) ** 3;
+/** Overshoots by a hair on the way in, so things land instead of stopping. */
+const easeOutBack = (k) => 1 + 2.2 * (k - 1) ** 3 + 1.4 * (k - 1) ** 2;
+
 const canvas = document.getElementById('espresso-canvas');
 const hintEl = document.getElementById('espresso-hint');
 const shotsEl = document.getElementById('espresso-shots');
@@ -91,6 +143,7 @@ function init() {
     lock: 0, // portafilter travel to the group, 0..1
     lever: 0, // lever travel, 0 up .. 1 pulled
     pour: 0, // extraction, 0..1
+    cine: null, // the victory lap: { phase, t, star, cheer }
     fade: 0, // end-of-loop blackout, 0..1..0
     fading: null, // null | 'out' | 'in'
     time: 0,
@@ -271,27 +324,56 @@ function init() {
     state.shots += 1;
     localStorage.setItem(STORE_KEY, String(state.shots));
     shotsEl.textContent = String(state.shots);
-    setHint('ahh. that’s the stuff.');
-    beep(523, 0, 0.08, 'triangle', 0.025);
-    beep(392, 0.09, 0.12, 'triangle', 0.025);
-    particles.push({ kind: 'plusone', x: 92, y: 70, t: 0, dur: 1.1 });
-    setTimeout(() => {
-      state.fading = 'out';
-    }, 900);
-    for (let i = 0; i < 8; i += 1) {
-      const angle = (i / 8) * Math.PI * 2;
-      particles.push({
-        kind: 'spark',
-        x: 92,
-        y: 78,
-        vx: Math.cos(angle) * 26,
-        vy: Math.sin(angle) * 26 - 12,
-        t: 0,
-        dur: 0.6,
-      });
-    }
     // One shot on the house: the first pull is one of the page's secrets.
     window.dispatchEvent(new CustomEvent('mz:secret', { detail: 'espresso' }));
+
+    const cheer = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+
+    // Reduced motion gets the reward without the zoom: a toast, then the reset.
+    if (reduceMotion) {
+      setHint(cheer.hint);
+      jingle();
+      particles.push({ kind: 'plusone', x: 92, y: 70, t: 0, dur: 1.1 });
+      setTimeout(() => {
+        state.fading = 'out';
+      }, 900);
+      return;
+    }
+
+    setHint('here it comes…');
+    state.cine = { phase: 'approach', t: 0, star: 0, cheer };
+    // a rising sweep, because the cup is coming straight at the camera
+    beep(220, 0, 0.05, 'square', 0.02);
+    beep(330, 0.05, 0.05, 'square', 0.02);
+    beep(440, 0.1, 0.07, 'square', 0.022);
+  }
+
+  /** The four notes every 8-bit game plays when you finish something. */
+  function jingle() {
+    beep(523, 0, 0.07, 'square', 0.03);
+    beep(659, 0.08, 0.07, 'square', 0.03);
+    beep(784, 0.16, 0.07, 'square', 0.03);
+    beep(1046, 0.24, 0.26, 'square', 0.034);
+  }
+
+  /** The cup pops out of existence and the card takes the screen. */
+  function levelClear() {
+    setHint(state.cine.cheer.hint);
+    jingle();
+    for (let i = 0; i < 14; i += 1) {
+      const angle = (i / 14) * Math.PI * 2;
+      particles.push({
+        kind: 'spark',
+        top: true,
+        size: 3,
+        x: CINE.x,
+        y: CINE.y - 5 * CINE.s,
+        vx: Math.cos(angle) * 58,
+        vy: Math.sin(angle) * 46,
+        t: 0,
+        dur: 0.8,
+      });
+    }
   }
 
   function resetScene() {
@@ -308,14 +390,60 @@ function init() {
       lock: 0,
       lever: 0,
       pour: 0,
+      cine: null,
     });
     setHint(HINTS[STEP.BEANS]);
+  }
+
+  /**
+   * The drink sequence, one beat at a time. It owns the scene until the
+   * blackout takes over, so every other branch in update() stays parked.
+   */
+  function updateCinematic(dt) {
+    const c = state.cine;
+    c.t += dt;
+
+    if (c.phase === 'approach' && c.t >= CINE.approach) {
+      c.phase = 'hold';
+      c.t = 0;
+    } else if (c.phase === 'hold' && c.t >= CINE.hold) {
+      c.phase = 'clear';
+      c.t = 0;
+      levelClear();
+    } else if (c.phase === 'clear') {
+      // three stars, landing one at a time, each with its own little ding
+      while (c.star < 3 && c.t >= 0.6 + c.star * 0.22) {
+        beep([1319, 1568, 1976][c.star], 0, 0.07, 'square', 0.026);
+        c.star += 1;
+      }
+      if (c.t >= CINE.clear) {
+        c.phase = 'gone'; // the blackout carries it home from here
+        state.fading = 'out';
+      }
+    }
+
+    // Steam off a cup this close reads as heat, so it gets bigger wisps.
+    if ((c.phase === 'approach' || c.phase === 'hold') && Math.random() < dt * 9) {
+      const pose = cupPose();
+      particles.push({
+        kind: 'steam',
+        top: true,
+        size: 4,
+        rise: 26,
+        x: pose.x - 14 + Math.random() * 28,
+        y: pose.y - 10 * pose.s,
+        t: 0,
+        dur: 1.2,
+      });
+    }
   }
 
   /* -------------------------------------------------------------- update */
 
   function update(dt) {
     state.time += dt;
+
+    if (state.cine) updateCinematic(dt);
 
     // Beans in flight own the BEANS → GRIND transition.
     if (state.step === STEP.BEANS && state.busy && !particles.some((p) => p.kind === 'bean')) {
@@ -387,7 +515,7 @@ function init() {
     }
 
     // A served cup breathes; so does the machine's relief valve, sometimes.
-    if (!reduceMotion && state.step === STEP.SERVE && Math.random() < dt * 4) {
+    if (!reduceMotion && !state.cine && state.step === STEP.SERVE && Math.random() < dt * 4) {
       particles.push({ kind: 'steam', x: 90 + Math.random() * 5, y: 74, t: 0, dur: 1.4 });
     }
     if (!reduceMotion && Math.random() < dt * 0.25) {
@@ -599,6 +727,7 @@ function init() {
 
   function drawCup() {
     if (state.lock < 1) return; // the cup arrives with the portafilter
+    if (state.cine) return; // …and leaves the counter once you pick it up
     // demitasse, cutaway view so the shot has somewhere visible to go
     px(86, 76, 2, 8, C.cream);
     px(96, 76, 2, 8, C.cream);
@@ -619,9 +748,143 @@ function init() {
     }
   }
 
-  function drawParticles() {
+  /**
+   * Where the big cup is this frame, in canvas pixels: anchor at the foot,
+   * `s` game-pixels per cup unit, `dim` how far the café behind it has faded
+   * out of the way. Past the flash the cup is simply gone.
+   */
+  function cupPose() {
+    const c = state.cine;
+    if (c.phase === 'approach') {
+      const k = Math.min(1, c.t / CINE.approach);
+      const e = easeOut(k);
+      return {
+        x: 92 + (CINE.x - 92) * e,
+        y: 85 + (CINE.y - 85) * e,
+        s: 1 + (CINE.s - 1) * easeOutBack(k),
+        alpha: 1,
+        dim: Math.min(1, k * 1.5) * 0.8,
+      };
+    }
+    if (c.phase === 'hold') {
+      // it breathes for a beat, then rushes the camera and is gone
+      const k = Math.min(1, c.t / CINE.hold);
+      return {
+        x: CINE.x,
+        y: CINE.y + Math.sin(c.t * 4) * 0.6,
+        s: CINE.s + 2.6 * k ** 3,
+        alpha: 1,
+        dim: 0.8,
+      };
+    }
+    return { x: CINE.x, y: CINE.y, s: CINE.s, alpha: 0, dim: 0.86 };
+  }
+
+  /**
+   * The cup, drawn one cup-unit-tall row at a time so it stays pixel-crisp at
+   * any scale instead of asking canvas to resample anything.
+   */
+  function drawBigCup(pose) {
+    if (pose.alpha <= 0) return;
+    const row = (ly, x0, x1, color) => {
+      const ax = Math.round(pose.x + x0 * pose.s);
+      const bx = Math.round(pose.x + x1 * pose.s);
+      const ay = Math.round(pose.y + ly * pose.s);
+      const by = Math.round(pose.y + (ly + 1) * pose.s);
+      ctx.fillStyle = color;
+      ctx.fillRect(ax, ay, bx - ax, by - ay);
+    };
+
+    ctx.globalAlpha = pose.alpha;
+
+    // handle: a C of ceramic hung off the right wall
+    row(-9, 6, 9, C.cream);
+    for (let y = -8; y <= -4; y += 1) row(y, 8, 9, C.cupShade);
+    row(-3, 6, 9, C.cupShade);
+
+    // walls, with the inside of the cup in shadow behind the shot
+    for (let y = -10; y <= -1; y += 1) {
+      row(y, -5, 5, C.cupDark);
+      row(y, -6, -5, C.cream);
+      row(y, 5, 6, C.cupShade);
+    }
+    row(-2, -5, 5, C.cupHollow); // shadow pooling at the bottom
+    row(-1, -5, 5, C.cupHollow);
+    row(-11, -6, 6, C.cream); // the rim, seen a touch from above
+
+    // the shot: nine rows of it, one of headspace under the rim
+    for (let i = 0; i < 9; i += 1) {
+      row(-1 - i, -5, 5, i === 8 ? C.crema : C.espresso);
+    }
+    row(-9, -3, -1, C.cremaLit); // a glint on the crema
+
+    row(0, -5, 5, C.cupShade); // foot
+    row(1, -9, 9, C.cream); // saucer
+    row(2, -7, 7, C.cupDark);
+
+    ctx.globalAlpha = 1;
+  }
+
+  /* ------------------------------------------------------------ level clear */
+
+  /** 4×5 glyphs, centred on `cx`, at whole-pixel scale. */
+  function text(str, cx, y, scale, color) {
+    const advance = (GLYPH_W + 1) * scale;
+    const left = Math.round(cx - (str.length * advance - scale) / 2);
+    str.split('').forEach((ch, i) => {
+      const glyph = FONT[ch];
+      if (!glyph) return;
+      for (let r = 0; r < 5; r += 1) {
+        for (let c = 0; c < GLYPH_W; c += 1) {
+          if (glyph[r * GLYPH_W + c] === '1') px(left + i * advance + c * scale, y + r * scale, scale, scale, color);
+        }
+      }
+    });
+  }
+
+  /**
+   * The card that drops in once the cup is gone: a flash, a shout in Italian,
+   * three stars punched in one by one, and the tally. Level cleared.
+   */
+  function drawClearCard(c) {
+    const k = c.t;
+    if (k < 0.2) {
+      ctx.globalAlpha = (1 - k / 0.2) * 0.85;
+      px(0, 0, W, H, C.cream);
+      ctx.globalAlpha = 1;
+    }
+
+    const y = Math.round(-50 + 70 * easeOutBack(Math.min(1, k / 0.4)));
+
+    px(4, y, 120, 48, C.plastic); // the card, bordered like a dialogue box
+    px(4, y, 120, 1, C.cream);
+    px(4, y + 47, 120, 1, C.cream);
+    px(4, y, 1, 48, C.cream);
+    px(123, y, 1, 48, C.cream);
+    px(6, y + 2, 116, 1, C.plasticLit);
+
+    text(c.cheer.word, 64, y + 7, 2, C.brass);
+
+    for (let i = 0; i < c.star; i += 1) {
+      const age = Math.min(1, (k - (0.6 + i * 0.22)) / 0.18);
+      const size = age < 0.35 ? 3 : 2; // punched in oversized, then settling
+      const cx = 64 + (i - 1) * 16;
+      STAR.forEach((line, r) => {
+        for (let col = 0; col < 5; col += 1) {
+          if (line[col] === '1') {
+            px(cx - size * 2.5 + col * size, y + 26 - size * 2.5 + r * size, size, size, C.brass);
+          }
+        }
+      });
+      px(cx - 1, y + 25, 2, 2, C.cream); // the glint in the middle
+    }
+
+    if (k > 1.2) text(`SHOT ${String(state.shots).padStart(3, '0')}`, 64, y + 37, 1, C.cream);
+  }
+
+  function drawParticles(top) {
     particles.forEach((p) => {
-      if (p.t < 0) return;
+      if (p.t < 0 || Boolean(p.top) !== top) return;
       const k = Math.min(1, p.t / p.dur);
       if (p.kind === 'bean' || p.kind === 'grounds') {
         const x = p.from[0] + (p.to[0] - p.from[0]) * k;
@@ -629,20 +892,23 @@ function init() {
         const y = base - Math.sin(k * Math.PI) * (p.from[1] - p.peak);
         px(x, y, 2, 2, p.kind === 'bean' ? C.bean : C.grounds);
       } else if (p.kind === 'steam') {
+        const size = p.size || 2;
         ctx.globalAlpha = 0.55 * (1 - k);
-        px(p.x + Math.sin((p.t + p.x) * 5) * 2, p.y - k * 14, 2, 2, C.steelLit);
+        px(p.x + Math.sin((p.t + p.x) * 5) * 2, p.y - k * (p.rise || 14), size, size, C.steelLit);
         ctx.globalAlpha = 1;
       } else if (p.kind === 'spark') {
+        const size = p.size || 2;
         ctx.globalAlpha = 1 - k;
-        px(p.x + p.vx * p.t, p.y + p.vy * p.t + 30 * p.t * p.t, 2, 2, C.brass);
+        px(p.x + p.vx * p.t, p.y + p.vy * p.t + 30 * p.t * p.t, size, size, C.brass);
         ctx.globalAlpha = 1;
       } else if (p.kind === 'plusone') {
+        const s = p.s || 1;
         ctx.globalAlpha = 1 - k;
         const x = p.x;
-        const y = p.y - k * 12;
-        px(x, y + 1, 3, 1, C.brass); // +
-        px(x + 1, y, 1, 3, C.brass);
-        px(x + 5, y, 1, 3, C.brass); // 1
+        const y = p.y - k * 12 * s;
+        px(x, y + s, 3 * s, s, C.brass); // +
+        px(x + s, y, s, 3 * s, C.brass);
+        px(x + 5 * s, y, s, 3 * s, C.brass); // 1
         ctx.globalAlpha = 1;
       }
     });
@@ -675,7 +941,19 @@ function init() {
     drawMachine();
     drawCup();
     drawPortafilter();
-    drawParticles();
+    drawParticles(false);
+    // Once the cup is in your hand the café steps back and the cup takes over.
+    if (state.cine) {
+      const pose = cupPose();
+      ctx.globalAlpha = pose.dim;
+      px(0, 0, W, H, C.bg);
+      ctx.globalAlpha = 1;
+      drawBigCup(pose);
+      drawParticles(true);
+      // the card stays up through the blackout, so it dims out instead of
+      // being yanked off the screen a beat before the café returns
+      if (state.cine.phase === 'clear' || state.cine.phase === 'gone') drawClearCard(state.cine);
+    }
     drawArrow();
     drawProgress();
     if (state.fade > 0) {

@@ -21,7 +21,6 @@ const SECRETS = [
   { id: 'konami', icon: 'dpad', color: '#e60012', label: 'ARCADE MODE', hint: '↑↑↓↓←→←→ B A' },
   { id: 'dmg', icon: 'gbConsole', color: '#9bbc0f', label: 'DMG MODE', hint: 'the screen has a second mode' },
   { id: 'cart', icon: 'cartridge', color: '#b0a8c8', label: 'BLEW THE DUST OUT', hint: 'a cartridge sits loose' },
-  { id: 'bug', icon: 'bug', color: '#2ed573', label: 'BUG SQUASHED', hint: 'something skitters past' },
   { id: 'sound', icon: 'note', color: '#7b68ee', label: 'SOUND TEST', hint: 'the footer can sing' },
   { id: 'espresso', icon: 'coffeeCup', color: '#e8e4f4', label: 'GOD SHOT', hint: 'the sidebar makes coffee' },
   { id: 'koi', icon: 'fish', color: '#7cc7f5', label: 'THE SCREEN HOLDS WATER', hint: 'tap the dot matrix glass' },
@@ -122,9 +121,10 @@ function spawnCat() {
   const bubble = cat.querySelector('.oneko-bubble');
   const statusReadout = document.getElementById('cat-status');
 
-  // The sheet is an 8×4 grid of 32px cells, shown at the site's 2× pixel scale.
+  // The sheet is an 8×4 grid of 32px cells, scaled a notch under the site's
+  // 2× pixel grid so the cat reads as a critter, not a mascot.
   const CELL = 32;
-  const ZOOM = 2;
+  const ZOOM = 1.8;
   const BOX_W = CELL * ZOOM;
   const BOX_H = CELL * ZOOM;
   body.style.width = `${BOX_W}px`;
@@ -149,17 +149,14 @@ function spawnCat() {
     NW: [[1, 0], [1, 1]],
   };
 
-  const RUN_AT = 140; // px/s — faster than this cycles the gait at sprint tempo
-
   const rand = (lo, hi) => lo + Math.random() * (hi - lo);
 
   const state = {
     mode: 'sleep',
-    x: 0, y: 0, vx: 0, vy: 0,
+    x: 0, y: 0,
     tx: 0, ty: 0,
     pose: '', poseFrame: 0, gait: 0,
-    heading: 'S', headingCandidate: '', headingHeld: 0,
-    frameTimer: 0,
+    heading: 'S',
     modeTime: 0, until: 0,
     awake: 0,           // seconds since it last slept — drives the pull back to bed
     squash: 0,          // seconds of arrival-squash left
@@ -167,7 +164,11 @@ function spawnCat() {
     zTimer: 0, zNext: rand(2, 4),
     flickTimer: 0, flickNext: rand(1.6, 3.4), flicking: 0,
     plan: null,
-    pointer: { x: window.innerWidth / 2, y: window.innerHeight / 2, seen: false },
+    pointer: {
+      x: window.scrollX + window.innerWidth / 2,
+      y: window.scrollY + window.innerHeight / 2,
+      seen: false,
+    },
   };
 
   const setPose = (name, frame = 0) => {
@@ -185,7 +186,9 @@ function spawnCat() {
   };
 
   /**
-   * Sleeping spots hug the viewport edges, and each candidate is vetted with
+   * Sleeping spots hug the edges of whatever part of the page is currently in
+   * view (the cat lives in document coordinates now, so it stays put and
+   * scrolls away with the cards). Each candidate is vetted with
    * elementsFromPoint so the cat never dozes off on top of a link or button.
    */
   function pickSleepSpot() {
@@ -202,24 +205,27 @@ function spawnCat() {
       { x: m, y: m + 48 },
     ].sort(() => Math.random() - 0.5);
     for (const spot of spots) {
+      // elementsFromPoint wants viewport coordinates, so vet before offsetting.
       const busy = document.elementsFromPoint(spot.x + BOX_W / 2, spot.y + BOX_H / 2)
         .some((el) => el !== cat && !cat.contains(el)
-          && el.closest?.('a, button, input, select, textarea, summary, [role="button"], canvas, .wild-bug, .secret-toast'));
-      if (!busy) return spot;
+          && el.closest?.('a, button, input, select, textarea, summary, [role="button"], canvas, .secret-toast'));
+      if (!busy) return { x: spot.x + window.scrollX, y: spot.y + window.scrollY };
     }
-    return { x: w - BOX_W - m, y: h - BOX_H - m };
+    return { x: window.scrollX + w - BOX_W - m, y: window.scrollY + h - BOX_H - m };
   }
 
   function wanderTarget() {
     const w = window.innerWidth;
     const h = window.innerHeight;
+    const sx = window.scrollX;
+    const sy = window.scrollY;
     for (let tries = 0; tries < 8; tries += 1) {
-      const x = rand(16, w - BOX_W - 16);
-      const y = rand(64, h - BOX_H - 16);
+      const x = sx + rand(16, w - BOX_W - 16);
+      const y = sy + rand(64, h - BOX_H - 16);
       const trip = Math.hypot(x - state.x, y - state.y);
       if (trip > 130 && trip < 520) return { x, y };
     }
-    return { x: rand(16, w - BOX_W - 16), y: rand(64, h - BOX_H - 16) };
+    return { x: sx + rand(16, w - BOX_W - 16), y: sy + rand(64, h - BOX_H - 16) };
   }
 
   function enter(mode) {
@@ -277,63 +283,42 @@ function spawnCat() {
     }
   }
 
-  /** Ease the velocity toward the target — the lag IS the animal. */
-  function locomote(delta, maxSpeed) {
-    const dx = state.tx - state.x;
-    const dy = state.ty - state.y;
-    const dist = Math.hypot(dx, dy);
-    const arrive = Math.min(1, dist / 110); // brake on approach
-    const want = dist > 2 ? Math.min(maxSpeed, 28 + maxSpeed * arrive) : 0;
-    const ux = dist > 0 ? dx / dist : 0;
-    const uy = dist > 0 ? dy / dist : 0;
-    const blend = Math.min(1, delta * 5);
-    state.vx += (ux * want - state.vx) * blend;
-    state.vy += (uy * want - state.vy) * blend;
-    state.x += state.vx * delta;
-    state.y += state.vy * delta;
-    return dist;
-  }
-
   /**
-   * Velocity → compass heading → sheet row. All eight directions exist as
-   * drawn frames, so no mirroring; a heading only commits after ~90ms so the
-   * sprite doesn't flicker when the path crosses a sector boundary.
+   * Movement is the classic oneko clock: on every 100ms tick the cat hops a
+   * fixed step straight at its target and the gait advances one frame. No
+   * velocity, no easing — direction changes land instantly, which is exactly
+   * the shifty, mechanical charm of the original.
    */
+  const STEP = {
+    follow: 22, // flat out after the cursor
+    trot: 12, // closing in
+    shy: 11,
+    wander: 7, // an amble
+    return: 9,
+  };
+
   const SECTOR = {
     0: 'E', 1: 'SE', 2: 'S', 3: 'SW', 4: 'W',
     '-1': 'NE', '-2': 'N', '-3': 'NW', '-4': 'W',
   };
 
-  function moveSprite(delta) {
-    const speed = Math.hypot(state.vx, state.vy);
-    if (speed < 14) {
-      setPose('idle');
-      return;
-    }
-
-    const sector = Math.round(Math.atan2(state.vy, state.vx) / (Math.PI / 4));
-    const candidate = SECTOR[sector];
-    if (candidate !== state.heading) {
-      if (candidate === state.headingCandidate) {
-        state.headingHeld += delta;
-        if (state.headingHeld > 0.09) state.heading = candidate;
-      } else {
-        state.headingCandidate = candidate;
-        state.headingHeld = 0;
-      }
-    }
-
-    // One stride, two tempos: an ambling walk below RUN_AT, the classic
-    // oneko sprint cadence above it.
-    const interval = speed > RUN_AT
-      ? Math.max(0.09, 14 / speed)
-      : Math.min(0.32, Math.max(0.16, 18 / speed));
-    state.frameTimer += delta;
-    if (state.frameTimer >= interval) {
-      state.frameTimer -= interval;
-      state.gait += 1;
-    }
+  /** One tick of travel. Returns the distance still to cover (0 = arrived). */
+  function moveTick(stepPx) {
+    const dx = state.tx - state.x;
+    const dy = state.ty - state.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1) return 0;
+    state.heading = SECTOR[Math.round(Math.atan2(dy, dx) / (Math.PI / 4))];
+    state.gait += 1;
     setPose(state.heading, state.gait);
+    if (dist <= stepPx) {
+      state.x = state.tx;
+      state.y = state.ty;
+      return 0;
+    }
+    state.x += (dx / dist) * stepPx;
+    state.y += (dy / dist) * stepPx;
+    return dist - stepPx;
   }
 
   /** A pixel "z" that drifts up off the sleeping loaf. */
@@ -348,9 +333,7 @@ function spawnCat() {
   }
 
   const arrive = () => {
-    state.squash = 0.14;
-    state.vx = 0;
-    state.vy = 0;
+    state.squash = 0.2;
   };
 
   /** The idle decider — the older the wake, the stronger the pull back to bed. */
@@ -370,8 +353,8 @@ function spawnCat() {
   }
 
   window.addEventListener('pointermove', (event) => {
-    state.pointer.x = event.clientX;
-    state.pointer.y = event.clientY;
+    state.pointer.x = event.pageX;
+    state.pointer.y = event.pageY;
     state.pointer.seen = true;
   }, { passive: true });
 
@@ -405,30 +388,30 @@ function spawnCat() {
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      state.x = Math.min(state.x, window.innerWidth - BOX_W - 6);
-      state.y = Math.min(state.y, window.innerHeight - BOX_H - 6);
+      state.x = Math.min(state.x, document.documentElement.clientWidth - BOX_W - 6);
+      state.y = Math.min(state.y, document.documentElement.scrollHeight - BOX_H - 6);
       if (state.mode === 'sleep' || state.mode === 'curl') enter('return');
     }, 250);
   });
 
-  let previous = performance.now();
-  function step(now) {
-    const delta = Math.min(0.05, (now - previous) / 1000);
-    previous = now;
-    state.modeTime += delta;
-    if (state.mode !== 'sleep') state.awake += delta;
+  const TICK = 0.1; // the oneko heartbeat
+
+  function tick() {
+    state.modeTime += TICK;
+    if (state.mode !== 'sleep') state.awake += TICK;
+    if (state.squash > 0) state.squash -= TICK;
 
     switch (state.mode) {
       case 'sleep': {
         setPose('sleep', Math.floor(state.modeTime / 1.1));
-        state.zTimer += delta;
+        state.zTimer += TICK;
         if (state.zTimer > state.zNext) {
           state.zTimer = 0;
           state.zNext = rand(2.4, 4.2);
           floatZ();
         }
         // It wakes itself now and then — average of ~40s once it's settled in.
-        if (state.modeTime > 14 && Math.random() < delta / 40) {
+        if (state.modeTime > 14 && Math.random() < TICK / 40) {
           state.plan = Math.random() < 0.72 ? 'wander' : 'shy';
           enter('wake');
         }
@@ -445,10 +428,10 @@ function spawnCat() {
       }
 
       case 'idle': {
-        state.flickTimer += delta;
+        state.flickTimer += TICK;
         if (state.flicking > 0) {
           // A single wash of the paw — three frames, then back to the loaf.
-          state.flicking -= delta;
+          state.flicking -= TICK;
           setPose('groom', Math.floor((0.9 - state.flicking) / 0.3));
         } else {
           setPose('idle');
@@ -463,15 +446,14 @@ function spawnCat() {
       }
 
       case 'groom': {
-        setPose('groom', Math.floor(state.modeTime / 0.28));
+        setPose('groom', Math.floor(state.modeTime / 0.3));
         if (state.modeTime >= state.until) enter('idle');
         break;
       }
 
       case 'wander': {
-        const dist = locomote(delta, 78);
-        moveSprite(delta);
-        if (dist < 6 || state.modeTime > state.until) {
+        const left = moveTick(STEP.wander);
+        if (left === 0 || state.modeTime > state.until) {
           arrive();
           if (Math.random() < 0.3) state.plan = 'wander';
           enter('idle');
@@ -489,17 +471,12 @@ function spawnCat() {
         if (gap > keep + 14) {
           state.tx = state.x + px * ((gap - keep) / gap);
           state.ty = state.y + py * ((gap - keep) / gap);
-          const eager = state.mode === 'follow';
-          const maxSpeed = eager ? (gap > 260 ? 250 : gap > 120 ? 165 : 110) : 105;
-          locomote(delta, maxSpeed);
-          moveSprite(delta);
+          moveTick(state.mode !== 'follow' ? STEP.shy : gap > 200 ? STEP.follow : STEP.trot);
         } else {
           // Close enough: settle and watch, with the odd wash of a paw.
-          state.vx *= 0.7;
-          state.vy *= 0.7;
-          state.flickTimer += delta;
+          state.flickTimer += TICK;
           if (state.flicking > 0) {
-            state.flicking -= delta;
+            state.flicking -= TICK;
             setPose('groom', Math.floor((0.9 - state.flicking) / 0.3));
           } else {
             setPose('idle');
@@ -517,9 +494,8 @@ function spawnCat() {
       }
 
       case 'return': {
-        const dist = locomote(delta, 92);
-        bob = moveSprite(delta);
-        if (dist < 5 || state.modeTime > state.until) {
+        const left = moveTick(STEP.return);
+        if (left === 0 || state.modeTime > state.until) {
           arrive();
           enter('curl');
         }
@@ -536,22 +512,29 @@ function spawnCat() {
         break;
     }
 
-    // Keep it on screen no matter what the viewport does.
-    state.x = Math.max(4, Math.min(window.innerWidth - BOX_W - 4, state.x));
-    state.y = Math.max(4, Math.min(window.innerHeight - BOX_H - 4, state.y));
+    // Keep it inside the page no matter what the document does.
+    state.x = Math.max(4, Math.min(document.documentElement.clientWidth - BOX_W - 4, state.x));
+    state.y = Math.max(4, Math.min(document.documentElement.scrollHeight - BOX_H - 4, state.y));
+  }
 
-    // The frames carry the animation now; the only transforms left are the
-    // arrival squash and (via CSS) the pet-bounce, which owns the body while
-    // it plays.
-    if (now >= state.happyUntil) {
-      if (state.squash > 0) {
-        state.squash -= delta;
-        body.style.transform = 'scaleY(0.9)';
-      } else if (body.style.transform) {
-        body.style.transform = '';
-      }
+  let previous = performance.now();
+  let bank = 0;
+  function step(now) {
+    // Bank real time, spend it in fixed ticks; the cap stops a background
+    // tab from fast-forwarding the cat across the screen on return.
+    bank = Math.min(bank + (now - previous) / 1000, 0.4);
+    previous = now;
+    while (bank >= TICK) {
+      bank -= TICK;
+      tick();
     }
 
+    // The frames carry the animation; the only transforms left are the
+    // arrival squash and (via CSS) the pet-bounce, which owns the body
+    // while it plays.
+    if (performance.now() >= state.happyUntil) {
+      body.style.transform = state.squash > 0 ? 'scaleY(0.9)' : '';
+    }
     cat.style.transform = `translate3d(${Math.round(state.x)}px, ${Math.round(state.y)}px, 0)`;
     requestAnimationFrame(step);
   }
@@ -639,7 +622,10 @@ function wireMoon() {
   const field = document.createElement('div');
   field.className = 'starfield';
   field.setAttribute('aria-hidden', 'true');
-  field.innerHTML = Array.from({ length: 46 }, () => {
+  // The field covers the whole document now, so keep the per-screen density:
+  // ~46 stars for every viewport of scroll, not 46 stretched over the page.
+  const screens = Math.max(1, Math.round(document.body.scrollHeight / window.innerHeight));
+  field.innerHTML = Array.from({ length: 46 * screens }, () => {
     const size = Math.random() < 0.22 ? 3 : Math.random() < 0.6 ? 2 : 1;
     return `<i style="left:${(Math.random() * 100).toFixed(2)}%;top:${(Math.random() * 100).toFixed(2)}%;
       width:${size}px;height:${size}px;animation-delay:${(Math.random() * 4).toFixed(2)}s;
@@ -775,79 +761,6 @@ function wireCartridge() {
     }, 600);
     unlock('cart');
   });
-}
-
-/* -------------------------------------------------------------- wild bug */
-
-let openBattle = null;
-
-/** The dialogue box every 8-bit RPG opened a fight with, typed one char at a time. */
-function battle(lines) {
-  openBattle?.remove();
-  const box = document.createElement('div');
-  box.className = 'battle-box';
-  box.setAttribute('role', 'status');
-  box.innerHTML = '<p></p><span class="battle-cue" aria-hidden="true">▼</span>';
-  document.body.append(box);
-  openBattle = box;
-  requestAnimationFrame(() => box.classList.add('is-in'));
-
-  const target = box.querySelector('p');
-  let index = 0;
-
-  const nextLine = () => {
-    if (index >= lines.length) {
-      box.classList.add('is-out');
-      setTimeout(() => {
-        box.remove();
-        if (openBattle === box) openBattle = null;
-      }, 400);
-      return;
-    }
-    const line = lines[index];
-    index += 1;
-    let char = 0;
-    const tick = setInterval(() => {
-      target.textContent = line.slice(0, char += 1);
-      if (char < line.length) return;
-      clearInterval(tick);
-      setTimeout(nextLine, 1100);
-    }, 34);
-  };
-
-  nextLine();
-}
-
-function wildBugs() {
-  const spawn = () => {
-    const bug = document.createElement('button');
-    bug.type = 'button';
-    bug.className = 'wild-bug';
-    bug.title = 'a wild bug';
-    bug.setAttribute('aria-label', 'A wild bug skitters past. Click to squash it.');
-    bug.innerHTML = spriteSvg('bug', { scale: 2, color: '#2ed573' });
-
-    bug.addEventListener('click', () => {
-      const rect = bug.getBoundingClientRect();
-      burst(rect.left + rect.width / 2, rect.top, '#e60012', 12, ['sparkle', 'sparkle']);
-      bug.remove();
-      battle([
-        'A WILD BUG APPEARED!',
-        'MICHAEL used PATCH!',
-        "IT'S SUPER EFFECTIVE!",
-        'The BUG fled to staging.',
-      ]);
-      unlock('bug');
-    }, { once: true });
-
-    document.body.append(bug);
-    setTimeout(() => bug.remove(), 15500);
-  };
-
-  setTimeout(function loop() {
-    if (!document.hidden) spawn();
-    setTimeout(loop, 34000 + Math.random() * 26000);
-  }, 20000);
 }
 
 /* ------------------------------------------------------------ sound test */
@@ -1013,7 +926,7 @@ function greet() {
   const art = [
     '',
     '   /\\_/\\   michael zhou // portfolio',
-    '  ( o.o )  there are 11 secrets on this page.',
+    '  ( o.o )  there are 10 secrets on this page.',
     '   > ^ <   konami code. pet the cat. blow on the cartridge.',
     '',
   ].join('\n');
@@ -1031,7 +944,6 @@ wireSoundTest();
 wireCursorBlock();
 wireKonami();
 hoverDelights();
-wildBugs();
 shootingStars();
 hitCounter();
 greet();
