@@ -123,7 +123,9 @@
               Touch controls for the race. Hidden on hover-capable machines —
               the keyboard is the controller there — and shown by the CSS only
               when the pointer is a finger. app.js wires each pad straight into
-              the same key state the arrow keys set.
+              the same key state the arrow keys set. The car is steered in four
+              directions, not driven with pedals, so the pads are the four
+              arrows the keyboard offers and nothing more.
             -->
             <div class="race-touch" id="race-touch">
               <div class="touch-cluster">
@@ -131,8 +133,8 @@
                 <button class="touch-key" type="button" data-control="right" aria-label="Steer right">&#9654;</button>
               </div>
               <div class="touch-cluster">
-                <button class="touch-key touch-brake" type="button" data-control="down" aria-label="Brake">brk</button>
-                <button class="touch-key touch-gas" type="button" data-control="up" aria-label="Accelerate">gas</button>
+                <button class="touch-key" type="button" data-control="up" aria-label="Steer up">&#9650;</button>
+                <button class="touch-key" type="button" data-control="down" aria-label="Steer down">&#9660;</button>
               </div>
             </div>
             <div class="race-readout">

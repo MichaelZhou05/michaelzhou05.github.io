@@ -872,18 +872,14 @@ main section {
   animation: pulse 1.8s ease-in-out infinite;
 }
 
-/* The power light on the case is a square lit cell, blinking on and off. */
+/* The power light on the case is a square lit cell. It sits steady: the only
+   thing on the page allowed to blink is the marker on the map. */
 .race-window-bar i {
   display: inline-block;
   width: 8px;
   height: 8px;
   margin-right: var(--s2);
   background: var(--teal);
-  animation: blink-cell 1.6s steps(1, end) infinite;
-}
-
-@keyframes blink-cell {
-  50% { opacity: 0.25; }
 }
 
 @keyframes pulse {
@@ -923,7 +919,7 @@ main section {
 }
 
 /**
- * The touch pads: steering under one thumb, pedals under the other, moulded
+ * The touch pads: left/right under one thumb, up/down under the other, moulded
  * into the case between the screen and the telemetry. Only a machine whose
  * pointer is a finger gets them — on a desktop the keyboard is the controller
  * and the strip never exists.
@@ -967,14 +963,6 @@ main section {
   cursor: pointer;
   /* A held pedal is not a scroll, a zoom, or a double tap. */
   touch-action: none;
-}
-
-.touch-gas {
-  color: var(--green);
-}
-
-.touch-brake {
-  color: var(--red);
 }
 
 /* Pressed: the button sinks flush and lights amber, like the start button. */
@@ -1747,10 +1735,10 @@ main section {
   vertical-align: -2px;
   background: var(--amber);
   box-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
-  animation: blink 1s steps(1) infinite;
 }
 
-/* Lives here now: the contact prompt is the last cursor on the page. */
+/* Kept for the do-not-press panel, which is the one place a light is meant to
+   read as an alarm. The contact cursor below just sits there. */
 @keyframes blink {
   50% { opacity: 0; }
 }
@@ -1986,7 +1974,6 @@ main section {
   height: 6px;
   margin-right: var(--s1);
   background: #9bbc0f;
-  animation: blink-cell 1.6s steps(1, end) infinite;
 }
 
 .locale-coords {
@@ -2125,7 +2112,7 @@ main section {
  */
 .dnp-block.is-warned::before { animation: dnp-tape 1.6s linear infinite; }
 .dnp-block.is-warned::after { animation: dnp-tape 1.6s linear infinite reverse; }
-.dnp-block.is-warned .dnp-status i { animation-duration: 0.7s; }
+.dnp-block.is-warned .dnp-status i { animation: blink 0.7s steps(1) infinite; }
 
 .dnp-block.is-critical { border-color: var(--fami-red); }
 .dnp-block.is-critical::before { animation-duration: 0.55s; }
@@ -2146,8 +2133,8 @@ main section {
   75% { transform: translateX(3px); }
 }
 
-/* The armed light. Same lamp as the map's you-are-here dot, slower blink —
-   a heartbeat, not an alarm. */
+/* The armed light. At rest it just sits lit — armed is a state, not an alarm.
+   It only starts blinking once you have ignored the sign and pressed. */
 .dnp-block .dnp-status {
   display: flex;
   align-items: center;
@@ -2164,7 +2151,6 @@ main section {
   height: 8px;
   background: var(--fami-red);
   box-shadow: 0 0 8px color-mix(in srgb, var(--fami-red) 80%, transparent);
-  animation: blink 1.4s steps(1) infinite;
 }
 
 /* The housing: a recessed well of worn painted striping the button sits
@@ -2526,7 +2512,7 @@ main section {
 
 /**
  * The coffee break. The espresso game gets the racetrack's whole costume at
- * sidebar scale: moulded bezel, a title bar with a blinking power cell, the
+ * sidebar scale: moulded bezel, a title bar with a lit power cell, the
  * dot-matrix sheet over the glass. The canvas is 128×104 game pixels and the
  * CSS blows it up to whatever the rail affords, exactly like the Ring.
  *
@@ -2570,7 +2556,6 @@ main section {
   height: 6px;
   margin-right: var(--s1);
   background: var(--teal);
-  animation: blink-cell 1.6s steps(1, end) infinite;
 }
 
 .espresso-shots {
@@ -2911,22 +2896,11 @@ footer {
      clipped to a sliver at the bottom-right corner. Pin it to the viewport. */
   width: 100%;
   height: 100%;
+  /* Behind the page shell (z 2) on every width. The cards are 87% opaque, so
+     the creature ghosts through them rather than swimming over the console —
+     it belongs to the water behind the page, not on top of the game. */
   z-index: 1;
   pointer-events: none;
-}
-
-/**
- * On the one-column layout the cards cover the whole viewport, and a creature
- * swimming behind them is a secret nobody sees. There it surfaces instead:
- * above the glass, blended additively so its dots ride over the cards as pure
- * light — text stays readable, and the swim is actually watchable on a phone.
- * Below the back-to-top button and every toast, so chrome still wins.
- */
-@media (max-width: 960px) {
-  .swim-layer {
-    z-index: 50;
-    mix-blend-mode: screen;
-  }
 }
 
 body.stars-on .starfield {

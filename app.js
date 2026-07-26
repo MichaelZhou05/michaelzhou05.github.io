@@ -379,8 +379,8 @@ window.addEventListener('blur', () => Object.keys(keys).forEach((key) => { keys[
  * Touch controls. The pads below the screen (revealed by the stylesheet on
  * coarse pointers) drive the same `keys` state the keyboard does, so the
  * physics cannot tell a thumb from an arrow key. Each press captures its own
- * pointer: you can hold GAS with one thumb and steer with the other, and a
- * finger that slides off a pad still releases it.
+ * pointer: you can hold two directions at once for a diagonal, and a finger
+ * that slides off a pad still releases it.
  */
 const touchPad = $('#race-touch');
 if (touchPad) {
@@ -408,7 +408,7 @@ if (touchPad) {
 
 /** What the overlay tells you to drive with — thumbs or keys. */
 const COARSE_POINTER = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-const CONTROLS_NOTE = COARSE_POINTER ? 'STEER AND GAS BELOW THE SCREEN' : 'ARROW KEYS OR WASD';
+const CONTROLS_NOTE = COARSE_POINTER ? 'ARROW PADS BELOW THE SCREEN' : 'ARROW KEYS OR WASD';
 
 /* ---------------------------------- flow ---------------------------------- */
 
@@ -882,10 +882,12 @@ function drawMinimap() {
     const pose = racer.kind === 'replay' ? racer.pose : pointAtDistance(racer.distance);
     return { cell: minimap.project(pose.x, pose.y), color: racer.color };
   });
-  // Yours blinks, so it reads as the live one among three otherwise equal dots.
+  // Yours is the red one. It used to blink to mark itself as live, but the
+  // colour already does that and the flashing only fought the track for
+  // attention.
   blips.push({
     cell: minimap.project(player.x, player.y),
-    color: Math.sin(performance.now() / 220) > 0 ? '#e60012' : '#e8e4f4',
+    color: '#e60012',
   });
 
   // Every pad first, then every dot: on the grid three cars start a metre apart,

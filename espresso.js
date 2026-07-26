@@ -822,8 +822,9 @@ function init() {
     px(113 + Math.cos(sweep) * 2, 50 + Math.sin(sweep) * 2, 1, 1, C.crema);
     px(113, 50, 1, 1, C.steelLit);
 
-    // status lights: red means on, green means espresso
-    px(103, 42, 2, 2, Math.sin(state.time * 2.2) > -0.6 ? C.red : '#57100f');
+    // status lights: red means on, green means espresso. Both sit steady —
+    // a machine that is on says so once, it does not keep announcing it.
+    px(103, 42, 2, 2, C.red);
     px(103, 46, 2, 2, state.step >= STEP.SERVE ? C.green : '#0f3a24');
 
     px(104, 62, 16, 8, C.plastic); // the badge plate
