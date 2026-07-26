@@ -55,7 +55,7 @@
 
   /* the print */
   --fg: #e8e4f4;
-  --fg-dim: #8a849f;
+  --fg-dim: #9d97b3;
   --plate: #b0a8c8;
 
   /* the lights */
@@ -91,7 +91,7 @@
   --text: color-mix(in srgb, var(--fg) 82%, var(--fg-dim));
   --bright: var(--fg);
   --muted: var(--fg-dim);
-  --dim: color-mix(in srgb, var(--fg-dim) 80%, var(--shell));
+  --dim: color-mix(in srgb, var(--fg-dim) 88%, var(--shell));
   --faint: var(--bezel-lit);
 
   --green: var(--indigo-lit);
@@ -177,7 +177,7 @@ body {
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='224' height='224'%3E%3Cg fill='%23ffffff' opacity='0.025'%3E%3Cg transform='translate(18 14)'%3E%3Crect x='4' y='0' width='2' height='2'/%3E%3Crect x='16' y='0' width='2' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='14' y='2' width='2' height='2'/%3E%3Crect x='4' y='4' width='14' height='2'/%3E%3Crect x='2' y='6' width='4' height='2'/%3E%3Crect x='8' y='6' width='6' height='2'/%3E%3Crect x='16' y='6' width='4' height='2'/%3E%3Crect x='0' y='8' width='22' height='2'/%3E%3Crect x='0' y='10' width='2' height='2'/%3E%3Crect x='4' y='10' width='14' height='2'/%3E%3Crect x='20' y='10' width='2' height='2'/%3E%3Crect x='0' y='12' width='2' height='2'/%3E%3Crect x='4' y='12' width='2' height='2'/%3E%3Crect x='16' y='12' width='2' height='2'/%3E%3Crect x='20' y='12' width='2' height='2'/%3E%3Crect x='6' y='14' width='4' height='2'/%3E%3Crect x='12' y='14' width='4' height='2'/%3E%3C/g%3E%3Cg transform='translate(152 34)'%3E%3Crect x='4' y='0' width='2' height='2'/%3E%3Crect x='4' y='2' width='2' height='2'/%3E%3Crect x='0' y='4' width='10' height='2'/%3E%3Crect x='4' y='6' width='2' height='2'/%3E%3Crect x='4' y='8' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(88 96) rotate(90 7 6)'%3E%3Crect x='2' y='0' width='4' height='2'/%3E%3Crect x='8' y='0' width='4' height='2'/%3E%3Crect x='0' y='2' width='14' height='2'/%3E%3Crect x='0' y='4' width='14' height='2'/%3E%3Crect x='2' y='6' width='10' height='2'/%3E%3Crect x='4' y='8' width='6' height='2'/%3E%3Crect x='6' y='10' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(176 148)'%3E%3Crect x='6' y='0' width='6' height='2'/%3E%3Crect x='6' y='2' width='2' height='2'/%3E%3Crect x='10' y='2' width='2' height='2'/%3E%3Crect x='6' y='4' width='2' height='2'/%3E%3Crect x='10' y='4' width='2' height='2'/%3E%3Crect x='0' y='6' width='8' height='2'/%3E%3Crect x='10' y='6' width='8' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='16' y='8' width='2' height='2'/%3E%3Crect x='0' y='10' width='8' height='2'/%3E%3Crect x='10' y='10' width='8' height='2'/%3E%3Crect x='6' y='12' width='2' height='2'/%3E%3Crect x='10' y='12' width='2' height='2'/%3E%3Crect x='6' y='14' width='2' height='2'/%3E%3Crect x='10' y='14' width='2' height='2'/%3E%3Crect x='6' y='16' width='6' height='2'/%3E%3C/g%3E%3Cg transform='translate(34 172) rotate(270 8 9)'%3E%3Crect x='2' y='0' width='12' height='2'/%3E%3Crect x='0' y='2' width='16' height='2'/%3E%3Crect x='0' y='4' width='2' height='2'/%3E%3Crect x='4' y='4' width='8' height='2'/%3E%3Crect x='14' y='4' width='2' height='2'/%3E%3Crect x='0' y='6' width='2' height='2'/%3E%3Crect x='4' y='6' width='8' height='2'/%3E%3Crect x='14' y='6' width='2' height='2'/%3E%3Crect x='0' y='8' width='2' height='2'/%3E%3Crect x='4' y='8' width='8' height='2'/%3E%3Crect x='14' y='8' width='2' height='2'/%3E%3Crect x='0' y='10' width='16' height='2'/%3E%3Crect x='0' y='12' width='2' height='2'/%3E%3Crect x='6' y='12' width='4' height='2'/%3E%3Crect x='14' y='12' width='2' height='2'/%3E%3Crect x='0' y='14' width='2' height='2'/%3E%3Crect x='4' y='14' width='2' height='2'/%3E%3Crect x='10' y='14' width='2' height='2'/%3E%3Crect x='14' y='14' width='2' height='2'/%3E%3Crect x='0' y='16' width='16' height='2'/%3E%3C/g%3E%3Cg transform='translate(198 96) rotate(90 5 5)'%3E%3Crect x='4' y='0' width='2' height='2'/%3E%3Crect x='4' y='2' width='2' height='2'/%3E%3Crect x='0' y='4' width='10' height='2'/%3E%3Crect x='4' y='6' width='2' height='2'/%3E%3Crect x='4' y='8' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(120 200)'%3E%3Crect x='2' y='0' width='2' height='2'/%3E%3Crect x='0' y='2' width='6' height='2'/%3E%3Crect x='2' y='4' width='2' height='2'/%3E%3C/g%3E%3Cg transform='translate(66 58)'%3E%3Crect x='2' y='0' width='2' height='2'/%3E%3Crect x='0' y='2' width='6' height='2'/%3E%3Crect x='2' y='4' width='2' height='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
     radial-gradient(ellipse at 50% -10%, #0e0d17 0%, var(--shell) 55%) var(--shell);
   background-attachment: scroll, fixed;
-  font: 400 18px / 1.55 var(--mono);
+  font: 400 19px / 1.6 var(--mono);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -656,7 +656,7 @@ main section {
 
 .lede {
   color: var(--bright);
-  font-size: 21px;
+  font-size: 22px;
   line-height: 1.5;
 }
 
@@ -673,10 +673,6 @@ main section {
   margin-bottom: 0;
 }
 
-.lede b {
-  color: var(--lime);
-}
-
 /* The boot log is a screen, so it gets the amber phosphor and the scanlines. */
 .boot-log {
   margin: var(--s5) 0 0;
@@ -685,7 +681,7 @@ main section {
   border: 2px solid var(--bezel);
   border-radius: var(--r-sm);
   background: #000000 var(--scanlines);
-  font: 400 15.5px / 1.55 var(--mono);
+  font: 400 16.5px / 1.55 var(--mono);
   text-shadow: 0 0 4px rgba(255, 176, 0, 0.55);
   white-space: pre-wrap;
 }
@@ -694,18 +690,9 @@ main section {
   display: none;
 }
 
-/**
- * Quick facts, as a star chart. A disc bullet says "list item" and nothing
- * else; here each fact gets its own square of glass with a pixel glyph behind
- * it — a floppy, a star, a ball on a tee — and a dotted line wires it to the
- * next station down its column. The glyph carries what the fact is about, so
- * the chart is doing work rather than decorating.
- *
- * The two gaps are deliberately different sizes: lines that wrap inside one
- * fact are set tighter than the body text, and the space between facts is four
- * times that. Which line belongs to which fact is then a matter of looking,
- * not of reading.
- */
+/* Quick facts: a plain two-column list. The bullet is a terminal prompt
+   character in the edge colour, so it marks the line without competing with
+   the text. */
 .facts-lead {
   margin: var(--s4) 0 var(--s3);
   color: var(--text);
@@ -714,7 +701,7 @@ main section {
 .quick-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s4) var(--s6);
+  gap: var(--s3) var(--s6);
   max-width: none;
   margin: 0;
   padding-left: 0;
@@ -723,65 +710,17 @@ main section {
 
 .quick-facts li {
   position: relative;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: var(--s3);
-  align-items: start;
   margin-bottom: 0;
+  padding-left: var(--s4);
   color: var(--text);
-  line-height: 1.32;
+  line-height: 1.4;
 }
 
-/* The wire to the next station in the same column. The last two items are the
-   feet of their columns — with five facts, one column ends a row early, and
-   both ends have to stop rather than trail into the gap. */
 .quick-facts li::before {
-  content: "";
+  content: ">";
   position: absolute;
-  left: 13px;
-  top: 30px;
-  bottom: calc(var(--s4) * -1);
-  border-left: 1px dashed var(--edge-strong);
-}
-
-.quick-facts li:nth-last-child(-n + 2)::before {
-  content: none;
-}
-
-/* A pane of the same black glass the portrait is behind, at 28px. */
-.fact-mark {
-  position: relative;
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid var(--edge);
-  background: #000000 var(--scanlines);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-/* Standing in for the sprite until `friends.js` fills the tile — and staying
-   put if it never does. */
-.fact-mark:empty::after {
-  content: "";
-  width: 4px;
-  height: 4px;
-  background: var(--indigo-lit);
-}
-
-.fact-mark svg {
-  display: block;
-}
-
-.quick-facts li:hover .fact-mark {
-  border-color: var(--indigo-lit);
-  box-shadow:
-    inset 0 0 0 1px rgba(123, 104, 238, 0.25),
-    0 0 12px rgba(123, 104, 238, 0.35);
-}
-
-.quick-facts li:hover .fact-mark svg {
-  filter: drop-shadow(0 0 5px currentColor);
+  left: 0;
+  color: var(--edge-strong);
 }
 
 .hl-lang,
@@ -882,7 +821,7 @@ main section {
 }
 
 .arrow-link {
-  font-size: 17px;
+  font-size: 18px;
 }
 
 /* --------------------------------------------------- 7. race window */
@@ -1450,7 +1389,7 @@ main section {
 
 .log-role {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* Date and caret ride together at the far end of the title row. */
@@ -1491,7 +1430,7 @@ main section {
   grid-column: 2;
   max-width: none;
   color: var(--text);
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.65;
 }
 
@@ -1527,7 +1466,7 @@ main section {
   max-width: 88ch;
   margin: 0 0 var(--s3);
   color: var(--muted);
-  font-size: 16.5px;
+  font-size: 17.5px;
 }
 
 .log-notes p:last-child {
@@ -1581,7 +1520,7 @@ main section {
 .log-stats span {
   display: block;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.45;
 }
 
@@ -1598,7 +1537,7 @@ main section {
   padding: 4px 9px 3px;
   color: var(--dim);
   border: 1px solid var(--edge-soft);
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.05em;
 }
 
@@ -1782,7 +1721,7 @@ main section {
   flex-wrap: wrap;
   gap: var(--s1) var(--s5);
   color: var(--muted);
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .work-stats b {
@@ -1793,7 +1732,7 @@ main section {
 
 .prompt-line {
   color: var(--dim);
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .prompt-line span {
@@ -2137,7 +2076,7 @@ main section {
 .locale-hint {
   margin: 7px 2px 0 !important;
   color: var(--muted) !important;
-  font: 400 15px / 1.4 var(--mono);
+  font: 400 16px / 1.4 var(--mono);
   text-align: center;
 }
 
@@ -2482,7 +2421,7 @@ main section {
 /* Dotted leaders, the way old spec sheets did it. */
 .player-stats {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 16.5px;
 }
 
 .player-stats div {
@@ -2522,7 +2461,7 @@ main section {
 .side-note {
   margin-bottom: 0 !important;
   color: var(--dim);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .side-note b {
@@ -2537,7 +2476,7 @@ main section {
   margin: 0 0 var(--s3);
   padding: 0;
   list-style: none;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .secrets-list li {
@@ -3515,14 +3454,8 @@ body.arcade-mode #about .panel-title {
     padding-top: var(--s6);
   }
 
-  /* One column: every fact is now the station above another one, so only the
-     genuine last item drops its wire. */
   .quick-facts {
     grid-template-columns: 1fr;
-  }
-
-  .quick-facts li:nth-last-child(2)::before {
-    content: "";
   }
 
   .panel,

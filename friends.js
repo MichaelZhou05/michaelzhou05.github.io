@@ -1016,23 +1016,6 @@ function hoverDelights() {
   wire('[data-coffee]', (x, y) => burst(x, y, ['#f2f0fa', '#f2c49b'], 8, ['coffeeCup', 'coffeeCup']));
 }
 
-/**
- * Fills the quick-facts star chart. Each fact names the sprite that says what
- * it is about — a floppy for the languages, a ball on a tee for the sports —
- * and gets it dropped behind its pane of glass. The tiles carry their own lit
- * dot until this runs, so the chart is never a row of empty boxes.
- */
-function paintFactGlyphs() {
-  document.querySelectorAll('.quick-facts li[data-glyph]').forEach((fact) => {
-    const tile = fact.querySelector('.fact-mark');
-    if (!tile || !SPRITES[fact.dataset.glyph]) return;
-    tile.innerHTML = spriteSvg(fact.dataset.glyph, {
-      scale: 2,
-      color: fact.dataset.glyphColor || '#b8a9ff',
-    });
-  });
-}
-
 /** An honest-to-goodness 90s hit counter. It counts your visits, not the world's. */
 function hitCounter() {
   const readout = document.getElementById('hit-counter');
@@ -1069,7 +1052,6 @@ function greet() {
 }
 
 paintIcons();
-paintFactGlyphs();
 renderSecrets();
 scatterDoodles();
 wireWishStar();
