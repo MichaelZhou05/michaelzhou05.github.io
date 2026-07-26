@@ -2966,8 +2966,28 @@ footer {
 .swim-layer {
   position: fixed;
   inset: 0;
+  /* A canvas is a replaced element: `inset: 0` positions it but does NOT
+     stretch it, and its intrinsic size is the viewport × devicePixelRatio.
+     Left alone, every Retina screen showed the swim at doubled coordinates —
+     clipped to a sliver at the bottom-right corner. Pin it to the viewport. */
+  width: 100%;
+  height: 100%;
   z-index: 1;
   pointer-events: none;
+}
+
+/**
+ * On the one-column layout the cards cover the whole viewport, and a creature
+ * swimming behind them is a secret nobody sees. There it surfaces instead:
+ * above the glass, blended additively so its dots ride over the cards as pure
+ * light — text stays readable, and the swim is actually watchable on a phone.
+ * Below the back-to-top button and every toast, so chrome still wins.
+ */
+@media (max-width: 960px) {
+  .swim-layer {
+    z-index: 50;
+    mix-blend-mode: screen;
+  }
 }
 
 body.stars-on .starfield {
