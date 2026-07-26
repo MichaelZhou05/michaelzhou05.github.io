@@ -500,8 +500,13 @@
         </section>
 
         <!--
-          The location card. Everything the map and the clock read is on this
-          element, so moving is a one-line edit and no JavaScript:
+          The location card — where Michael is right now, not a decorative map
+          of the world. The title, the status bar and the running clock all say
+          the same thing three ways, because a green screen with a dot on it
+          reads as scenery unless something tells you the dot is a person.
+
+          Everything the map and the clock read is on this element, so moving is
+          a one-line edit and no JavaScript:
 
             data-place  the name printed under the screen
             data-lat    decimal degrees, north positive
@@ -518,8 +523,9 @@
           data-zoom="14"
           data-tz="America/New_York"
         >
+          <h2 class="side-title" data-icon="flag" data-icon-color="#9bbc0f">where i am</h2>
           <div class="locale-bar">
-            <span><i></i> world map</span>
+            <span><i></i> current location</span>
             <span class="locale-coords">&mdash;</span>
           </div>
           <div class="locale-screen">
@@ -527,14 +533,14 @@
               class="locale-map"
               tabindex="0"
               role="img"
-              aria-label="A Game Boy-green world map, zoomed to New England — Cape Cod, Long Island and the Gulf of Maine — with a blinking marker on Boston, Massachusetts. Click or press enter to pull back to the whole world."
+              aria-label="A Game Boy-green map of New England — Cape Cod, Long Island and the Gulf of Maine — with a blinking marker on Boston, Massachusetts, where Michael currently lives. Click or press enter to pull back to the whole world."
             ></canvas>
           </div>
           <p class="locale-readout">
-            <b class="locale-place">&mdash;</b>
+            <span class="locale-where">i&rsquo;m in <b class="locale-place">&mdash;</b></span>
             <span><b class="locale-clock-time">--:--:--</b> <i class="locale-clock-zone">&mdash;</i></span>
           </p>
-          <p class="side-note locale-hint">click the screen for the whole world</p>
+          <p class="side-note locale-hint">that blinking dot is me &mdash; click for the whole world</p>
         </section>
 
         <section class="side-block dnp-block">
