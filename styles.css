@@ -1974,6 +1974,11 @@ main section {
   height: 6px;
   margin-right: var(--s1);
   background: #9bbc0f;
+  animation: blink-cell 1.6s steps(1, end) infinite;
+}
+
+@keyframes blink-cell {
+  50% { opacity: 0.25; }
 }
 
 .locale-coords {
@@ -2072,8 +2077,8 @@ main section {
  * instruction on this page anyone follows. Dressed after the Nostromo's
  * emergency-destruct panel: hazard tape across both cut edges, an armed
  * light, and the red button raised on its own striped housing, lit from
- * within. The tape only marches while the cursor is inside the card, so
- * the rail stays quiet until someone leans in.
+ * within. The tape sits still — the motion in this card belongs to the
+ * lamp and the button, so the rail stays quiet.
  */
 .dnp-block {
   padding-top: calc(var(--s5) + 12px);
@@ -2095,28 +2100,14 @@ main section {
 .dnp-block::before { top: 0; }
 .dnp-block::after { bottom: 0; }
 
-/* One stripe period along a 45° gradient is 18px, which is 18px·√2 ≈ 25.5px
-   measured horizontally — anything else makes the loop stutter. The two bands
-   run opposite ways, like tape being pulled across the card from both sides. */
-.dnp-block:hover::before { animation: dnp-tape 1.6s linear infinite; }
-.dnp-block:hover::after { animation: dnp-tape 1.6s linear infinite reverse; }
-
-@keyframes dnp-tape {
-  to { background-position: 25.456px 0; }
-}
-
 /**
- * The three-strike escalation, staged by friends.js. One press and the tape
- * marches for good; two and the whole card goes to red alert — everything that
- * was already moving just moves faster, which is how real panels panic.
+ * The three-strike escalation, staged by friends.js. One press and the armed
+ * light starts blinking; two and the whole card goes to red alert — everything
+ * that was already moving just moves faster, which is how real panels panic.
  */
-.dnp-block.is-warned::before { animation: dnp-tape 1.6s linear infinite; }
-.dnp-block.is-warned::after { animation: dnp-tape 1.6s linear infinite reverse; }
 .dnp-block.is-warned .dnp-status i { animation: blink 0.7s steps(1) infinite; }
 
 .dnp-block.is-critical { border-color: var(--fami-red); }
-.dnp-block.is-critical::before { animation-duration: 0.55s; }
-.dnp-block.is-critical::after { animation-duration: 0.55s; }
 .dnp-block.is-critical .dnp-status i { animation-duration: 0.35s; }
 .dnp-block.is-critical .dnp-button { animation-duration: 0.9s; }
 
@@ -2214,7 +2205,6 @@ main section {
 .dnp-block.is-broken::before,
 .dnp-block.is-broken::after {
   filter: grayscale(1) brightness(0.7);
-  animation: none;
 }
 
 .dnp-block.is-broken .dnp-status { color: #8a849f; }
