@@ -1737,24 +1737,20 @@ main section {
 }
 
 /**
- * The trainer's screen. Unlike the race screen there is no dot-matrix glass
- * over it — behind this sheet is a real application with real text to read,
- * and a lattice over someone's reading is just grime.
+ * The race's screen. Unlike the race track there is no dot-matrix glass over
+ * it — behind this sheet is real text to read at speed, and a lattice over
+ * someone's reading is just grime. The height is the buffer's height: a vim
+ * window is exactly as tall as what it holds.
  */
 .vim-screen {
   position: relative;
-  height: min(70vh, 640px);
   overflow: hidden;
   background: #060606;
   box-shadow: inset 0 0 24px #000000;
 }
 
-.vim-frame {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: #060606;
+.vim-screen:focus {
+  outline: none;
 }
 
 .vim-mode {
@@ -1762,24 +1758,104 @@ main section {
   text-shadow: 2px 2px 0 #000000;
 }
 
-/* The empty-buffer filler down the facade's left edge, like nvim draws. */
-.vim-tildes {
-  position: absolute;
-  top: var(--s3);
-  left: var(--s3);
-  margin: 0;
-  color: var(--dim);
-  font: 400 14px / 1.7 var(--mono);
-  text-align: left;
+.vim-mode.is-insert {
+  color: var(--pcb);
 }
 
-/* Only a machine with a keyboard gets the boot button; a finger gets a door. */
+.vim-buffer {
+  padding: var(--s3) var(--s3) var(--s2);
+  color: var(--text);
+  font: 400 clamp(11px, 1.5vw, 15px) / 1.6 var(--mono);
+}
+
+.vim-line {
+  position: relative;
+  white-space: pre;
+}
+
+.vim-gutter {
+  display: inline-block;
+  width: 3ch;
+  margin-right: 1ch;
+  color: var(--faint);
+  text-align: right;
+}
+
+/* The block cursor is yours; the amber block is where the course wants it. */
+.vim-cursor {
+  background: var(--fg);
+  color: #060606;
+}
+
+.vim-cursor--bar {
+  background: transparent;
+  color: inherit;
+  box-shadow: inset 2px 0 0 var(--fg);
+}
+
+.vim-block {
+  background: var(--amber);
+  color: #000000;
+}
+
+.vim-bad {
+  color: var(--red);
+  background: rgba(230, 0, 18, 0.16);
+}
+
+/**
+ * The repair label floats the goal beside the defect — `proirity → priority`
+ * — so the what sits next to the where, the way the trainer draws it. It
+ * hangs one line up, over text, which is why it carries its own plate.
+ */
+.vim-label {
+  position: absolute;
+  z-index: 4;
+  top: -1.35em;
+  left: calc((var(--c) + 4) * 1ch);
+  padding: 0 6px;
+  background: var(--amber);
+  color: #000000;
+  font-size: 0.82em;
+  line-height: 1.5;
+}
+
+/* The statusline is the machine's readout, so it is set like the title bar. */
+.vim-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s1) var(--s4);
+  padding: 8px var(--s3);
+  background: #000000;
+  color: var(--plate);
+  font: 400 8px / 1.6 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vim-status-right {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--s1) var(--s4);
+}
+
+/* You wear the same colours here as on the track: you red, the rival amber. */
+#vim-clock {
+  color: var(--you);
+}
+
+#vim-rival {
+  color: var(--opus);
+}
+
+/* Only a machine with a keyboard gets the start button; a finger gets a door. */
 .vim-touch-link {
   display: none;
 }
 
 @media (hover: none) and (pointer: coarse) {
-  #vim-boot {
+  #vim-start {
     display: none;
   }
 

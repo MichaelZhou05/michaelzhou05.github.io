@@ -179,7 +179,8 @@
                 it explains one command at a time, then hands you a real editor to practise in. The modal engine
                 underneath (motions, operators, text objects, registers, the <b>.</b> repeat) is written from
                 scratch, and the keymap is NvChad's actual default, transcribed verbatim — which-key popup,
-                Telescope pickers and floating terminals included. You can play it right here.
+                Telescope pickers and floating terminals included. Below it sits <b>race me in vim</b>, the
+                arcade cut: one buffer, the same twelve marks for everyone, and my lap time to beat.
               </p>
               <p class="work-stats">
                 <span><b>from-scratch</b> modal vim engine</span>
@@ -188,37 +189,55 @@
               </p>
               <p class="log-tech">typescript &middot; react &middot; vite</p>
               <p>
-                <a class="arrow-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open fullscreen</a>
+                <a class="arrow-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open the full trainer</a>
                 <a class="arrow-link" href="https://github.com/MichaelZhou05/learnNvim" target="_blank" rel="noreferrer">&rarr; view on github</a>
               </p>
             </div>
             <!--
-              The trainer itself. Nothing loads up front — the facade is a
-              drawn nvim window that costs nothing, and the boot button swaps
-              it for an iframe onto the same app that lives at /learnNvim/.
-              On touch machines the button gives way to a link out instead:
-              a keyboard trainer without a keyboard is just a screenshot.
+              race me in vim. Not the trainer in a frame — the trainer is an
+              application and made a lousy exhibit — but its game, rebuilt
+              native to this page like the racetrack above it: a small vim
+              engine, one fixed course, and a clock. The course is identical
+              for every visitor, so the times mean something.
+
+              data-rival-time is Michael's lap in seconds. Play a lap, then
+              put your real time here — one attribute, no JavaScript.
             -->
-            <div class="vim-window">
+            <div class="vim-window" data-rival-time="58.0">
               <div class="vim-window-bar">
                 <span><i></i> nvim &mdash; taskpy/tasks/cli.py</span>
-                <span class="vim-mode">-- NORMAL --</span>
+                <span class="vim-mode" id="vim-mode">-- NORMAL --</span>
               </div>
-              <div class="vim-screen" id="vim-screen">
-                <div class="game-overlay">
-                  <pre class="vim-tildes" aria-hidden="true">~
-~
-~
-~
-~
-~
-~
-~</pre>
-                  <p class="overlay-title">LEARN NEOVIM</p>
-                  <p>a real modal editor &middot; nvchad's default keymap</p>
-                  <p>lessons &middot; drills &middot; section quizzes &middot; progress saved locally</p>
-                  <button id="vim-boot" class="button primary" type="button">boot the trainer</button>
-                  <a class="arrow-link vim-touch-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open the trainer &mdash; it wants a keyboard</a>
+              <div
+                class="vim-screen"
+                id="vim-screen"
+                tabindex="0"
+                aria-label="Race me in vim. A small vim buffer with twelve marks to reach or repair using vim motions, against the clock. Keyboard only."
+              >
+                <div class="vim-buffer" id="vim-buffer" aria-hidden="true"></div>
+                <div class="vim-status" aria-hidden="true">
+                  <span id="vim-hint">nvim sprint &mdash; press a key, the clock starts</span>
+                  <span class="vim-status-right">
+                    <span id="vim-progress">mark 00/12</span>
+                    <span id="vim-clock">you 0:00.0</span>
+                    <span id="vim-rival">michael &mdash;</span>
+                  </span>
+                </div>
+                <div class="game-overlay" id="vim-overlay">
+                  <div id="vim-intro">
+                    <p class="overlay-title">RACE ME IN VIM</p>
+                    <p>twelve marks &middot; reach the block &middot; repair the typo</p>
+                    <p>hjkl w b e 0 $ f t { } gg G &middot; x r ciw u &middot; counts work</p>
+                    <p>my lap: <span id="vim-rival-intro">&mdash;</span> &middot; the clock starts on your first key</p>
+                    <button id="vim-start" class="button primary" type="button">race me</button>
+                    <a class="arrow-link vim-touch-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open the full trainer &mdash; this race wants a keyboard</a>
+                  </div>
+                  <div id="vim-results" hidden>
+                    <p class="overlay-title" id="vim-verdict">PHOTO FINISH</p>
+                    <p id="vim-result-times">&mdash;</p>
+                    <p id="vim-result-keys">&mdash;</p>
+                    <button id="vim-again" class="button primary" type="button">run it again</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -673,7 +692,7 @@
     <script type="module" src="./ui.js"></script>
     <script type="module" src="./app.js"></script>
     <script type="module" src="./friends.js"></script>
-    <script type="module" src="./vim-embed.js"></script>
+    <script type="module" src="./vim-game.js"></script>
     <script type="module" src="./swimmer.js"></script>
     <script type="module" src="./location.js"></script>
     <script type="module" src="./espresso.js"></script>
