@@ -168,6 +168,145 @@
           </div>
         </section>
 
+        <section id="projects" class="panel">
+          <h2 class="section-title" data-icon="chest">projects</h2>
+
+          <article class="work work-feature">
+            <div class="work-body">
+              <h3>learn neovim <span class="work-num">// 001</span></h3>
+              <p>
+                A browser-based trainer for Neovim + <a href="https://nvchad.com" target="_blank" rel="noreferrer">NvChad</a> —
+                it explains one command at a time, then hands you a real editor to practise in. The modal engine
+                underneath (motions, operators, text objects, registers, the <b>.</b> repeat) is written from
+                scratch, and the keymap is NvChad's actual default, transcribed verbatim — which-key popup,
+                Telescope pickers and floating terminals included. You can play it right here.
+              </p>
+              <p class="work-stats">
+                <span><b>from-scratch</b> modal vim engine</span>
+                <span><b>271</b> tests pinning vim's real quirks</span>
+                <span><b>0</b> servers &mdash; it all runs in the page</span>
+              </p>
+              <p class="log-tech">typescript &middot; react &middot; vite</p>
+              <p>
+                <a class="arrow-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open fullscreen</a>
+                <a class="arrow-link" href="https://github.com/MichaelZhou05/learnNvim" target="_blank" rel="noreferrer">&rarr; view on github</a>
+              </p>
+            </div>
+            <!--
+              The trainer itself. Nothing loads up front — the facade is a
+              drawn nvim window that costs nothing, and the boot button swaps
+              it for an iframe onto the same app that lives at /learnNvim/.
+              On touch machines the button gives way to a link out instead:
+              a keyboard trainer without a keyboard is just a screenshot.
+            -->
+            <div class="vim-window">
+              <div class="vim-window-bar">
+                <span><i></i> nvim &mdash; taskpy/tasks/cli.py</span>
+                <span class="vim-mode">-- NORMAL --</span>
+              </div>
+              <div class="vim-screen" id="vim-screen">
+                <div class="game-overlay">
+                  <pre class="vim-tildes" aria-hidden="true">~
+~
+~
+~
+~
+~
+~
+~</pre>
+                  <p class="overlay-title">LEARN NEOVIM</p>
+                  <p>a real modal editor &middot; nvchad's default keymap</p>
+                  <p>lessons &middot; drills &middot; section quizzes &middot; progress saved locally</p>
+                  <button id="vim-boot" class="button primary" type="button">boot the trainer</button>
+                  <a class="arrow-link vim-touch-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open the trainer &mdash; it wants a keyboard</a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="work">
+            <div class="work-visual graph-visual" aria-hidden="true">
+              <div class="graph-node n1">PDF</div>
+              <div class="graph-node n2">RAG</div>
+              <div class="graph-node n3">LTI</div>
+              <div class="graph-node n4">KG</div>
+              <div class="graph-node n5">AI</div>
+              <svg viewBox="0 0 500 220" preserveAspectRatio="none">
+                <path d="M80 105 L205 58 L330 118 L430 55 M205 58 L250 180 L430 55 M80 105 L250 180 L330 118" />
+              </svg>
+              <span class="visual-caption">knowledge graph // live</span>
+            </div>
+            <div class="work-body">
+              <h3>Playground AI <span class="work-num">// 002</span></h3>
+              <p>
+                An AI learning environment for Canvas, procured by Duke OIT and engineered for 1,000+ users. It turns
+                course documents into citation-backed answers, maps curriculum gaps, and deploys through repeatable IaC.
+              </p>
+              <p class="work-stats">
+                <span><b>1,000+</b> target users</span>
+                <span><b>CI/CD</b> from day one</span>
+                <span><b>RAG</b> with source citations</span>
+              </p>
+              <p class="log-tech">python &middot; flask &middot; vis.js &middot; terraform</p>
+              <p>
+                <a class="arrow-link" href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer">
+                  &rarr; view on github
+                </a>
+              </p>
+            </div>
+          </article>
+
+          <article class="work">
+            <div class="work-visual bench-visual" aria-hidden="true">
+              <div class="bench-rows">
+                <div class="bench-row"><span>frontend</span><i style="--w: 92%"></i><b>92</b></div>
+                <div class="bench-row"><span>time-to-done</span><i style="--w: 78%"></i><b>78</b></div>
+                <div class="bench-row"><span>one-shot ui</span><i style="--w: 64%"></i><b>64</b></div>
+                <div class="bench-row"><span>backend</span><i style="--w: 55%"></i><b>55</b></div>
+                <div class="bench-row"><span>terminal</span><i style="--w: 41%"></i><b>41</b></div>
+              </div>
+              <span class="visual-caption">per-category boards // no mega-number</span>
+            </div>
+            <div class="work-body">
+              <h3>everyday dev benchmark <span class="work-num">// 003</span></h3>
+              <p>
+                "Which model should I use for <em>this</em> job?" &mdash; answered per job, never blended into one
+                mega-number. Most categories are sourced from the most-cited public leaderboards; the gaps nobody
+                measures &mdash; brownfield frontend work, time-to-done, one-shot UI &mdash; run through an in-house
+                harness: agents in Docker, graded headlessly with Playwright down to visual fidelity and a11y gates.
+              </p>
+              <p class="work-stats">
+                <span><b>8</b> ranked categories</span>
+                <span><b>3</b> measured by in-house evals</span>
+                <span><b>0</b> estimates &mdash; a missing cell renders as a dash</span>
+              </p>
+              <p class="log-tech">python &middot; docker &middot; playwright &middot; react</p>
+              <p class="work-note">repo private for now &mdash; the hidden test sets live in it</p>
+            </div>
+          </article>
+
+          <article class="work">
+            <div class="work-visual doc-visual" aria-hidden="true">
+              <div class="file-stack"><i></i><i></i><i></i><span>10K+</span></div>
+              <div class="pipeline-arrow">&rarr;</div>
+              <div class="data-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <span class="visual-caption">extraction pipeline</span>
+            </div>
+            <div class="work-body">
+              <h3>Amdahl <span class="work-num">// 004</span></h3>
+              <p>
+                Automated document extraction across 10,000+ pages of mixed-format government records, standardizing
+                metadata and cutting retention analysis from days to hours.
+              </p>
+              <p class="work-stats">
+                <span><b>&minus;85%</b> manual analysis time</span>
+                <span><b>10K+</b> pages processed</span>
+              </p>
+              <p class="log-tech">langchain &middot; chromadb &middot; gcloud</p>
+            </div>
+          </article>
+        </section>
+
         <section id="experience" class="panel">
           <h2 class="section-title" data-icon="book" data-icon-color="#ffb000">experience</h2>
           <p class="section-intro">
@@ -370,63 +509,6 @@
           </div>
         </section>
 
-        <section id="projects" class="panel">
-          <h2 class="section-title" data-icon="chest">projects</h2>
-
-          <article class="work">
-            <div class="work-visual graph-visual" aria-hidden="true">
-              <div class="graph-node n1">PDF</div>
-              <div class="graph-node n2">RAG</div>
-              <div class="graph-node n3">LTI</div>
-              <div class="graph-node n4">KG</div>
-              <div class="graph-node n5">AI</div>
-              <svg viewBox="0 0 500 220" preserveAspectRatio="none">
-                <path d="M80 105 L205 58 L330 118 L430 55 M205 58 L250 180 L430 55 M80 105 L250 180 L330 118" />
-              </svg>
-              <span class="visual-caption">knowledge graph // live</span>
-            </div>
-            <div class="work-body">
-              <h3>Playground AI <span class="work-num">// 001</span></h3>
-              <p>
-                An AI learning environment for Canvas, procured by Duke OIT and engineered for 1,000+ users. It turns
-                course documents into citation-backed answers, maps curriculum gaps, and deploys through repeatable IaC.
-              </p>
-              <p class="work-stats">
-                <span><b>1,000+</b> target users</span>
-                <span><b>CI/CD</b> from day one</span>
-                <span><b>RAG</b> with source citations</span>
-              </p>
-              <p class="log-tech">python &middot; flask &middot; vis.js &middot; terraform</p>
-              <p>
-                <a class="arrow-link" href="https://github.com/MichaelZhou05" target="_blank" rel="noreferrer">
-                  &rarr; view on github
-                </a>
-              </p>
-            </div>
-          </article>
-
-          <article class="work">
-            <div class="work-visual doc-visual" aria-hidden="true">
-              <div class="file-stack"><i></i><i></i><i></i><span>10K+</span></div>
-              <div class="pipeline-arrow">&rarr;</div>
-              <div class="data-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-              <span class="visual-caption">extraction pipeline</span>
-            </div>
-            <div class="work-body">
-              <h3>Amdahl <span class="work-num">// 002</span></h3>
-              <p>
-                Automated document extraction across 10,000+ pages of mixed-format government records, standardizing
-                metadata and cutting retention analysis from days to hours.
-              </p>
-              <p class="work-stats">
-                <span><b>&minus;85%</b> manual analysis time</span>
-                <span><b>10K+</b> pages processed</span>
-              </p>
-              <p class="log-tech">langchain &middot; chromadb &middot; gcloud</p>
-            </div>
-          </article>
-        </section>
-
         <section id="contact" class="panel">
           <button
             class="doodle doodle-wish"
@@ -460,8 +542,8 @@
           <ul class="warp-list" id="site-index">
             <li><a href="#about" data-icon="hero" data-icon-color="#7b68ee">About me</a></li>
             <li><a href="#race" data-icon="car" data-icon-color="#e60012">Nordschleife eval <i class="nav-tag">play</i></a></li>
+            <li><a href="#projects" data-icon="chest">Project archive <i class="nav-tag">play</i></a></li>
             <li><a href="#experience" data-icon="book" data-icon-color="#ffb000">Work logs</a></li>
-            <li><a href="#projects" data-icon="chest">Project archive</a></li>
             <li><a href="#contact" data-icon="tower" data-icon-color="#7b68ee">Contact</a></li>
           </ul>
           <ul class="warp-list warp-list-away">
@@ -591,6 +673,7 @@
     <script type="module" src="./ui.js"></script>
     <script type="module" src="./app.js"></script>
     <script type="module" src="./friends.js"></script>
+    <script type="module" src="./vim-embed.js"></script>
     <script type="module" src="./swimmer.js"></script>
     <script type="module" src="./location.js"></script>
     <script type="module" src="./espresso.js"></script>

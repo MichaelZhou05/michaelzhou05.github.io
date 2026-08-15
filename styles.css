@@ -208,6 +208,7 @@ canvas {
  * it may light up as selected text while you play.
  */
 .race-window,
+.vim-window,
 .espresso-frame,
 .locale-screen,
 .dnp-housing {
@@ -831,14 +832,16 @@ main section {
  * rounded rectangle, so the status bar, the screen, the telemetry and the
  * ticker read as four regions of a single display rather than four cards.
  */
-.race-window {
+.race-window,
+.vim-window {
   padding: 6px 6px 8px;
   border-radius: var(--r-lg);
   background: linear-gradient(145deg, var(--bezel-lit), var(--bezel));
   box-shadow: var(--mould);
 }
 
-.race-window-bar {
+.race-window-bar,
+.vim-window-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -874,7 +877,8 @@ main section {
 
 /* The power light on the case is a square lit cell. It sits steady: the only
    thing on the page allowed to blink is the marker on the map. */
-.race-window-bar i {
+.race-window-bar i,
+.vim-window-bar i {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -1714,6 +1718,115 @@ main section {
 
 .work-stats b {
   color: var(--lime);
+}
+
+.work-note {
+  color: var(--faint);
+  font-size: 15px;
+}
+
+/* ------------------------------------------- the learn-neovim demo card */
+
+/* The playable card runs the panel's full width: the demo is the screenshot. */
+.work-feature {
+  display: block;
+}
+
+.work-feature .work-body {
+  margin-bottom: var(--s5);
+}
+
+/**
+ * The trainer's screen. Unlike the race screen there is no dot-matrix glass
+ * over it — behind this sheet is a real application with real text to read,
+ * and a lattice over someone's reading is just grime.
+ */
+.vim-screen {
+  position: relative;
+  height: min(70vh, 640px);
+  overflow: hidden;
+  background: #060606;
+  box-shadow: inset 0 0 24px #000000;
+}
+
+.vim-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #060606;
+}
+
+.vim-mode {
+  color: var(--amber);
+  text-shadow: 2px 2px 0 #000000;
+}
+
+/* The empty-buffer filler down the facade's left edge, like nvim draws. */
+.vim-tildes {
+  position: absolute;
+  top: var(--s3);
+  left: var(--s3);
+  margin: 0;
+  color: var(--dim);
+  font: 400 14px / 1.7 var(--mono);
+  text-align: left;
+}
+
+/* Only a machine with a keyboard gets the boot button; a finger gets a door. */
+.vim-touch-link {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  #vim-boot {
+    display: none;
+  }
+
+  .vim-touch-link {
+    display: inline-block;
+    margin-top: var(--s5);
+  }
+}
+
+/* ------------------------------------------------- the benchmark visual */
+
+.bench-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(255, 176, 0, 0.07), transparent 55%), #060606;
+}
+
+.bench-rows {
+  display: grid;
+  width: 80%;
+  gap: var(--s3);
+}
+
+.bench-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--muted);
+  font: 400 7px / 1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Discrete lit cells, not a smooth fill — the same rule the telemetry
+   meters live by: a bar of blocks is what a machine like this could draw. */
+.bench-row i {
+  width: var(--w);
+  height: 9px;
+  background: repeating-linear-gradient(90deg, var(--indigo) 0 6px, transparent 6px 8px);
+}
+
+.bench-row b {
+  color: var(--amber);
+  font: inherit;
+  text-align: right;
 }
 
 /* ------------------------------------------------------- 10. contact */
