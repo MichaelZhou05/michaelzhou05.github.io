@@ -166,6 +166,7 @@ function init() {
 
   function setMode(mode) {
     S.mode = mode;
+    if (mode === 'insert') S.want = S.col;
     modeEl.textContent = mode === 'insert' ? '-- INSERT --' : '-- NORMAL --';
     modeEl.classList.toggle('is-insert', mode === 'insert');
   }
@@ -357,6 +358,17 @@ function init() {
   }
 
   function insertKey(k) {
+    // Insert mode moves between characters, including just past the line end.
+    if (k === 'ArrowLeft' || k === 'ArrowRight') {
+      S.col = Math.max(0, Math.min(lineLen(), S.col + (k === 'ArrowLeft' ? -1 : 1)));
+      S.want = S.col;
+      return;
+    }
+    if (k === 'ArrowUp' || k === 'ArrowDown') {
+      S.row = clampRow(S.row + (k === 'ArrowUp' ? -1 : 1));
+      S.col = Math.min(S.want, lineLen());
+      return;
+    }
     if (k === 'Escape' || k === 'Enter') {
       setMode('normal');
       S.col = Math.max(0, Math.min(S.col - 1, lastCol(line())));
@@ -368,12 +380,14 @@ function init() {
       if (S.col > 0) {
         S.lines[S.row] = line().slice(0, S.col - 1) + line().slice(S.col);
         S.col -= 1;
+        S.want = S.col;
       }
       return;
     }
     if (k.length === 1) {
       S.lines[S.row] = line().slice(0, S.col) + k + line().slice(S.col);
       S.col += 1;
+      S.want = S.col;
     }
   }
 
@@ -483,8 +497,8 @@ function init() {
   screen.addEventListener('keydown', (e) => {
     if (!S.running) return;
     if (e.metaKey || e.ctrlKey || e.altKey || e.key === 'Tab') return;
-    const k = ARROWS[e.key] || e.key;
-    if (k.length > 1 && k !== 'Escape' && k !== 'Backspace' && k !== 'Enter') return;
+    const k = S.mode === 'insert' ? e.key : (ARROWS[e.key] || e.key);
+    if (k.length > 1 && !ARROWS[k] && k !== 'Escape' && k !== 'Backspace' && k !== 'Enter') return;
     e.preventDefault();
     e.stopPropagation(); // this page has its own ideas about loose keystrokes
     S.keys += 1;
