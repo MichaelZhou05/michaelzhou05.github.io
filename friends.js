@@ -1016,16 +1016,49 @@ function hoverDelights() {
   wire('[data-coffee]', (x, y) => burst(x, y, ['#f2f0fa', '#f2c49b'], 8, ['coffeeCup', 'coffeeCup']));
 }
 
-/** An honest-to-goodness 90s hit counter. It counts your visits, not the world's. */
+/**
+ * A real hit counter — the shared number comes from GoatCounter
+ * (goatcounter.com), which sets no cookies and stores no personal data, so
+ * the marquee's "no trackers" claim still holds. We ping its no-script pixel
+ * rather than loading its JS, so no third-party code runs here.
+ * Setup: register the site code below at goatcounter.com and enable
+ * "Allow adding visitor counts on your website" in its settings.
+ */
 function hitCounter() {
   const readout = document.getElementById('hit-counter');
   if (!readout) return;
+  const gc = 'https://michaelzhou05.goatcounter.com';
   const visits = Number(localStorage.getItem('mz.visits') || 0) + 1;
   localStorage.setItem('mz.visits', String(visits));
 
-  const total = String(4096 + visits).padStart(7, '0');
-  readout.textContent = total;
-  readout.title = `you have been here ${visits} time${visits === 1 ? '' : 's'} — click to reroll the digits`;
+  // Shown until the network answers, and kept if the counter service is gone.
+  let total = 4096 + visits;
+  const show = () => {
+    readout.textContent = String(total).padStart(7, '0');
+    readout.title = `you are visitor ${total} — your visit #${visits} — click to reroll the digits`;
+  };
+  show();
+
+  // Record once per session, so refreshing doesn't inflate the count, and
+  // skip localhost so development doesn't either.
+  if (!sessionStorage.getItem('mz.counted') && location.hostname.endsWith('github.io')) {
+    sessionStorage.setItem('mz.counted', '1');
+    new Image().src =
+      `${gc}/count?p=${encodeURIComponent(location.pathname)}` +
+      `&rnd=${Math.random().toString(36).slice(2)}`;
+  }
+
+  // Site-wide unique-visitor total. GoatCounter caches it for up to four
+  // hours, so it trails reality a little — that's fine for a footer.
+  fetch(`${gc}/counter/TOTAL.json`)
+    .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+    .then((data) => {
+      const n = Number(String(data.count_unique ?? data.count).replace(/[^0-9]/g, ''));
+      if (!Number.isFinite(n) || n <= 0) return;
+      total = n;
+      show();
+    })
+    .catch(() => {});
 
   // Not a secret, just a mechanical counter that likes being touched.
   readout.addEventListener('click', () => {
@@ -1035,7 +1068,7 @@ function hitCounter() {
       readout.textContent = Array.from({ length: 7 }, () => Math.floor(Math.random() * 10)).join('');
       if (ticks < 12) return;
       clearInterval(roll);
-      readout.textContent = total;
+      show();
     }, 55);
   });
 }

@@ -1736,6 +1736,10 @@ main section {
   margin-bottom: var(--s5);
 }
 
+.work-feature .work-body p {
+  max-width: none;
+}
+
 /**
  * The race's screen. Unlike the race track there is no dot-matrix glass over
  * it — behind this sheet is real text to read at speed, and a lattice over
@@ -1781,7 +1785,17 @@ main section {
   text-align: right;
 }
 
-/* The block cursor is yours; the amber block is where the course wants it. */
+.vim-block {
+  background: var(--amber);
+  color: #000000;
+}
+
+.vim-bad {
+  color: var(--red);
+  background: rgba(230, 0, 18, 0.16);
+}
+
+/* Keep the cursor above target and typo colors when decorations overlap. */
 .vim-cursor {
   background: var(--fg);
   color: #060606;
@@ -1791,16 +1805,6 @@ main section {
   background: transparent;
   color: inherit;
   box-shadow: inset 2px 0 0 var(--fg);
-}
-
-.vim-block {
-  background: var(--amber);
-  color: #000000;
-}
-
-.vim-bad {
-  color: var(--red);
-  background: rgba(230, 0, 18, 0.16);
 }
 
 /**
