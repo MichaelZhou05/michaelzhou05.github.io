@@ -93,3 +93,39 @@ renderer) and the behaviour lives in `friends.js`. Every heading and index entry
 names its own sprite through `data-icon`, so the rail is a d-pad, a sword, a key
 and a CRT rather than six copies of the same star. All of it respects
 `prefers-reduced-motion`, and the resident cat is skipped on touch devices.
+
+## Race methodology and Jev
+
+The race links to `race-method.html`, a plain-language explanation of the actual
+runner, recorded results, response latency versus simulation time, and current
+fairness limitations (including different browser/offline camera transitions).
+
+Jev uses TypeSafe AI's official Choice API via `scripts/jev-driver.mjs`:
+https://docs.typesafe.ai/api . Set `TYPESAFE_API_KEY` in your terminal environment;
+never put a credential in a tracked file or browser code. Then record a short trial:
+
+```bash
+npm run jev-lap -- --sectors 1 --out tmp/jev-trial.js
+```
+
+For a full recording, run `npm run jev-lap`. This makes real, billed API calls
+(up to 125 calls per sector, before transient retries). `--model` can pin an
+available model version instead of `jev-latest`; the returned model id is saved.
+The site imports `jev-lap.js`, initially null. Only a completed recording enables
+the blue replay car and its progress gauge. Partial runs are not ranked.
+
+Jev's **reactive-choice-12-frames** mode chooses one of nine actions every 0.2
+simulated seconds. It receives current state and latest feedback, without chat
+history. Opus/Sol's existing plan mode permits longer action sequences and five
+calls per sector. These are different control configurations, not an isolated
+model comparison. Repeat all models under matched control rules for a fair ranking.
+
+New Jev recordings save probabilities, confidence, per-call response latency,
+usage and the returned model id. Latency includes the HTTP round trip and excludes
+retry backoff; it is not pure model compute time. Existing recordings have no
+latency measurements. Unknown Jev cost is null, not zero. The simulation still
+pauses during inference. Test the adapter without credentials or network calls:
+
+```bash
+npm run test:jev
+```

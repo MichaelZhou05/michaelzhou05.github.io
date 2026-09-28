@@ -14,6 +14,7 @@ import {
 } from './race-sim.js';
 import { opusLap } from './opus-lap.js';
 import { solLap } from './sol-lap.js';
+import { jevLap } from './jev-lap.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -242,7 +243,9 @@ const minimap = (() => {
  * `scripts/run-opus-racer.mjs` regenerates it. USV GPT 5.6 is a second real
  * replay, driven by gpt-5.6-sol at xhigh reasoning through the same harness.
  */
+const hasJevLap = jevLap?.finished === true && jevLap.frames?.length > 1;
 const RACERS = [
+  ...(hasJevLap ? [{ id: 'jev', label: 'JEV · REACTIVE', tag: 'JEV', color: '#6bcbef', kind: 'replay', lap: jevLap }] : []),
   {
     id: 'opus',
     label: 'USV OPUS 5',
@@ -434,7 +437,7 @@ function resetRace() {
   lines[1].textContent = 'THE WINDOW SHIFTS EACH SECTOR · GRASS COSTS YOU';
   ui.start.textContent = 'START LAP';
   ui.overlay.classList.remove('hidden');
-  setLog('USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.');
+  setLog(`${RACERS.map((racer) => racer.label).join(' and ')} are waiting on the grid.`);
   updateUi();
 }
 
@@ -442,7 +445,7 @@ function startRace() {
   primeRace();
   phase = 'running';
   ui.overlay.classList.add('hidden');
-  setLog('Lap live. Both USV models are running their own lines.');
+  setLog('Lap live. The model recordings are running their own lines.');
   previousFrame = performance.now();
   canvas.focus({ preventScroll: true });
 }
@@ -466,7 +469,7 @@ function finishRace() {
   const title = ui.overlay.querySelector('.overlay-title');
   const lines = ui.overlay.querySelectorAll('p:not(.overlay-title)');
 
-  title.textContent = place === 1 ? 'P1 · LAP RECORD' : `P${place} OF 3`;
+  title.textContent = place === 1 ? 'P1 · LAP RECORD' : `P${place} OF ${board.length}`;
   lines[0].textContent = `${formatTime(player.finishTime)} · ${player.offTrackCount} OFF-TRACK MOMENTS`;
   lines[1].textContent = board
     .map((entry, index) => `${index + 1}. ${entry.name} ${entry.time ? formatTime(entry.time) : `~${formatTime(entry.projected)}`}`)
@@ -475,7 +478,7 @@ function finishRace() {
   ui.overlay.classList.remove('hidden');
 
   setLog(place === 1
-    ? `Full lap in ${formatTime(player.finishTime)} — you beat both USV models around the Ring.`
+    ? `Full lap in ${formatTime(player.finishTime)} — you beat the model recordings around the Ring.`
     : `${board[0].name} took it. You finished P${place} in ${formatTime(player.finishTime)}.`);
 }
 
@@ -1023,6 +1026,11 @@ function frame(timestamp) {
 
 ui.start.addEventListener('click', startRace);
 ui.restart.addEventListener('click', resetRace);
+
+// Jev joins only after a completed real recording; no invented baseline.
+$('#jev-gauge').hidden = !hasJevLap;
+$('#jev-garage').hidden = hasJevLap;
+if (hasJevLap) $('#jev-lap-note').textContent = `${formatTime(jevLap.finishTime)} · reactive mode`;
 
 // Recorded laps know their times before you turn a wheel.
 if (ui.opusLapNote) ui.opusLapNote.textContent = `${formatTime(opusLap.finishTime)} recorded`;

@@ -17,9 +17,11 @@
  *
  *   node scripts/run-opus-racer.mjs --agent opus [--sectors 18]
  *   node scripts/run-opus-racer.mjs --agent sol [--sectors 18]
+ *   node scripts/run-opus-racer.mjs --agent jev [--sectors 18] (reactive Choice API)
  */
 
 import { spawn } from 'node:child_process';
+import { askJev, JEV_ACTION_FRAMES } from './jev-driver.mjs';
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
@@ -49,7 +51,7 @@ const TICK = 1 / 60;
 const RECORD_HZ = 20;
 
 const MAX_PLAN_FRAMES = 420;      // ~7 s of driving, longer than any sector
-const MAX_CALLS_PER_SECTOR = 5;   // the model gets to correct itself mid-sector
+const LEGACY_CALLS_PER_SECTOR = 5;   // the model gets to correct itself mid-sector
 const SECTOR_FRAME_BUDGET = 1500; // ~25 s; a sector this slow is abandoned
 const CLI_TIMEOUT_MS = 240_000;
 
@@ -60,6 +62,13 @@ const readArg = (name, fallback) => {
 };
 const agentName = readArg('--agent', 'opus');
 const AGENTS = {
+  jev: {
+    provider: 'typesafe',
+    model: readArg('--model', 'jev-latest'),
+    reasoningEffort: null,
+    output: 'jev-lap.js',
+    exportName: 'jevLap',
+  },
   opus: {
     provider: 'claude',
     model: 'claude-opus-5',
@@ -76,9 +85,14 @@ const AGENTS = {
   },
 };
 const agent = AGENTS[agentName];
-if (!agent) throw new Error(`Unknown --agent ${agentName}. Use opus or sol.`);
+if (!agent) throw new Error(`Unknown --agent ${agentName}. Use opus, sol or jev.`);
 
 const MODEL = agent.model;
+const isJev = agent.provider === 'typesafe';
+const MAX_CALLS_PER_SECTOR = isJev ? SECTOR_FRAME_BUDGET / JEV_ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
+if (isJev && !process.env.TYPESAFE_API_KEY) {
+  throw new Error('Set TYPESAFE_API_KEY in your terminal before running jev-lap. No recording was changed.');
+}
 const outputPath = resolve(here, '..', readArg('--out', agent.output));
 const sectorLimit = Number(readArg('--sectors', '0')) || Infinity;
 const planSchemaPath = resolve(here, 'racer-plan.schema.json');
@@ -86,6 +100,7 @@ const resumeLapArg = readArg('--resume-lap', '');
 const resumeLap = resumeLapArg
   ? (await import(`${pathToFileURL(resolve(here, '..', resumeLapArg)).href}?resume=${Date.now()}`))[agent.exportName]
   : null;
+if (isJev && (resumeLapArg || readArg('--start-sector', '1') !== '1')) throw new Error('Jev runs must start from sector 1.');
 const startSector = Math.max(0, Number(readArg('--start-sector', resumeLap ? '18' : '1')) - 1);
 
 const course = buildCourse(VIEW_WIDTH, VIEW_HEIGHT);
@@ -319,7 +334,26 @@ function askCodex(prompt) {
   });
 }
 
-const ask = agent.provider === 'codex' ? askCodex : askClaude;
+const decisions = [];
+let resolvedJevModel = null;
+async function askJevTurn(prompt) {
+  const started = performance.now();
+  const result = await askJev({
+    movementRules: SYSTEM_PROMPT.split('YOUR JOB each turn:')[0],
+    cameraRule: SYSTEM_PROMPT.slice(SYSTEM_PROMPT.indexOf('ONE CATCH:')),
+    screenStateAndFeedback: prompt,
+  }, { model: MODEL });
+  const responseMs = Math.round(performance.now() - started);
+  if (typeof result.model !== 'string' || !result.model) throw new Error('Jev response is missing the resolved model id');
+  if (resolvedJevModel && result.model !== resolvedJevModel) throw new Error('Jev model changed during the run; pin --model to a version.');
+  resolvedJevModel = result.model;
+  calls += 1;
+  inputTokens += result.usage?.input_tokens ?? 0;
+  outputTokens += result.usage?.output_tokens ?? 0;
+  decisions.push({ sector: activeSector + 1, simulationTime: round(raceTime, 3), responseMs, ...result.decision });
+  return JSON.stringify(result.decision);
+}
+const ask = isJev ? askJevTurn : agent.provider === 'codex' ? askCodex : askClaude;
 
 async function askWithRetry(prompt) {
   let lastError;
@@ -502,13 +536,14 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
       '',
       '"road" is the centreline as a list of [x, y] screen points in the direction of travel;'
       + ' "gate" is the two ends of the line you must cross to finish this sector.',
-      'Reply with the JSON key programme only.',
+      isJev ? 'Choose the next fixed-duration move.' : 'Reply with the JSON key programme only.',
     ].join('\n');
 
     let plan;
     try {
       plan = parsePlan(await askWithRetry(prompt));
     } catch (error) {
+      if (isJev) throw error; // Fail without overwriting a recording on auth/API/validation errors.
       feedback = `Your last reply could not be used (${error.message}). Reply with the JSON object only.`;
       process.stdout.write(`  ! ${error.message}\n`);
       continue;
@@ -576,7 +611,19 @@ record();
 
 const finished = driver.distance >= LAP_LENGTH_METERS - FINISH_MARGIN;
 const lap = {
-  model: MODEL,
+  model: resolvedJevModel ?? MODEL,
+  ...(isJev ? {
+    requestedModel: MODEL,
+    controlMode: 'reactive-choice-12-frames',
+    actionFrames: JEV_ACTION_FRAMES,
+    maxCallsPerSector: MAX_CALLS_PER_SECTOR,
+    decisions,
+    responseLatencyMs: {
+      calls: decisions.length,
+      total: decisions.reduce((sum, item) => sum + item.responseMs, 0),
+      mean: decisions.length ? round(decisions.reduce((sum, item) => sum + item.responseMs, 0) / decisions.length, 1) : null,
+    },
+  } : {}),
   ...(agent.reasoningEffort ? { reasoningEffort: agent.reasoningEffort } : {}),
   drivenAt: new Date().toISOString().slice(0, 10),
   finishTime: Number(raceTime.toFixed(3)),
@@ -586,8 +633,8 @@ const lap = {
   offTrackSeconds: Number((offTrackFrames / 60).toFixed(2)),
   wallHits,
   modelCalls: calls,
-  costUsd: Number(totalCostUsd.toFixed(4)),
-  ...(agent.provider === 'codex' ? {
+  costUsd: isJev ? null : Number(totalCostUsd.toFixed(4)),
+  ...(agent.provider !== 'claude' ? {
     usage: { inputTokens, cachedInputTokens, outputTokens },
   } : {}),
   recordHz: RECORD_HZ,

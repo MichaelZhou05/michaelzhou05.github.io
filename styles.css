@@ -3818,3 +3818,15 @@ body.arcade-mode #about .panel-title {
   .doodle, .starfield i { opacity: 1; }
   .marquee-track { animation: none; }
 }
+
+/* Methodology entry point and the unscored upcoming racer. */
+.race-method-link { margin: 16px 0 24px; }
+.race-method-link span { color: var(--muted); }
+.race-garage { display: flex; align-items: center; gap: 20px; padding: 16px 24px; border-top: 2px solid var(--edge); background: var(--shell-grey); }
+.race-garage .jev-car { flex: 0 0 72px; image-rendering: pixelated; }
+.race-garage strong { color: #6bcbef; font-weight: normal; }
+.race-garage p { margin: 4px 0 0; color: var(--muted); }
+@media (max-width: 480px) { .race-garage { gap: 12px; padding: 12px; } }
+
+#jev-garage[hidden], #jev-gauge[hidden] { display: none; }
+.gauge-label .dot-jev, #jev-progress { background: #6bcbef; }

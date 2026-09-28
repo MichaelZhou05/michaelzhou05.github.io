@@ -94,9 +94,11 @@
           <h2 class="section-title" data-icon="flag" data-icon-color="#e8e4f4">nordschleife eval</h2>
           <p class="section-intro">
             Two frontier models were sat down in front of a hand-drawn N&uuml;rburgring and told to drive it.
-            Neither is good at this. Take the keyboard and see if you are better. Heavily inspired by
+            Race their recorded laps and see if you are faster. Heavily inspired by
             <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>.
           </p>
+
+          <p class="race-method-link"><a href="./race-method.html">How this eval works →</a> <span>JSON plans, recorded laps, and what the clock measures.</span></p>
 
           <div class="race-window">
             <div class="race-window-bar">
@@ -160,7 +162,21 @@
                 <span class="progress-track"><span id="gpt-progress"></span></span>
                 <span class="gauge-note" id="sol-lap-note"></span>
               </div>
+              <div id="jev-gauge" class="gauge jev-stat" hidden>
+                <span class="gauge-label"><i class="dot-jev"></i> jev · reactive</span>
+                <span class="gauge-value"><span id="jev-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="jev-progress"></span></span>
+                <span class="gauge-note" id="jev-lap-note"></span>
+              </div>
             </div>
+            <aside id="jev-garage" class="race-garage" aria-label="Upcoming racer">
+              <svg class="jev-car" viewBox="0 0 48 28" width="72" height="42" aria-hidden="true" shape-rendering="crispEdges">
+                <path fill="#6bcbef" d="M8 8h8V4h16v4h8v16H8z" />
+                <path fill="#16141b" d="M17 8h14v6H17zM4 10h4v6H4zm36 0h4v6h-4zM4 20h4v6H4zm36 0h4v6h-4z" />
+                <path fill="#e8e4f4" d="M10 20h6v4h-6zm22 0h6v4h-6z" />
+              </svg>
+              <div><strong>JEV · in the garage</strong><p>TypeSafe AI · awaiting a real recorded lap. <a href="./race-method.html#jev">Could it have an advantage?</a></p></div>
+            </aside>
             <div class="race-log">
               <span id="race-log" aria-live="polite">USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.</span>
               <button id="restart-race" class="text-button" type="button">&#8635; reset</button>
@@ -598,11 +614,12 @@
         <section
           class="side-block locale-block"
           data-locale
-          data-place="Hong Kong SAR"
-          data-lat="22.3193"
-          data-lon="114.1694"
-          data-zoom="14"
+          data-place="Sheung Wan, Hong Kong SAR"
+          data-lat="22.2852"
+          data-lon="114.1514"
+          data-zoom="360"
           data-tz="Asia/Hong_Kong"
+          data-map="hong-kong"
         >
           <h2 class="side-title" data-icon="pin" data-icon-color="#9bbc0f">where i am</h2>
           <div class="locale-bar">
@@ -614,7 +631,7 @@
               class="locale-map"
               tabindex="0"
               role="img"
-              aria-label="A Game Boy-green map of Hong Kong SAR and the surrounding region with a blinking marker on Hong Kong SAR, where Michael currently is. Click or press enter to pull back to the whole world."
+              aria-label="A Game Boy-green map of Hong Kong SAR and the surrounding region with a blinking marker on Sheung Wan, Hong Kong SAR, where Michael currently is. Click or press enter to pull back to the whole world."
             ></canvas>
           </div>
           <p class="locale-readout">

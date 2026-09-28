@@ -1,0 +1,31 @@
+/* The same handheld-console palette, with a wider-spaced reading layout. */
+.method-page { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; font-size: 22px; line-height: 1.5; }
+.method-page nav { margin-bottom: 48px; }
+.method-header { border-bottom: 2px solid var(--edge); padding-bottom: 32px; }
+.method-header h1 { font-family: var(--font-pixel, 'Press Start 2P', monospace); font-size: clamp(26px, 6vw, 48px); line-height: 1.5; color: var(--bright); margin: 20px 0; }
+.method-lede { max-width: 640px; font-size: 28px; }
+.method-page section { padding-top: 36px; }
+.method-page h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; line-height: 1.8; color: var(--bright); margin-bottom: 18px; }
+.method-page p { margin: 16px 0; }
+.method-page strong { color: var(--bright); }
+.method-page .clock-callout { padding: 16px 20px; border-left: 4px solid var(--amber); background: var(--shell-grey); }
+.method-loop { padding-left: 30px; }
+.method-loop li { padding: 0 0 18px 8px; }
+.method-loop li::marker { color: var(--amber); }
+.plan-example { margin: 12px 0 0; padding: 20px; border: 2px solid var(--edge); background: #000; }
+.plan-example figcaption, .method-page caption { color: var(--muted); text-align: left; padding-bottom: 12px; }
+.plan-example pre { overflow-x: auto; font: 14px/1.8 monospace; color: var(--amber); }
+.results-scroll { overflow-x: auto; }
+.method-page table { width: 100%; border-collapse: collapse; font-size: 19px; }
+.method-page th, .method-page td { text-align: left; padding: 12px; border-bottom: 2px solid var(--edge); }
+.method-page td { white-space: nowrap; }
+.method-page th { color: var(--bright); font-weight: normal; }
+.source-links { padding-left: 24px; margin-bottom: 28px; }
+.method-page a:focus-visible, .results-scroll:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
+@media (max-width: 480px) {
+  .method-page { padding: 24px 16px 48px; font-size: 20px; }
+  .method-page nav { margin-bottom: 32px; }
+  .method-lede { font-size: 24px; }
+  .plan-example { padding: 12px; }
+  .plan-example pre { font-size: 12px; }
+}

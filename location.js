@@ -23,6 +23,7 @@
  * of it that is pretending to be the actual screen.
  */
 import { WORLD } from './assets/worldmap.js';
+import { HONG_KONG } from './assets/hongkong-map.js';
 
 const card = document.querySelector('[data-locale]');
 
@@ -50,6 +51,9 @@ if (card) {
   const zone = card.dataset.tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const zoom = Math.max(1, Number(card.dataset.zoom) || 1);
 
+  const localMap = card.dataset.map === 'hong-kong' ? HONG_KONG : null;
+  const localBytes = localMap ? Uint8Array.from(atob(localMap.bits), (c) => c.charCodeAt(0)) : null;
+
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   /* Bit `y * w + x`, most significant bit first — the packing the generator
@@ -76,13 +80,9 @@ if (card) {
   function window_() {
     const scale = wide ? 1 : zoom;
 
-    /* A cell never covers less than one pixel of the source map. Past that
-       point zooming stops adding coastline and starts stretching the same
-       pixel over two cells — which shows up as a coastline where every other
-       row is doubled, the one artefact that reads as broken rather than
-       low-resolution. `data-zoom` is therefore a request, and this is the
-       screen's honest answer to it. */
-    const step = Math.max(360 / scale / grid.cols, 360 / WORLD.w);
+    // Use the detailed local mask when close; retain the world mask when wide.
+    const sourceStep = !wide && localMap ? localMap.step : 360 / WORLD.w;
+    const step = Math.max(360 / scale / grid.cols, sourceStep);
     const spanLat = step * grid.rows;
 
     /* Latitude is clamped so a zoomed view never runs off the top or bottom of
@@ -116,18 +116,25 @@ if (card) {
        than the cell it falls in — pulled back to the whole world that cell is
        three degrees across, so it drops most of the Pacific, and a world map
        missing Hawaii looks broken rather than generalised. */
-    const patch = Math.max(1, Math.round(step / (360 / WORLD.w)));
+    const local = !wide && localMap;
+    const sourceStep = local ? local.step : 360 / WORLD.w;
+    const patch = Math.max(1, Math.round(step / sourceStep));
+    const sample = local ? (x, y) => {
+      if (x < 0 || x >= local.w || y < 0 || y >= local.h) return 0;
+      const index = y * local.w + x;
+      return (localBytes[index >> 3] >> (7 - (index & 7))) & 1;
+    } : isLand;
     const filled = new Uint8Array(cols * rows);
 
     for (let row = 0; row < rows; row += 1) {
       for (let col = 0; col < cols; col += 1) {
-        const originX = Math.floor(((left + col * step + 180) / 360) * WORLD.w);
-        const originY = Math.floor(((90 - (top - row * step)) / 180) * WORLD.h);
+        const originX = Math.floor((left + col * step - (local ? local.west : -180)) / sourceStep);
+        const originY = Math.floor(((local ? local.north : 90) - (top - row * step)) / sourceStep);
 
         let hit = 0;
         for (let dy = 0; dy < patch && !hit; dy += 1) {
           for (let dx = 0; dx < patch && !hit; dx += 1) {
-            hit = isLand(originX + dx, originY + dy);
+            hit = sample(originX + dx, originY + dy);
           }
         }
         filled[row * cols + col] = hit;

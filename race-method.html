@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="How the Nordschleife model racing experiment works: JSON driving plans, shared physics, recorded laps, and what the times actually measure." />
+  <meta name="theme-color" content="#070709" />
+  <title>How the race works // Michael Zhou</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./race-method.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <main id="main" class="method-page">
+    <nav aria-label="Back to game"><a href="./index.html#race">← Back to the race</a></nav>
+    <header class="method-header">
+      <p class="eyebrow">nordschleife eval / under the hood</p>
+      <h1>Think. Drive.<br />Replay.</h1>
+      <p class="method-lede">An AI reads a little map, chooses which keys to press, and tries to stay on the road. You race against the lap it recorded.</p>
+      <p class="clock-callout"><strong>The lap clock stops while the model thinks.</strong> A quick answer and a quick lap are two different things.</p>
+    </header>
+
+    <section aria-labelledby="loop-title">
+      <h2 id="loop-title">One turn behind the wheel</h2>
+      <ol class="method-loop">
+        <li><strong>Read the road.</strong> The model gets text containing JSON: its position, road centreline coordinates, the sector’s exit gate, road width and movement speed. It receives coordinates, not a screenshot.</li>
+        <li><strong>Choose a plan.</strong> It replies with directions and durations. There are nine choices: four directions, four diagonals, or no movement. It also chooses how long to hold each one.</li>
+        <li><strong>Drive, then check.</strong> The harness runs those keys at 60 simulation frames per second. If the car has not reached the gate, the model gets updated coordinates and feedback about grass, walls and distance remaining.</li>
+        <li><strong>Save the lap.</strong> Positions and headings are recorded 20 times per simulated second. This website replays those positions while you drive. Visiting the page makes no model calls.</li>
+      </ol>
+      <figure class="plan-example">
+        <figcaption>A tiny example reply — not a recorded winning plan</figcaption>
+        <pre><code>{
+  "plan": [
+    { "direction": "up", "frames": 24 },
+    { "direction": "up+right", "frames": 18 }
+  ],
+  "note": "Follow the bend."
+}</code></pre>
+        <p>Move up for 0.4 seconds, then diagonally for 0.3 seconds. That adds <strong>0.7 seconds</strong> to the lap if the whole plan runs, however long the model took to answer.</p>
+      </figure>
+    </section>
+
+    <section aria-labelledby="physics-title">
+      <h2 id="physics-title">What makes a good driver?</h2>
+      <p>This is an arcade navigation task. The car moves instantly in the chosen direction: no acceleration, gears or steering radius. Diagonals have the same total speed as straight moves. Grass slows the car from 170 to 74 screen pixels per second; the treeline pushes it back into the corridor.</p>
+      <p>A good plan follows a short, clean route, holds each direction for the right duration, and recovers from mistakes. The track is a hand-drawn approximation of the Nordschleife, scaled to 20.832 km across 18 sectors.</p>
+      <p>For the Opus/Sol plan mode, each turn allows at most 420 planned frames (7 simulated seconds), with 1–240 frames per move. Each sector allows up to five model calls and has a roughly 25-second driving budget. A plan stops early at the gate. The runner advances to the next sector window after its budget is spent even if the gate was not reached.</p>
+    </section>
+
+    <section aria-labelledby="results-title">
+      <h2 id="results-title">The recordings on the grid</h2>
+      <p>The Opus and Sol values below come from saved lap files dated 25 July 2026. Model names are the identifiers stored in those files.</p>
+      <div class="results-scroll" tabindex="0" role="region" aria-label="Recorded lap results; scroll horizontally on small screens">
+        <table>
+          <caption>Simulation time, not time spent waiting for answers</caption>
+          <thead><tr><th scope="col">Recorded model</th><th scope="col">Lap</th><th scope="col">On grass</th><th scope="col">Wall-hit frames</th><th scope="col">Model calls</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="./sol-lap.js">gpt-5.6-sol · xhigh</a></th><td>95.933 s</td><td>8.32 s</td><td>0</td><td>70</td></tr>
+            <tr><th scope="row"><a href="./opus-lap.js">claude-opus-5</a></th><td>114.117 s</td><td>33.77 s</td><td>72</td><td>32</td></tr>
+            <tr id="jev-result"><th scope="row">Jev · reactive mode</th><td colspan="4">No recorded run yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p id="jev-record-status">No real Jev run has been recorded yet.</p>
+      <p>Sol’s saved lap is 18.184 seconds faster and spends less time on grass. These artifacts do not record response latency, so they cannot tell us which model answered faster. A zero cost field is also not evidence that a run was free.</p>
+    </section>
+
+    <section id="jev" aria-labelledby="jev-title">
+      <h2 id="jev-title">Would JEV have an advantage?</h2>
+      <p><strong>Jev is TypeSafe AI’s decision model.</strong> Its <a href="https://docs.typesafe.ai/api">official API</a> returns typed choices, yes/no probabilities and scores. Unlike the current Opus/Sol interface, it does not write an arbitrary driving plan. The blue car stays in the garage until a real completed recording is available.</p>
+      <p>Selecting among a fixed set of actions is a natural fit for Jev’s Choice interface. But the current task asks for a whole sequence of directions <em>and durations</em>. Choosing “right” is only part of the problem: holding it too long can put the car on the grass.</p>
+      <p><strong>JSON is just the container.</strong> The Opus/Sol response contains actions, not probabilities. Producing valid JSON does not by itself show good spatial planning. Jev’s action probabilities are not measured probabilities of finishing the lap or avoiding a crash; that interpretation would need its own testing.</p>
+      <p>The new Jev adapter asks for one of the nine directions, uses the returned highest-probability choice, and holds it for 12 frames (0.2 simulated seconds). It then sends a fresh road observation. It allows up to 125 calls per sector, uses the same movement physics and camera as the offline runner, and saves action probabilities plus response times. Each request uses the current state and latest feedback, without a resumed chat history. This is a separate <strong>reactive mode</strong>: its shorter actions and more frequent feedback mean its times are not a controlled head-to-head comparison with the existing plan-mode recordings. To isolate the model’s contribution, run all models with the same action interval, observations and budgets.</p>
+      <p><a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev">TypeSafe reports fast responses on its own decision tasks</a>; that is not a measured racing result. Faster individual calls could shorten the time needed to generate a recording, although reactive mode makes more calls. It does <strong>not</strong> reduce the current lap time directly. To test both strengths, report simulated lap time and model response latency separately, alongside completion rate and mistakes. A future real-time mode would need an explicit rule for what the car does while waiting.</p>
+    </section>
+
+    <section aria-labelledby="limits-title">
+      <h2 id="limits-title">How much should you trust the ranking?</h2>
+      <p>Treat this as a playable experiment, not a general intelligence leaderboard. It shows two saved laps on one track, with no repeated-run averages or uncertainty estimates. The replay files preserve positions and summaries, not a complete audit trail of every prompt and response.</p>
+      <p>The human and offline models share the same movement function, but the surrounding conditions differ. Humans see an image and steer continuously; models read coordinates and act in batches. The browser currently cuts immediately to a new sector view, while the offline harness eases its camera. Browser updates use elapsed frame time; the runner uses fixed 1/60-second steps.</p>
+      <p>The model interfaces differ too: Opus runs through Claude Code, and Sol runs through Codex at xhigh reasoning with an output schema. Both resume their own session for feedback. These details matter when comparing results. A stricter benchmark would align camera behaviour, preserve full run logs, and repeat each configuration before making broader claims.</p>
+    </section>
+
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Read the actual setup</h2>
+      <ul class="source-links">
+        <li><a href="./scripts/run-opus-racer.mjs">Model runner</a> — the prompt, observations, call limits and recording.</li>
+        <li><a href="./scripts/jev-driver.mjs">Jev adapter</a> — probabilities become a fixed-duration key press; API calls stay outside the browser.</li>
+        <li><a href="./scripts/racer-plan.schema.json">Reply format</a> — the directions and durations a model returns.</li>
+        <li><a href="./race-sim.js">Shared movement rules</a> — how keys move a car.</li>
+        <li><a href="./app.js">Browser game</a> — human controls and replay playback.</li>
+      </ul>
+      <a class="button primary" href="./index.html#race">Try a lap →</a>
+    </section>
+  </main>
+  <script type="module" src="./race-method.js"></script>
+</body>
+</html>
