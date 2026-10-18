@@ -2207,14 +2207,7 @@ main section {
 
 .locale-map {
   display: block;
-  outline: none;
-  cursor: pointer;
   image-rendering: pixelated;
-}
-
-.locale-map:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: -2px;
 }
 
 .locale-readout {
@@ -2256,13 +2249,6 @@ main section {
   font-style: normal;
   font-size: 15px;
   color: var(--dim);
-}
-
-.locale-hint {
-  margin: 7px 2px 0 !important;
-  color: var(--muted) !important;
-  font: 400 16px / 1.4 var(--mono);
-  text-align: center;
 }
 
 /**

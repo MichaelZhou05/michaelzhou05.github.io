@@ -67,22 +67,13 @@ if (card) {
 
   /* ------------------------------------------------------------ the view */
 
-  /**
-   * Zoomed in, the card shows a window on the world; zoomed all the way out it
-   * shows the whole thing. Both are the same crop maths, so the click that
-   * swaps between them only has to change one number.
-   */
-  let wide = false;
   let grid = { cols: 0, rows: 0 };
   let terrain = null;
 
   /** Degrees per map cell, and the top-left corner of the window, in degrees. */
   function window_() {
-    const scale = wide ? 1 : zoom;
-
-    // Use the detailed local mask when close; retain the world mask when wide.
-    const sourceStep = !wide && localMap ? localMap.step : 360 / WORLD.w;
-    const step = Math.max(360 / scale / grid.cols, sourceStep);
+    const sourceStep = localMap ? localMap.step : 360 / WORLD.w;
+    const step = Math.max(360 / zoom / grid.cols, sourceStep);
     const spanLat = step * grid.rows;
 
     /* Latitude is clamped so a zoomed view never runs off the top or bottom of
@@ -116,7 +107,7 @@ if (card) {
        than the cell it falls in — pulled back to the whole world that cell is
        three degrees across, so it drops most of the Pacific, and a world map
        missing Hawaii looks broken rather than generalised. */
-    const local = !wide && localMap;
+    const local = localMap;
     const sourceStep = local ? local.step : 360 / WORLD.w;
     const patch = Math.max(1, Math.round(step / sourceStep));
     const sample = local ? (x, y) => {
@@ -290,21 +281,6 @@ if (card) {
     `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'} ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
 
   /* ------------------------------------------------------------ the wire */
-
-  const hint = card.querySelector('.locale-hint');
-
-  function toggle() {
-    wide = !wide;
-    hint.textContent = wide ? 'click back' : 'click for the whole world';
-    render();
-  }
-
-  canvas.addEventListener('click', toggle);
-  canvas.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    toggle();
-  });
 
   new ResizeObserver(fit).observe(canvas.parentElement);
   fit();
