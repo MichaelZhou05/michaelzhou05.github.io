@@ -12,6 +12,21 @@ for (const { label, lap, artifact } of matchedRuns) {
   assert.equal(lap.startedAt, config.startedAt, label);
   if (['local-road-v2-six-frames', 'screen-named-v3-six-frames', 'screen-focused-v5-six-frames'].includes(lap.protocolVersion)) verifyRacePhysics(lap, attempts);
   const valid = attempts.filter(row => row.status === 'ok');
+  if (config.networkRetries !== undefined) assert.equal(lap.networkRetries, config.networkRetries);
+  for (let i = 0; i < attempts.length; i++) {
+    const row = attempts[i];
+    if (row.retryOf !== undefined) {
+      assert.equal(config.networkRetries, 1);
+      assert.equal(row.retryOf, i);
+      const prior = attempts[i - 1];
+      assert.equal(prior.status, 'failed');
+      assert.equal(prior.retryOf, undefined);
+      assert.equal(row.sector, prior.sector);
+      assert.equal(row.simulationTime, prior.simulationTime);
+      assert.deepEqual(row.request, prior.request);
+      assert.equal(row.prompt, prior.prompt);
+    }
+  }
   assert.equal(lap.responseLatencyMs.attempts, attempts.length, label);
   assert.equal(lap.responseLatencyMs.calls, valid.length, label);
   assert.equal(lap.responseLatencyMs.failed, attempts.length - valid.length, label);

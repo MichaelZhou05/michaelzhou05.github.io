@@ -161,7 +161,7 @@ seeing its result:
 ```sh
 source ~/.bashrc
 export OPENROUTER_API_KEY
-node scripts/run-opus-racer.mjs --agent jev --model typesafe/jev-1.13 --mode reactive --sectors 18 --max-calls 2250 --out results/jev-2026-10-18-r5.js
+node scripts/run-opus-racer.mjs --agent jev --model typesafe/jev-1.13 --mode reactive --observation-format v2-baseline --sectors 18 --max-calls 2250 --out results/jev-2026-10-18-r5.js
 ```
 
 Stop at the first failed/invalid response, missed sector gate, total call cap, or
@@ -174,7 +174,7 @@ repeatability estimate or matched cross-model benchmark.
 
 ## Structured screen protocol v3
 
-New reactive runs default to `screen-named-v3-six-frames`; use
+The earlier structured format is `screen-named-v3-six-frames`; use
 `--observation-format absolute-named` explicitly in reproducible commands. The
 state uses named x/y screen coordinates, nearest road centre, plain-language
 relative position, ordered road samples continuing to the sector gate, and
@@ -188,3 +188,23 @@ No candidate action outcomes or evaluator scores enter the model input. The
 prespecified cases, admission thresholds, results, and source commits. It is a
 development diagnostic, not a repeated-lap benchmark. Historical v2 observations
 remain reproducible with `--observation-format v2-baseline`.
+
+## Route orientation v5 and transport recovery
+
+The current shared reactive default is `--observation-format surface-focused`,
+protocol `screen-focused-v5-six-frames`. On asphalt, the observation adds a local
+forward road tangent, road samples at fixed forward distances, relative positions
+and signed previous route progress. On grass, it uses the successful v3 recovery
+state and question unchanged. These are geometry and observed movement, not an
+action ranking, chosen waypoint or route optimizer. Jev chooses and executes the
+legal action unchanged. CLI providers receive the same per-turn objective and
+state. The v4 candidate, its regressions, all preflights and pilots are retained.
+
+`--network-retries 1` is an opt-in Jev HTTP transport experiment. Transient network
+or timeout failures and HTTP 408/429/500/502/503/504 can be retried once. No physics
+time or car/camera state advances before the retry. Both attempts are logged,
+with a one-based `retryOf` reference, and consume the same sector/total attempt
+budgets. All failures remain in latency totals and make total charge unknown.
+Validation failures and a second consecutive transient error terminate the run.
+The default remains no harness retries. This option is not supported for opaque
+CLI transports and must be disclosed in comparisons. r8 uses it; r1-r7 did not.

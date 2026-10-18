@@ -154,14 +154,14 @@ test('opt-in transient retry preserves state, logs failures, and respects attemp
   const { execFile } = await import('node:child_process');
   const { promisify } = await import('node:util');
   const { verifyRacePhysics } = await import('./verify-race-physics.mjs');
-  for (const [scenario, cap, expectedAttempts, expectedCalls] of [['recover', 3, 3, 2], ['always-timeout', 10, 2, 0], ['recover', 1, 1, 0], ['invalid', 10, 1, 0]]) {
+  for (const [scenario, cap, expectedAttempts, expectedCalls] of [['recover', 3, 3, 2], ['recover-v2', 3, 3, 2], ['always-timeout', 10, 2, 0], ['recover', 1, 1, 0], ['invalid', 10, 1, 0]]) {
     const dir = await mkdtemp(join(tmpdir(), 'jev-retry-'));
     try {
       const preload = join(dir, 'mock.mjs'), output = join(dir, 'lap.mjs');
       const payload = reply('right'); payload.usage.cost = .01;
       if (scenario === 'invalid') payload.answers.direction.choice = 'invalid';
       await writeFile(preload, `let calls=0;globalThis.fetch=async()=>{calls++;if(${JSON.stringify(scenario)}!=='invalid'&&(calls===1||${JSON.stringify(scenario)}==='always-timeout'))throw Object.assign(new Error('private detail'),{name:'TimeoutError'});return {ok:true,json:async()=>(${JSON.stringify(payload)})};};`);
-      await promisify(execFile)(process.execPath, ['--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--network-retries', '1', '--max-calls', String(cap), '--out', output], { env: { ...process.env, OPENROUTER_API_KEY: 'test-only' } });
+      await promisify(execFile)(process.execPath, ['--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--network-retries', '1', '--observation-format', scenario === 'recover-v2' ? 'v2-baseline' : 'surface-focused', '--max-calls', String(cap), '--out', output], { env: { ...process.env, OPENROUTER_API_KEY: 'test-only' } });
       const { jevLap } = await import(pathToFileURL(output));
       const [config, ...rows] = (await readFile(output + '.audit.jsonl', 'utf8')).trim().split('\n').map(JSON.parse);
       assert.equal(rows.length, expectedAttempts); assert.equal(jevLap.modelCalls, expectedCalls);
@@ -171,6 +171,7 @@ test('opt-in transient retry preserves state, logs failures, and respects attemp
         assert.equal(rows[1].retryOf, 1);
         assert.equal(rows[0].simulationTime, rows[1].simulationTime);
         assert.deepEqual(rows[0].request, rows[1].request);
+        assert.equal(rows[0].prompt, rows[1].prompt);
       }
       verifyRacePhysics(jevLap, rows);
     } finally { await rm(dir, { recursive: true, force: true }); }

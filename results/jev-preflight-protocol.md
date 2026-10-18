@@ -145,3 +145,11 @@ attempt limits. A second consecutive failure stops. Any failure keeps total cost
 unknown; no successful action is replayed or replaced. The no-retry default stays
 available. This differs from the original transport protocol and is labeled so.
 The full-course cap remains 2,250 attempts and 250 attempts per sector.
+
+r8 completed all 18 gates in 102.867 simulated seconds, with 8.88 seconds grass,
+zero wall-hit frames, and 1,035 valid requests out of 1,035 attempts. No retry was
+needed. Reported cost: $0.104299692. Wall time: 389.537 seconds; response median
+332.892 ms and p95 612.458 ms. The model snapshot remained 1.13-20260917.
+The driving source was committed in `9655e3e`. Its replay is now selected on the
+site, and every r1-r8 recording remains in the results manifest. This is a working
+full lap, not proof of completion reliability or superiority over GPT/Opus.

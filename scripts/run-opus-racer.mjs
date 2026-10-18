@@ -464,7 +464,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
   let sectorFrames = 0;
   let feedback = '';
   let note = '';
-  let retries = 0, retryOf = null;
+  let retries = 0, retryOf = null, retryPrompt = null;
 
   for (let call = 0; call < MAX_CALLS_PER_SECTOR; call += 1) {
     if (driver.distance >= gateDistance) break;
@@ -474,7 +474,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
       : buildObservation(course, driver, camera, index, gateDistance, previousAction);
     currentObservation = observation;
 
-    const prompt = [
+    const prompt = retryPrompt ?? [
       ...(namedObservation ? [] : [call === 0 && index === 0
         ? 'Lap start. You are on the grid at the first sector window.'
         : (feedback || 'New sector window. The camera has swung round to frame this stretch.')]),
@@ -494,13 +494,14 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
         && attempts.length < maxAttempts && call + 1 < MAX_CALLS_PER_SECTOR) {
         retries++;
         retryOf = attempts.length; // One-based audit attempt number, excluding config.
+        retryPrompt = prompt;
         process.stdout.write(`  ! ${error.message}; one logged retry at unchanged simulation state\n`);
         continue;
       }
       stopReason = error.message;
       break;
     }
-    retries = 0; retryOf = null;
+    retries = 0; retryOf = null; retryPrompt = null;
 
     const beforePosition = { x: driver.x, y: driver.y };
     const executedMoves = [];
