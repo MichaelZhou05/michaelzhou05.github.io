@@ -106,6 +106,9 @@ let currentObservation = null;
 let lastJevRequest = null;
 const maxAttempts = Number(readArg('--max-calls', '10000'));
 if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new Error('--max-calls must be a positive integer');
+const networkRetries = Number(readArg('--network-retries', '0'));
+if (![0, 1].includes(networkRetries) || (networkRetries && !isJev)) throw new Error('--network-retries supports 0 or 1 for Jev HTTP transport only');
+const transientJevFailure = message => /^(Jev request timed out|Jev network failure \([A-Z_]+\)|Jev HTTP (408|429 rate limit|500|502|503|504))$/.test(message);
 const MAX_CALLS_PER_SECTOR = reactive ? SECTOR_FRAME_BUDGET / ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
 if (isJev && !process.env.OPENROUTER_API_KEY) {
   throw new Error('Set OPENROUTER_API_KEY in your terminal before running jev-lap. No recording was changed.');
@@ -141,7 +144,7 @@ for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mj
 }
 await writeFile(auditPath, JSON.stringify({ type: 'config', startedAt, model: MODEL, provider: agent.provider,
   mode: reactive ? `reactive-choice-${ACTION_FRAMES}-frames` : 'legacy-plan', stateless: reactive, protocolVersion, observationFormat, actionFrames: reactive ? ACTION_FRAMES : null, sectorFrameBudget: SECTOR_FRAME_BUDGET, maxAttempts,
-  sectorLimit, startSector, reasoningEffort: agent.reasoningEffort, maxCallsPerSector: MAX_CALLS_PER_SECTOR,
+  sectorLimit, startSector, reasoningEffort: agent.reasoningEffort, maxCallsPerSector: MAX_CALLS_PER_SECTOR, networkRetries,
   runtime: { node: process.version, platform: process.platform, arch: process.arch },
   systemPrompt: SYSTEM_PROMPT, hashes }) + '\n', { flag: 'wx' });
 let lastUsage = null;
@@ -309,12 +312,13 @@ async function askJevTurn(prompt) {
 }
 const ask = isJev ? askJevTurn : agent.provider === 'codex' ? askCodex : askClaude;
 
-async function askMeasured(prompt) {
+async function askMeasured(prompt, retryOf = null) {
   if (attempts.length >= maxAttempts) throw new Error('Call budget exhausted');
   const started = performance.now();
   lastJevRequest = null;
   lastUsage = null; lastCost = null; lastResolvedModel = null; lastRequestId = null; lastProvider = null;
   const item = { sector: activeSector + 1, simulationTime: round(raceTime, 3), prompt };
+  if (retryOf !== null) item.retryOf = retryOf;
   try {
     const reply = await ask(prompt);
     item.reply = reply;
@@ -460,6 +464,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
   let sectorFrames = 0;
   let feedback = '';
   let note = '';
+  let retries = 0, retryOf = null;
 
   for (let call = 0; call < MAX_CALLS_PER_SECTOR; call += 1) {
     if (driver.distance >= gateDistance) break;
@@ -483,11 +488,19 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
 
     let plan;
     try {
-      plan = await askMeasured(prompt);
+      plan = await askMeasured(prompt, retryOf);
     } catch (error) {
+      if (isJev && retries < networkRetries && transientJevFailure(error.message)
+        && attempts.length < maxAttempts && call + 1 < MAX_CALLS_PER_SECTOR) {
+        retries++;
+        retryOf = attempts.length; // One-based audit attempt number, excluding config.
+        process.stdout.write(`  ! ${error.message}; one logged retry at unchanged simulation state\n`);
+        continue;
+      }
       stopReason = error.message;
       break;
     }
+    retries = 0; retryOf = null;
 
     const beforePosition = { x: driver.x, y: driver.y };
     const executedMoves = [];
@@ -578,6 +591,7 @@ const lap = {
   stopReason,
   sectorLimit,
   maxAttempts,
+  networkRetries,
   actionFrames: reactive ? ACTION_FRAMES : null,
   maxCallsPerSector: MAX_CALLS_PER_SECTOR,
   hashes,

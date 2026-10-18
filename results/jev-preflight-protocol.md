@@ -126,3 +126,22 @@ These thresholds admit exactly one new full-course attempt, r7, using
 is now the shared reactive default; older formats remain explicitly selectable.
 No live Opus/GPT trial is implied. Their existing legacy times are contextual,
 not matched comparisons. No hidden steering, action replacement or rescue retry.
+
+## Transport interruption and bounded recovery
+
+r7 kept the v5 driving interface unchanged. It stopped at attempt 83 on
+`Jev request timed out`, after 82 valid decisions, 1,517 m and 8.183 simulation
+seconds. There were no wall hits. The timeout occupied 598.623 wall-clock seconds
+(despite a 30-second active-time abort); the evidence does not establish whether
+the host was suspended. Successful calls reported $0.008432508; whole-run cost is
+unknown. Preserve r7 as an incomplete trial, not a navigation-budget failure.
+
+r8 is a separate transport-recovery attempt: identical v5 observations, model and
+physics, with explicit `--network-retries 1`. Only network/timeout, HTTP 408/429,
+and HTTP 500/502/503/504 failures can be retried once at the unchanged state.
+Invalid choices/distributions/JSON and other HTTP statuses still stop immediately.
+Every failed request and retry is audited; retries consume both sector and total
+attempt limits. A second consecutive failure stops. Any failure keeps total cost
+unknown; no successful action is replayed or replaced. The no-retry default stays
+available. This differs from the original transport protocol and is labeled so.
+The full-course cap remains 2,250 attempts and 250 attempts per sector.

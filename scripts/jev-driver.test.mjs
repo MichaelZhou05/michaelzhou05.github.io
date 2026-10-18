@@ -145,3 +145,34 @@ test('executes the supplied legal choice and flags its probability mismatch', ()
   assert.equal(decision.choiceMatchesArgmax, false);
   assert.deepEqual(decision.probabilities, data.answers.direction.probabilities);
 });
+
+test('opt-in transient retry preserves state, logs failures, and respects attempt caps', async () => {
+  const { mkdtemp, writeFile, readFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { pathToFileURL } = await import('node:url');
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { verifyRacePhysics } = await import('./verify-race-physics.mjs');
+  for (const [scenario, cap, expectedAttempts, expectedCalls] of [['recover', 3, 3, 2], ['always-timeout', 10, 2, 0], ['recover', 1, 1, 0], ['invalid', 10, 1, 0]]) {
+    const dir = await mkdtemp(join(tmpdir(), 'jev-retry-'));
+    try {
+      const preload = join(dir, 'mock.mjs'), output = join(dir, 'lap.mjs');
+      const payload = reply('right'); payload.usage.cost = .01;
+      if (scenario === 'invalid') payload.answers.direction.choice = 'invalid';
+      await writeFile(preload, `let calls=0;globalThis.fetch=async()=>{calls++;if(${JSON.stringify(scenario)}!=='invalid'&&(calls===1||${JSON.stringify(scenario)}==='always-timeout'))throw Object.assign(new Error('private detail'),{name:'TimeoutError'});return {ok:true,json:async()=>(${JSON.stringify(payload)})};};`);
+      await promisify(execFile)(process.execPath, ['--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--network-retries', '1', '--max-calls', String(cap), '--out', output], { env: { ...process.env, OPENROUTER_API_KEY: 'test-only' } });
+      const { jevLap } = await import(pathToFileURL(output));
+      const [config, ...rows] = (await readFile(output + '.audit.jsonl', 'utf8')).trim().split('\n').map(JSON.parse);
+      assert.equal(rows.length, expectedAttempts); assert.equal(jevLap.modelCalls, expectedCalls);
+      assert.equal(config.networkRetries, 1); assert.equal(jevLap.networkRetries, 1);
+      assert.equal(jevLap.costUsd, null);
+      if (rows.length > 1) {
+        assert.equal(rows[1].retryOf, 1);
+        assert.equal(rows[0].simulationTime, rows[1].simulationTime);
+        assert.deepEqual(rows[0].request, rows[1].request);
+      }
+      verifyRacePhysics(jevLap, rows);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  }
+});
