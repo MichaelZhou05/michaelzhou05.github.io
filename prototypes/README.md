@@ -12,9 +12,9 @@ PORT=4174 npm run dev
 
 Open `/prototypes/` on the printed local address. The persistent direction switcher links to:
 
-- `/prototypes/?view=arcade` — cartridge shelf, filterable project covers, native dialog case studies.
+- `/prototypes/?view=arcade` — compact cartridge shelf, direct demo links, native dialog case studies.
 - `/prototypes/?view=terminal` — functional local commands, clickable project shortcuts, command history.
-- `/prototypes/?view=workbench` — project selector beside the full engineering story; horizontal selector on phones.
+- `/prototypes/?view=workbench` — compact project index with Demo and Read more actions; stories open on demand.
 
 No build step or new runtime dependencies. Existing portrait and pixel fonts are reused. Fonts fall back to monospace offline. The lab is marked `noindex`; the root homepage is untouched.
 
@@ -22,9 +22,9 @@ No build step or new runtime dependencies. Existing portrait and pixel fonts are
 
 | Direction | Strength | Tradeoff |
 | --- | --- | --- |
-| Cartridge shelf | Most playful, visual scanning; demos and case studies clearly distinguished | A second click is needed for engineering detail; illustrative covers are not product screenshots |
+| Cartridge shelf | Small pixel cartridges; direct Demo and Read more actions | Engineering details stay behind Read more; compact glyphs replace large covers |
 | Terminal | Personal, exploratory; useful commands rather than a fake typing animation | Less immediate on a phone, so every project also has a normal button |
-| Workbench | Fastest access to ownership, design choices, evidence and limitations | Denser and less surprising; selected details run longer on mobile |
+| Workbench | Densest project scan with direct demo links and on-demand case studies | Less playful; a click is needed for the engineering story |
 
 Shared filters organize projects by technical interest. Case studies explain contribution, a decision, evidence/impact and limits. Direct demo/source actions let reviewers inspect the work. Existing work history remains a secondary link rather than a chronological wall. Race, Vim, coffee and the original secrets remain one link away; no iframe or copied benchmark implementation.
 
@@ -48,7 +48,7 @@ The terminal is an original fit for this site's existing Vim/retro personality, 
 | --- | --- | --- |
 | Nordschleife | Root README, `app.js`, `race-sim.js`, `race-method.html` | Describes shared physics/replays, not new race results. Notes approximate track and unmatched controls. No Jev internals changed. |
 | learn NvChad | Root Vim entry, `vim-game.js`; [linked repository README](https://github.com/MichaelZhou05/learnNvim) fetched through GitHub API | Trainer state/drill behavior comes from the README. Browser simulation is not the real Neovim runtime. |
-| Playground AI | Existing `index.html` project entry | 1,000+ is a design target, not adoption. The old GitHub link only targets a profile, so no project repository or demo is implied. |
+| Playground AI | Existing `index.html` project entry and owner-provided demo URL | 1,000+ is a design target, not adoption. The old GitHub link only targets a profile, so no project repository is implied. The owner supplied a development workspace demo on October 18; its exact URL is linked without claiming unauthenticated access. |
 | Everyday dev benchmark | Existing `index.html` project entry | Eight categories/three in-house are portfolio-reported. No fabricated scores or decorative chart bars presented as results. Repository remains private. |
 | Amdahl | Existing `index.html` project entry | 10,000+ pages / 85% are explicitly portfolio-reported; no independent measurement artifact available. |
 
@@ -67,3 +67,7 @@ PORTFOLIO_URL=http://127.0.0.1:4174 node scripts/check-portfolio-prototypes.cjs
 The browser smoke script checks all three directions at 1280px and 390px, page overflow, filtering, dialog dismissal, command errors/history, terminal focus restoration, reduced-motion styling, original game elements and JavaScript errors. It saves screenshots in the OS temporary directory for visual inspection. `NODE_PATH` may point to an existing Playwright installation; no project dependency is required.
 
 Manual visual inspection covers desktop and mobile layouts plus the case-study treatment. Native links/buttons, labelled input, skip link, visible focus, native modal focus trapping/Escape and reduced-motion CSS are implemented. This is not a full screen-reader audit. Touch project navigation is available; the original Vim race still requires a keyboard.
+
+## Compact discovery revision
+
+All directions now keep full case studies closed until requested. The shelf replaces large cover illustrations with small glyphs, the workbench becomes a dense project index, and terminal shortcuts expose the same Demo / Read more choices. The shorter intro puts projects closer to the top. Playground links directly to the owner-provided development workspace; the research browser could not inspect that URL, so demo availability/login requirements remain unverified.

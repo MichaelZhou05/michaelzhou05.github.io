@@ -28,5 +28,8 @@ test("every case study exposes evidence, limitations and a real source destinati
     assert.match(p.source, /^(https:\/\/|\.\.\/)/);
     assert.equal(p.flow.length, 3);
   }
-  assert.equal(projects.find((p) => p.id === "playground").demo, undefined);
+  assert.equal(
+    projects.find((p) => p.id === "playground").demo,
+    "https://development.playground-learning.space/workspace/yWG2GPqOIy7KqxWbWNbI",
+  );
 });

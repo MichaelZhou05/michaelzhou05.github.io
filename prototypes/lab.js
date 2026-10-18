@@ -22,13 +22,13 @@ const modes = {
   workbench: [
     "03 / PROJECT WORKBENCH",
     "Open it up. See how it works.",
-    "Select a project on the left; inspect the engineering story on the right.",
+    "Scan the index. Launch a demo or open a project’s story.",
   ],
 };
 $("#mode-label").textContent = modes[view][0];
 $("#mode-title").textContent = modes[view][1];
 $("#mode-description").textContent = modes[view][2];
-let active = projects[0].id;
+
 let category = "All projects";
 let history = [],
   historyIndex = 0;
@@ -36,8 +36,11 @@ const filtered = () =>
   projects.filter(
     (p) => category === "All projects" || p.category === category,
   );
-function art(p) {
-  return `<div class="project-art art-${p.id}" aria-hidden="true"><span class="art-grid"></span><span class="art-glyph">${p.glyph}</span><span class="art-code">${p.flow[0]}<br>↓<br>${p.flow[2]}</span><span class="art-caption">MZ / ${p.id.toUpperCase()}</span></div>`;
+function quickActions(p) {
+  return `<div class="quick-actions">${p.demo ? `<a class="button primary" href="${p.demo}" aria-label="Demo: ${p.title}">Demo ↗</a>` : ""}<button class="button" data-project="${p.id}" aria-label="Read more about ${p.title}">Read more →</button></div>`;
+}
+function compactProject(p, index, row = false) {
+  return `<article class="${row ? "project-row" : "cartridge"}" style="--project:${p.color}"><span class="mini-glyph" aria-hidden="true">${p.glyph}</span><div class="compact-copy"><p class="project-category">0${index + 1} / ${p.category}</p><h3>${p.title}</h3><p>${p.subtitle}</p></div>${quickActions(p)}</article>`;
 }
 function links(p) {
   return `<div class="actions">${p.demo ? `<a class="button primary" href="${p.demo}">${p.demoLabel} ↗</a>` : '<span class="availability">No public demo linked</span>'}<a class="button" href="${p.source}">${p.sourceLabel} ↗</a>${p.extra ? `<a href="${p.extra}">${p.extraLabel} ↗</a>` : ""}</div>`;
@@ -47,11 +50,6 @@ function detail(p, modal = false) {
 }
 function openProject(id) {
   const p = projects.find((p) => p.id === id);
-  active = id;
-  if (view === "workbench") {
-    render();
-    return;
-  }
   $("#case-content").innerHTML = detail(p, true);
   $("#case-dialog").showModal();
 }
@@ -76,7 +74,6 @@ function filter(next) {
 }
 function render() {
   const list = filtered();
-  if (!list.some((p) => p.id === active)) active = list[0]?.id;
   $("#count").textContent = `${String(list.length).padStart(2, "0")} PROJECTS`;
   $("#filters").innerHTML = categories
     .map(
@@ -96,13 +93,13 @@ function render() {
     );
   if (view === "arcade")
     $("#stage").innerHTML =
-      `<div class="shelf">${list.map((p, i) => `<button class="cartridge" data-project="${p.id}" style="--project:${p.color}"><span class="cart-top"><span>0${i + 1} / ${p.category}</span><span>↗</span></span>${art(p)}<span class="cart-body"><strong>${p.title}</strong><span>${p.subtitle}</span><small>${p.demo ? "PLAYABLE + CASE STUDY" : "CASE STUDY / PORTFOLIO EVIDENCE"}</small></span><span class="pins" aria-hidden="true"></span></button>`).join("")}</div>`;
+      `<div class="shelf">${list.map((p, i) => compactProject(p, i)).join("")}</div>`;
   if (view === "workbench")
     $("#stage").innerHTML =
-      `<div class="workbench"><nav class="project-list" aria-label="Choose case study">${list.map((p) => `<button data-project="${p.id}" aria-pressed="${p.id === active}" style="--project:${p.color}"><span>${p.glyph}</span><strong>${p.title}</strong><small>${p.category}</small></button>`).join("")}</nav><div class="work-detail" aria-live="polite">${detail(projects.find((p) => p.id === active))}</div></div>`;
+      `<div class="project-index">${list.map((p, i) => compactProject(p, i, true)).join("")}</div>`;
   if (view === "terminal") {
     $("#stage").innerHTML =
-      `<div class="terminal-layout"><div class="terminal"><div class="window-bar"><span>● ● ●</span><span>portfolio.sh — visitor session</span></div><div id="transcript" role="log" aria-label="Command output"><p class="terminal-welcome">Welcome, curious human.<br>Five projects mounted. Nothing to install.</p><p>Try <b>help</b>, <b>open race</b>, or <b>filter tools</b>.</p></div><form id="command-form"><label for="command">visitor@mz:~$</label><input id="command" name="command" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help" aria-describedby="terminal-hint"><button>Run ↵</button></form><p id="terminal-hint">↑ ↓ command history · commands are local to this page</p></div><nav class="terminal-projects" aria-label="Clickable project shortcuts"><p class="eyebrow">OR JUST CLICK SOMETHING</p>${list.map((p) => `<button data-project="${p.id}" style="--project:${p.color}"><span>${p.glyph}</span><strong>${p.title}</strong><small>open ${p.id} ↗</small></button>`).join("")}</nav></div>`;
+      `<div class="terminal-layout"><div class="terminal"><div class="window-bar"><span>● ● ●</span><span>portfolio.sh — visitor session</span></div><div id="transcript" role="log" aria-label="Command output"><p class="terminal-welcome">Welcome, curious human.<br>Five projects mounted. Nothing to install.</p><p>Try <b>help</b>, <b>open race</b>, or <b>filter tools</b>.</p></div><form id="command-form"><label for="command">visitor@mz:~$</label><input id="command" name="command" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="help" aria-describedby="terminal-hint"><button>Run ↵</button></form><p id="terminal-hint">↑ ↓ command history · commands are local to this page</p></div><nav class="terminal-projects" aria-label="Clickable project shortcuts"><p class="eyebrow">OR JUST CLICK SOMETHING</p>${list.map((p) => `<div class="terminal-shortcut" style="--project:${p.color}"><strong>${p.title}</strong>${quickActions(p)}</div>`).join("")}</nav></div>`;
     bindTerminal();
   }
   $("#stage")
@@ -111,8 +108,6 @@ function render() {
       b.addEventListener("click", () => {
         const id = b.dataset.project;
         openProject(id);
-        if (view === "workbench")
-          document.querySelector(`[data-project="${id}"]`).focus();
       }),
     );
 }

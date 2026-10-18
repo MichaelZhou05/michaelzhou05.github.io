@@ -35,16 +35,15 @@ const base = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
         .getByRole("button", { name: "All projects", exact: true })
         .click();
       await page.locator('[data-project="vim"]').click();
-      if (view !== "workbench") {
-        assert(await page.locator("dialog").evaluate((el) => el.open));
-        await page.keyboard.press("Escape");
-        assert(!(await page.locator("dialog").evaluate((el) => el.open)));
-      } else
-        assert(
-          (await page.locator(".work-detail").innerText()).includes(
-            "learn NvChad",
-          ),
-        );
+      assert(await page.locator("dialog").evaluate((el) => el.open));
+      await page.keyboard.press("Escape");
+      assert(!(await page.locator("dialog").evaluate((el) => el.open)));
+      assert.equal(
+        await page
+          .getByRole("link", { name: "Demo: Playground AI", exact: true })
+          .getAttribute("href"),
+        "https://development.playground-learning.space/workspace/yWG2GPqOIy7KqxWbWNbI",
+      );
     }
   }
   await page.goto(`${base}/prototypes/?view=terminal`);
@@ -52,6 +51,7 @@ const base = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
     "help",
     "ls",
     "demo playground",
+    "demo amdahl",
     "source vim",
     "nonsense",
     "<script>bad</script>",

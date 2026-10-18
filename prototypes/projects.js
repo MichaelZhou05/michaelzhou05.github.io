@@ -71,8 +71,10 @@ export const projects = [
     evidence:
       "The existing portfolio reports Duke OIT procurement and a design target of 1,000+ users. That is a capacity target, not verified adoption.",
     limit:
-      "No project-specific public repository or live demo is linked in the current portfolio.",
+      "A development workspace demo is available; no project-specific public repository is linked.",
     flow: ["COURSE DOCUMENTS", "RETRIEVE CONTEXT", "CITED ANSWER"],
+    demo: "https://development.playground-learning.space/workspace/yWG2GPqOIy7KqxWbWNbI",
+    demoLabel: "Try Playground",
     source: "../index.html#projects",
     sourceLabel: "Read original project entry",
   },
