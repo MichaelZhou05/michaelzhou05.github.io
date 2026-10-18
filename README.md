@@ -143,3 +143,11 @@ All new reactive providers use the same six-frame interval and observation field
 The original Jev r1–r4 trials used 12 frames; they remain separate historical
 configurations. See the protocol document for the 2,250-call rerun cap and its
 225-second maximum driving-time tradeoff.
+
+The new reactive default is `screen-named-v3-six-frames`: structured state with
+named screen coordinates, the actual car position, nearest road centre, road
+geometry continuing through the gate, and explicit action descriptions. Jev gets
+this object directly through Choice; it no longer receives JSON embedded in a
+prose string. `--observation-format v2-baseline` retains the previous format.
+The fixed-state comparison and pilot are documented in
+[the input experiment](results/jev-preflight-protocol.md).

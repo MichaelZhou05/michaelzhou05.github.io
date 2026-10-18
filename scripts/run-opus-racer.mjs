@@ -93,7 +93,7 @@ const isJev = agent.provider === 'openrouter';
 const matched = readArg('--mode', '') === 'reactive';
 if (readArg('--mode', '') && !matched) throw new Error('Use --mode reactive or omit for legacy mode');
 const reactive = isJev || matched;
-const observationFormat = readArg('--observation-format', 'v2-baseline');
+const observationFormat = readArg('--observation-format', reactive ? 'absolute-named' : 'v2-baseline');
 if (!['v2-baseline', 'absolute-named'].includes(observationFormat)) throw new Error('Use --observation-format v2-baseline or absolute-named');
 const namedObservation = observationFormat === 'absolute-named';
 if (namedObservation && !reactive) throw new Error('Named observations require reactive mode');
@@ -320,7 +320,7 @@ async function askMeasured(prompt) {
     return plan;
   } catch (error) {
     // Only locally defined Jev messages/statuses are safe to persist; never raw CLI stderr.
-    const safeJevError = isJev && /^(Jev HTTP [0-9]{3}( rate limit)?|Jev returned an invalid direction choice|Jev returned an invalid probability distribution|Jev returned invalid confidence|Jev response is missing the resolved model id|Jev model changed during the run; pin --model to a version\.)$/.test(error.message);
+    const safeJevError = isJev && /^(Jev HTTP [0-9]{3}( rate limit)?|Jev request timed out|Jev network failure \((?:UNKNOWN|ECONNRESET|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET)\)|Jev response was not valid JSON|Jev returned an invalid direction choice|Jev returned an invalid probability distribution|Jev returned invalid confidence|Jev response is missing the resolved model id|Jev model changed during the run; pin --model to a version\.)$/.test(error.message);
     item.status = 'failed';
     item.failure = safeJevError ? error.message : 'Provider call or action validation failed';
     if (safeJevError && error.validation) item.validation = error.validation;
@@ -466,9 +466,9 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
     currentObservation = observation;
 
     const prompt = [
-      call === 0 && index === 0
+      ...(namedObservation ? [] : [call === 0 && index === 0
         ? 'Lap start. You are on the grid at the first sector window.'
-        : (feedback || 'New sector window. The camera has swung round to frame this stretch.'),
+        : (feedback || 'New sector window. The camera has swung round to frame this stretch.')]),
       '',
       'Screen state:',
       JSON.stringify(observation),

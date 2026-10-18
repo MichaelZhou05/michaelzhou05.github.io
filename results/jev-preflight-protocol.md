@@ -59,3 +59,46 @@ The next prespecified pilot uses `--observation-format absolute-named --sectors 
 the same `candidateState` and `candidateQuestion` functions as the preflight.
 All providers can receive the same geometry and action descriptions in reactive
 mode. Only Jev receives its request through the typed Choice interface.
+
+## Pilot result and full-course admission
+
+The pilot cleared both gates: 2,258 m at 11.500 simulated seconds, 116 valid
+requests, 0.02 seconds on grass, zero wall-hit frames. OpenRouter reported
+$0.009506532 USD; wall time was 55.918 seconds. It served the same 1.13 snapshot.
+It stopped at the requested two-sector limit, not a navigation failure. Its full
+audit and replay match re-executed physics (JSON serialization normalizes -0 to 0).
+The 80% asphalt threshold was exceeded: approximately 99.8%.
+
+A single full-course attempt is therefore admitted as `jev-2026-10-18-r6.js`,
+with 18 sectors and 2,250 maximum calls. The Jev request representation and action
+question remain identical to the pilot. Named observations are now the default
+for all reactive providers; `--observation-format v2-baseline` preserves the old
+option. CLI prompts use only the shared structured state and action descriptions
+(no extra prose feedback unavailable to Jev). Physics and six-frame cadence stay
+unchanged. Stop on the first failure, missed gate, total call cap or finish.
+
+## r6 failure and route-orientation diagnostic
+
+r6 cleared six gates but oscillated at the entrance to sector 7. At 49.8 simulated
+seconds it had a high-water distance of 7,127 m, 1.3 seconds of grass and no wall
+hits. 500 decisions were valid; attempt 501 failed with an unclassified provider
+or validation error. Its total charge is unknown; successful responses reported
+$0.045261258. Preserve the failed trial. The final error cannot be reconstructed
+from its audit; subsequent runs retain safe network/timeout/JSON categories.
+
+v3 included an ordered polyline but no explicit local forward direction and no
+signed route progress. The sector 7 finish lies right of the car while the road
+initially goes up-left. Jev repeatedly reversed toward the finish instead of
+following that bend. v4 adds raw local forward tangent, named road samples at
+fixed forward arc distances, their car-relative positions, and signed previous
+progress (including backward movement). It retains the whole road and gate.
+No action scoring, selected waypoint or steering policy is sent to any model.
+
+Before another lap: compare v3 and v4 once on the previous 16 cases plus six exact
+r6 sector-7 observations (calls 3, 7, 13, 16, 31, 91): 44 requests maximum, rotated
+format order. Require v4 >=20/22 useful moves and all six loop observations to
+advance on asphalt. If admitted, run one diagnostic continuation from the exact
+r6 sector-7 entry state, including the unsettled camera, for <=150 calls. Require
+the gate within 12 simulation seconds, >=90% asphalt and zero walls. This is a
+fixture experiment, never a ranked/resumed lap. Only after passing both checks,
+admit one new full-course v4 attempt. Keep all outcomes, including failures.

@@ -50,14 +50,20 @@ export function parseJevDecision(response) {
 
 export async function askJev(state, { model = 'typesafe/jev-1.13', apiKey = process.env.OPENROUTER_API_KEY, fetchImpl = fetch, question = null } = {}) {
   if (!apiKey) throw new Error('Set OPENROUTER_API_KEY in your terminal to record a real Jev lap. Never put it in browser code.');
-  const response = await fetchImpl('https://openrouter.ai/api/alpha/decisions', {
+  let response;
+  try { response = await fetchImpl('https://openrouter.ai/api/alpha/decisions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(jevRequest(state, model, question)),
     signal: AbortSignal.timeout(30_000),
-  });
+  }); } catch (error) {
+    // Persist only known categories, never raw network messages, URLs, headers or bodies.
+    const code = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET'].includes(error.cause?.code) ? error.cause.code : 'UNKNOWN';
+    throw new Error(error.name === 'TimeoutError' || error.name === 'AbortError' ? 'Jev request timed out' : `Jev network failure (${code})`);
+  }
   // Do not print provider bodies: diagnostics should never echo credentials.
   if (!response.ok) throw new Error(`Jev HTTP ${response.status}${response.status === 429 ? ' rate limit' : ''}`);
-  const payload = await response.json();
+  let payload;
+  try { payload = await response.json(); } catch { throw new Error('Jev response was not valid JSON'); }
   return { decision: parseJevDecision(payload), model: payload.model, usage: payload.usage, requestId: payload.id ?? null, provider: payload.provider ?? null };
 }

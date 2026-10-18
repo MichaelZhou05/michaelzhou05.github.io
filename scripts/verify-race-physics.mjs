@@ -4,7 +4,7 @@ import { buildCourse, createDriver, createCamera, stepDriver, updateCamera, LAP_
 import { candidateState, candidateQuestion } from './racer-observation-v3.mjs';
 import { buildObservation, DIRECTION_KEYS } from './racer-protocol.mjs';
 
-export function verifyRacePhysics(lap, attempts) {
+export function verifyRacePhysics(lap, attempts, { onObservation } = {}) {
   const course = buildCourse(), driver = createDriver(course), camera = createCamera(course, 0);
   let frames = 0, grass = 0, walls = 0, previous = null, previousSector = 1;
   const recording = [[0, Math.round(driver.x), Math.round(driver.y), Number(driver.heading.toFixed(3))]];
@@ -26,6 +26,7 @@ export function verifyRacePhysics(lap, attempts) {
     }
     assert.deepEqual(delivered, JSON.parse(JSON.stringify(expectedObservation)), `observation at frame ${frames}`);
     assert.equal(row.simulationTime, Number((frames / 60).toFixed(3)));
+    onObservation?.(structuredClone({ driver, camera, index, previous }), row);
     if (row.status !== 'ok') continue;
     const { plan } = JSON.parse(row.reply);
     const start = { x: driver.x, y: driver.y, distance: driver.distance };
@@ -50,7 +51,7 @@ export function verifyRacePhysics(lap, attempts) {
     previous.gained = driver.distance - start.distance;
   }
   record();
-  assert.deepEqual(lap.frames, recording, 'all recorded positions and timestamps match executed choices');
+  assert.deepEqual(lap.frames, JSON.parse(JSON.stringify(recording)), 'all recorded positions and timestamps match executed choices');
   assert.equal(lap.distance, Math.round(driver.distance));
   assert.equal(lap.finished, driver.distance >= LAP_LENGTH_METERS - FINISH_MARGIN);
   assert.equal(lap.finishTime, Number((frames / 60).toFixed(3)));

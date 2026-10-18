@@ -171,3 +171,20 @@ hashes, runtime and returned model snapshot. Only Jev is authorized for this
 live rerun. No matched Opus/GPT measurement has been collected. r4 versus r5 is
 one before/after observation with multiple simultaneous changes, not an ablation,
 repeatability estimate or matched cross-model benchmark.
+
+## Structured screen protocol v3
+
+New reactive runs default to `screen-named-v3-six-frames`; use
+`--observation-format absolute-named` explicitly in reproducible commands. The
+state uses named x/y screen coordinates, nearest road centre, plain-language
+relative position, ordered road samples continuing to the sector gate, and
+per-action movement descriptions. Jev receives a structured state object, rather
+than a string containing another JSON document. Opus/GPT get the same state and
+action descriptions with their required JSON output interface. The original
+physics, six-frame controls, statelessness and stop budgets are unchanged.
+
+No candidate action outcomes or evaluator scores enter the model input. The
+[fixed-state preflight protocol](../results/jev-preflight-protocol.md) records the
+prespecified cases, admission thresholds, results, and source commits. It is a
+development diagnostic, not a repeated-lap benchmark. Historical v2 observations
+remain reproducible with `--observation-format v2-baseline`.
