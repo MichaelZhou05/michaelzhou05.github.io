@@ -20,7 +20,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { askJev } from './jev-driver.mjs';
+import { askJev, jevRequest } from './jev-driver.mjs';
 import { latencySummary, jevCost, PRICING, validateReactive } from './race-metrics.mjs';
 import { randomUUID, createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -43,6 +43,8 @@ import {
 } from '../race-sim.js';
 
 import { ACTION_FRAMES, PROTOCOL_VERSION, DIRECTION_KEYS, buildObservation, drivingPrompt } from './racer-protocol.mjs';
+
+import { candidateState, candidateQuestion, V3_OBJECTIVE } from './racer-observation-v3.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -91,6 +93,13 @@ const isJev = agent.provider === 'openrouter';
 const matched = readArg('--mode', '') === 'reactive';
 if (readArg('--mode', '') && !matched) throw new Error('Use --mode reactive or omit for legacy mode');
 const reactive = isJev || matched;
+const observationFormat = readArg('--observation-format', 'v2-baseline');
+if (!['v2-baseline', 'absolute-named'].includes(observationFormat)) throw new Error('Use --observation-format v2-baseline or absolute-named');
+const namedObservation = observationFormat === 'absolute-named';
+if (namedObservation && !reactive) throw new Error('Named observations require reactive mode');
+const protocolVersion = namedObservation ? 'screen-named-v3-six-frames' : PROTOCOL_VERSION;
+let currentObservation = null;
+let lastJevRequest = null;
 const maxAttempts = Number(readArg('--max-calls', '10000'));
 if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new Error('--max-calls must be a positive integer');
 const MAX_CALLS_PER_SECTOR = reactive ? SECTOR_FRAME_BUDGET / ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
@@ -116,16 +125,18 @@ const course = buildCourse(VIEW_WIDTH, VIEW_HEIGHT);
 const { track } = course;
 
 const round = (value, places = 0) => Number(value.toFixed(places));
-const SYSTEM_PROMPT = drivingPrompt({ reactive, typedChoice: isJev, maxPlanFrames: MAX_PLAN_FRAMES });
+const SYSTEM_PROMPT = namedObservation
+  ? V3_OBJECTIVE + (isJev ? '\nAnswer the typed Choice question.' : '\nReturn only JSON: {"plan":[{"direction":"up","frames":6}],"note":""}, replacing up with your chosen action. Exactly one six-frame move is allowed.')
+  : drivingPrompt({ reactive, typedChoice: isJev, maxPlanFrames: MAX_PLAN_FRAMES });
 const attempts = [];
 const startedAt = new Date().toISOString();
 const runStarted = performance.now();
 const hashes = {};
-for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/racer-protocol.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
+for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/racer-protocol.mjs', 'scripts/racer-observation-v3.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
   hashes[file] = createHash('sha256').update(await readFile(resolve(here, '..', file))).digest('hex');
 }
 await writeFile(auditPath, JSON.stringify({ type: 'config', startedAt, model: MODEL, provider: agent.provider,
-  mode: reactive ? `reactive-choice-${ACTION_FRAMES}-frames` : 'legacy-plan', stateless: reactive, protocolVersion: PROTOCOL_VERSION, actionFrames: reactive ? ACTION_FRAMES : null, sectorFrameBudget: SECTOR_FRAME_BUDGET, maxAttempts,
+  mode: reactive ? `reactive-choice-${ACTION_FRAMES}-frames` : 'legacy-plan', stateless: reactive, protocolVersion, observationFormat, actionFrames: reactive ? ACTION_FRAMES : null, sectorFrameBudget: SECTOR_FRAME_BUDGET, maxAttempts,
   sectorLimit, startSector, reasoningEffort: agent.reasoningEffort, maxCallsPerSector: MAX_CALLS_PER_SECTOR,
   runtime: { node: process.version, platform: process.platform, arch: process.arch },
   systemPrompt: SYSTEM_PROMPT, hashes }) + '\n', { flag: 'wx' });
@@ -272,10 +283,10 @@ const decisions = [];
 let resolvedJevModel = null;
 async function askJevTurn(prompt) {
   const started = performance.now();
-  const result = await askJev({
-    movementRules: SYSTEM_PROMPT,
-    screenStateAndFeedback: prompt,
-  }, { model: MODEL });
+  const state = namedObservation ? currentObservation : { movementRules: SYSTEM_PROMPT, screenStateAndFeedback: prompt };
+  const question = namedObservation ? candidateQuestion(state) : null;
+  lastJevRequest = jevRequest(state, MODEL, question);
+  const result = await askJev(state, { model: MODEL, question });
   const responseMs = Math.round(performance.now() - started);
   if (typeof result.model !== 'string' || !result.model) throw new Error('Jev response is missing the resolved model id');
   if (resolvedJevModel && result.model !== resolvedJevModel) throw new Error('Jev model changed during the run; pin --model to a version.');
@@ -297,6 +308,7 @@ const ask = isJev ? askJevTurn : agent.provider === 'codex' ? askCodex : askClau
 async function askMeasured(prompt) {
   if (attempts.length >= maxAttempts) throw new Error('Call budget exhausted');
   const started = performance.now();
+  lastJevRequest = null;
   lastUsage = null; lastCost = null; lastResolvedModel = null; lastRequestId = null; lastProvider = null;
   const item = { sector: activeSector + 1, simulationTime: round(raceTime, 3), prompt };
   try {
@@ -315,6 +327,7 @@ async function askMeasured(prompt) {
     throw new Error(item.failure);
 
   } finally {
+    if (namedObservation && isJev) item.request = lastJevRequest;
     item.responseMs = round(performance.now() - started, 3);
     item.usage = lastUsage;
     item.costUsd = lastCost;
@@ -447,7 +460,10 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
   for (let call = 0; call < MAX_CALLS_PER_SECTOR; call += 1) {
     if (driver.distance >= gateDistance) break;
 
-    const observation = buildObservation(course, driver, camera, index, gateDistance, previousAction);
+    const observation = namedObservation
+      ? candidateState(course, driver, camera, index, gateDistance, previousAction, 'absolute-named')
+      : buildObservation(course, driver, camera, index, gateDistance, previousAction);
+    currentObservation = observation;
 
     const prompt = [
       call === 0 && index === 0
@@ -456,6 +472,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
       '',
       'Screen state:',
       JSON.stringify(observation),
+      ...(namedObservation ? ['Action definitions:', JSON.stringify(candidateQuestion(observation).criteria)] : []),
       '',
       reactive ? 'Choose the next fixed-duration move using the movement rules.' : 'Reply with the JSON key programme only.',
     ].join('\n');
@@ -546,7 +563,7 @@ const lap = {
     decisions,
   } : {}),
   measurementVersion: 2,
-  protocolVersion: PROTOCOL_VERSION,
+  protocolVersion, observationFormat,
   sectorFrameBudget: SECTOR_FRAME_BUDGET,
   startedAt,
   wallTimeMs: round(performance.now() - runStarted, 3),

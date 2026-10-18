@@ -10,7 +10,7 @@ for (const { label, lap, artifact } of matchedRuns) {
   assert.equal(config.type, 'config', label);
   assert.deepEqual(lap.hashes, config.hashes, label);
   assert.equal(lap.startedAt, config.startedAt, label);
-  if (lap.protocolVersion === 'local-road-v2-six-frames') verifyRacePhysics(lap, attempts);
+  if (['local-road-v2-six-frames', 'screen-named-v3-six-frames'].includes(lap.protocolVersion)) verifyRacePhysics(lap, attempts);
   const valid = attempts.filter(row => row.status === 'ok');
   assert.equal(lap.responseLatencyMs.attempts, attempts.length, label);
   assert.equal(lap.responseLatencyMs.calls, valid.length, label);

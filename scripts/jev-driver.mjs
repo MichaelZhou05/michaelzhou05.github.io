@@ -3,12 +3,12 @@ import { ACTION_FRAMES, DIRECTION_KEYS } from './racer-protocol.mjs';
 export const JEV_ACTION_FRAMES = ACTION_FRAMES;
 export const JEV_DIRECTIONS = [...DIRECTION_KEYS.keys()];
 
-export function jevRequest(state, model = 'typesafe/jev-1.13') {
+export function jevRequest(state, model = 'typesafe/jev-1.13', question = null) {
   return {
     model,
     state,
     questions: {
-      direction: {
+      direction: question ?? {
         type: 'choice',
         instructions: `Which direction should the car move for the next ${JEV_ACTION_FRAMES} frames (${JEV_ACTION_FRAMES / 60} simulated seconds) to reach the sector gate quickly while staying on asphalt? Use the car-relative road and movementUnitVectors in state. Choose exactly one direction; a fresh observation follows this move.`,
         criteria: Object.fromEntries(JEV_DIRECTIONS.map((direction) => [direction,
@@ -48,12 +48,12 @@ export function parseJevDecision(response) {
   };
 }
 
-export async function askJev(state, { model = 'typesafe/jev-1.13', apiKey = process.env.OPENROUTER_API_KEY, fetchImpl = fetch } = {}) {
+export async function askJev(state, { model = 'typesafe/jev-1.13', apiKey = process.env.OPENROUTER_API_KEY, fetchImpl = fetch, question = null } = {}) {
   if (!apiKey) throw new Error('Set OPENROUTER_API_KEY in your terminal to record a real Jev lap. Never put it in browser code.');
   const response = await fetchImpl('https://openrouter.ai/api/alpha/decisions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(jevRequest(state, model)),
+    body: JSON.stringify(jevRequest(state, model, question)),
     signal: AbortSignal.timeout(30_000),
   });
   // Do not print provider bodies: diagnostics should never echo credentials.

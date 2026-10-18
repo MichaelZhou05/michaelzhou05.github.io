@@ -1,6 +1,7 @@
 /** Independently execute recorded choices and check v2 observations and saved endpoints. No inference. */
 import assert from 'node:assert/strict';
 import { buildCourse, createDriver, createCamera, stepDriver, updateCamera, LAP_LENGTH_METERS, FINISH_MARGIN } from '../race-sim.js';
+import { candidateState, candidateQuestion } from './racer-observation-v3.mjs';
 import { buildObservation, DIRECTION_KEYS } from './racer-protocol.mjs';
 
 export function verifyRacePhysics(lap, attempts) {
@@ -16,7 +17,14 @@ export function verifyRacePhysics(lap, attempts) {
     previousSector = row.sector;
     const gate = index === 17 ? LAP_LENGTH_METERS - FINISH_MARGIN : course.track.sectors[index].endDistance;
     const delivered = JSON.parse(row.prompt.split('Screen state:\n')[1].split('\n')[0]);
-    assert.deepEqual(delivered, JSON.parse(JSON.stringify(buildObservation(course, driver, camera, index, gate, previous))), `observation at frame ${frames}`);
+    const expectedObservation = lap.protocolVersion === 'screen-named-v3-six-frames'
+      ? candidateState(course, driver, camera, index, gate, previous, 'absolute-named')
+      : buildObservation(course, driver, camera, index, gate, previous);
+    if (row.request) {
+      assert.deepEqual(row.request.state, JSON.parse(JSON.stringify(expectedObservation)));
+      assert.deepEqual(row.request.questions.direction, candidateQuestion(expectedObservation));
+    }
+    assert.deepEqual(delivered, JSON.parse(JSON.stringify(expectedObservation)), `observation at frame ${frames}`);
     assert.equal(row.simulationTime, Number((frames / 60).toFixed(3)));
     if (row.status !== 'ok') continue;
     const { plan } = JSON.parse(row.reply);

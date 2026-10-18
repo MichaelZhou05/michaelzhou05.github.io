@@ -39,3 +39,23 @@ candidate; break a tie in favour of absolute coordinates, which preserve the
 screen-position convention of the legacy racers. The pilot must clear both gates
 and spend at least 80% of its simulation time on asphalt before a full-course
 attempt. Retain failed pilots. No repeated full laps to select a lucky result.
+
+## First batch result
+
+All 48 requests succeeded and served `typesafe/jev-1.13-20260917`. The reported
+charge was $0.004104912 USD. Baseline passed 10/16; absolute-named and relative-named
+each passed 16/16, including all three r5 grass-recovery states. The absolute
+format was selected by the prespecified tie-break. This shows improved actions
+on these fixed observations, not a completion-rate or lap-time result.
+
+The baseline again failed all four r5 cases and two synthetic recovery cases.
+Neither candidate did. No scores, ranked actions, selected waypoint or computed
+route policy were sent to Jev. The fixtures, exact requests and responses are in
+`jev-2026-10-18-input-preflight-1.jsonl`, originally committed with experiment
+source in `6b8a4a1`. `npm run test:race-results` rechecks all scores and requests.
+
+The next prespecified pilot uses `--observation-format absolute-named --sectors 2
+--max-calls 500` and writes `jev-2026-10-18-v3-pilot.js` plus its audit. It shares
+the same `candidateState` and `candidateQuestion` functions as the preflight.
+All providers can receive the same geometry and action descriptions in reactive
+mode. Only Jev receives its request through the typed Choice interface.
