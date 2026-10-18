@@ -102,3 +102,27 @@ r6 sector-7 entry state, including the unsettled camera, for <=150 calls. Requir
 the gate within 12 simulation seconds, >=90% asphalt and zero walls. This is a
 fixture experiment, never a ranked/resumed lap. Only after passing both checks,
 admit one new full-course v4 attempt. Keep all outcomes, including failures.
+
+The first orientation batch stopped at request 25 (30-second API timeout). Its
+24 successful calls scored v3 12/12 and v4 10/12; v4 failed both sector-4 grass
+recoveries. Source and partial audit are retained in commit `979d2a9`.
+No pilot or lap was admitted from this partial batch.
+
+Next candidate, `surface-focused` (v5), delivers the exact v3 state and question
+when on grass and the v4 orientation state and question when on asphalt. This
+switch uses only the observed surface; it chooses no direction or waypoint. The
+44-call comparison repeats the same fixed cases with v3 as control. The earlier
+20/22 and six-loop-case threshold, single sector-7 diagnostic, and full-course
+admission criteria apply unchanged. Keep every attempt and stop on API failure.
+
+v5 passed 22/22 fixed states, including all six loop observations; v3 passed
+21/22. The 44 requests cost $0.004486818. The single sector-7 pilot then cleared
+the gate in 7.0167 simulation seconds, with 0.5333 seconds grass (92.4% asphalt),
+zero walls and 71 decisions; cost $0.007306698. All used the same 1.13 snapshot.
+The saved requests, choices and pilot trajectory have been re-executed locally.
+
+These thresholds admit exactly one new full-course attempt, r7, using
+`--observation-format surface-focused --sectors 18 --max-calls 2250`. This format
+is now the shared reactive default; older formats remain explicitly selectable.
+No live Opus/GPT trial is implied. Their existing legacy times are contextual,
+not matched comparisons. No hidden steering, action replacement or rescue retry.

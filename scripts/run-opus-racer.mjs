@@ -44,7 +44,8 @@ import {
 
 import { ACTION_FRAMES, PROTOCOL_VERSION, DIRECTION_KEYS, buildObservation, drivingPrompt } from './racer-protocol.mjs';
 
-import { candidateState, candidateQuestion, V3_OBJECTIVE } from './racer-observation-v3.mjs';
+import { candidateState, candidateQuestion } from './racer-observation-v3.mjs';
+import { focusedState, focusedQuestion } from './racer-observation-v5.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -93,11 +94,14 @@ const isJev = agent.provider === 'openrouter';
 const matched = readArg('--mode', '') === 'reactive';
 if (readArg('--mode', '') && !matched) throw new Error('Use --mode reactive or omit for legacy mode');
 const reactive = isJev || matched;
-const observationFormat = readArg('--observation-format', reactive ? 'absolute-named' : 'v2-baseline');
-if (!['v2-baseline', 'absolute-named'].includes(observationFormat)) throw new Error('Use --observation-format v2-baseline or absolute-named');
-const namedObservation = observationFormat === 'absolute-named';
+const observationFormat = readArg('--observation-format', reactive ? 'surface-focused' : 'v2-baseline');
+if (!['v2-baseline', 'absolute-named', 'surface-focused'].includes(observationFormat)) throw new Error('Use --observation-format v2-baseline, absolute-named or surface-focused');
+const focusedObservation = observationFormat === 'surface-focused';
+const namedObservation = observationFormat !== 'v2-baseline';
+const makeNamedState = focusedObservation ? focusedState : (...args) => candidateState(...args, 'absolute-named');
+const makeQuestion = focusedObservation ? focusedQuestion : candidateQuestion;
 if (namedObservation && !reactive) throw new Error('Named observations require reactive mode');
-const protocolVersion = namedObservation ? 'screen-named-v3-six-frames' : PROTOCOL_VERSION;
+const protocolVersion = focusedObservation ? 'screen-focused-v5-six-frames' : namedObservation ? 'screen-named-v3-six-frames' : PROTOCOL_VERSION;
 let currentObservation = null;
 let lastJevRequest = null;
 const maxAttempts = Number(readArg('--max-calls', '10000'));
@@ -126,13 +130,13 @@ const { track } = course;
 
 const round = (value, places = 0) => Number(value.toFixed(places));
 const SYSTEM_PROMPT = namedObservation
-  ? V3_OBJECTIVE + (isJev ? '\nAnswer the typed Choice question.' : '\nReturn only JSON: {"plan":[{"direction":"up","frames":6}],"note":""}, replacing up with your chosen action. Exactly one six-frame move is allowed.')
+  ? 'Use the driving objective, state, and action definitions provided on this turn.' + (isJev ? '\nAnswer the typed Choice question.' : '\nReturn only JSON: {"plan":[{"direction":"up","frames":6}],"note":""}, replacing up with your chosen action. Exactly one six-frame move is allowed.')
   : drivingPrompt({ reactive, typedChoice: isJev, maxPlanFrames: MAX_PLAN_FRAMES });
 const attempts = [];
 const startedAt = new Date().toISOString();
 const runStarted = performance.now();
 const hashes = {};
-for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/racer-protocol.mjs', 'scripts/racer-observation-v3.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
+for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/racer-protocol.mjs', 'scripts/racer-observation-v3.mjs', 'scripts/racer-observation-v4.mjs', 'scripts/racer-observation-v5.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
   hashes[file] = createHash('sha256').update(await readFile(resolve(here, '..', file))).digest('hex');
 }
 await writeFile(auditPath, JSON.stringify({ type: 'config', startedAt, model: MODEL, provider: agent.provider,
@@ -284,7 +288,7 @@ let resolvedJevModel = null;
 async function askJevTurn(prompt) {
   const started = performance.now();
   const state = namedObservation ? currentObservation : { movementRules: SYSTEM_PROMPT, screenStateAndFeedback: prompt };
-  const question = namedObservation ? candidateQuestion(state) : null;
+  const question = namedObservation ? makeQuestion(state) : null;
   lastJevRequest = jevRequest(state, MODEL, question);
   const result = await askJev(state, { model: MODEL, question });
   const responseMs = Math.round(performance.now() - started);
@@ -461,7 +465,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
     if (driver.distance >= gateDistance) break;
 
     const observation = namedObservation
-      ? candidateState(course, driver, camera, index, gateDistance, previousAction, 'absolute-named')
+      ? makeNamedState(course, driver, camera, index, gateDistance, previousAction)
       : buildObservation(course, driver, camera, index, gateDistance, previousAction);
     currentObservation = observation;
 
@@ -472,7 +476,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
       '',
       'Screen state:',
       JSON.stringify(observation),
-      ...(namedObservation ? ['Action definitions:', JSON.stringify(candidateQuestion(observation).criteria)] : []),
+      ...(namedObservation ? ['Driving objective:', makeQuestion(observation).instructions, 'Action definitions:', JSON.stringify(makeQuestion(observation).criteria)] : []),
       '',
       reactive ? 'Choose the next fixed-duration move using the movement rules.' : 'Reply with the JSON key programme only.',
     ].join('\n');

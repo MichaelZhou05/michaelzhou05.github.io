@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { fixtures, requestFor, gradeAction } from './jev-preflight.mjs';
 import { verifyRacePhysics } from './verify-race-physics.mjs';
 import { orientedState, orientedQuestion } from './racer-observation-v4.mjs';
+import { focusedState, focusedQuestion } from './racer-observation-v5.mjs';
 import { askJev, jevRequest } from './jev-driver.mjs';
 import { buildCourse, stepDriver, updateCamera } from '../race-sim.js';
 import { DIRECTION_KEYS } from './racer-protocol.mjs';
@@ -22,6 +23,10 @@ export async function orientationFixtures() {
 }
 export function orientationRequest(fixture, variant) {
   if (variant === 'absolute-named') return requestFor(fixture, variant);
+  if (variant === 'surface-focused') {
+    const state = focusedState(course, fixture.driver, fixture.camera, fixture.index, course.track.sectors[fixture.index].endDistance, fixture.previous);
+    return jevRequest(state, 'typesafe/jev-1.13', focusedQuestion(state));
+  }
   if (variant !== 'route-oriented') throw new Error('Unknown orientation format');
   const state = orientedState(course, fixture.driver, fixture.camera, fixture.index, course.track.sectors[fixture.index].endDistance, fixture.previous);
   return jevRequest(state, 'typesafe/jev-1.13', orientedQuestion(state));
@@ -45,10 +50,13 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const outIndex = process.argv.indexOf('--out'), out = process.argv[outIndex + 1];
   if (outIndex < 0 || !out) throw new Error('Explicit fresh --out required');
   const pilot = process.argv.includes('--pilot');
-  const variants = pilot ? ['route-oriented'] : ['absolute-named', 'route-oriented'];
+  const variantIndex = process.argv.indexOf('--variant');
+  const variant = variantIndex < 0 ? 'route-oriented' : process.argv[variantIndex + 1];
+  if (!['route-oriented', 'surface-focused'].includes(variant)) throw new Error('Unknown variant');
+  const variants = pilot ? [variant] : ['absolute-named', variant];
   const selected = pilot ? cases.filter(f => f.id === 'r6-sector7-call-1') : cases.filter(f => f.id !== 'r6-sector7-call-1');
   const hashes = {};
-  for (const name of ['jev-orientation-preflight.mjs', 'racer-observation-v4.mjs', 'racer-observation-v3.mjs', 'jev-driver.mjs']) hashes[name] = createHash('sha256').update(await readFile(new URL(name, import.meta.url))).digest('hex');
+  for (const name of ['jev-orientation-preflight.mjs', 'racer-observation-v5.mjs', 'racer-observation-v4.mjs', 'racer-observation-v3.mjs', 'jev-driver.mjs']) hashes[name] = createHash('sha256').update(await readFile(new URL(name, import.meta.url))).digest('hex');
   await writeFile(out, JSON.stringify({ type: 'config', startedAt: new Date().toISOString(), pilot, maxCalls: pilot ? 150 : selected.length * variants.length, variants, fixtures: selected, hashes }) + '\n', { flag: 'wx' });
   let count = 0, cost = 0, frames = 0, grass = 0, walls = 0;
   const totals = {};
@@ -60,7 +68,10 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
       await appendFile(out, JSON.stringify({ fixture: f.id, variant, request, failure: error.message, responseMs: performance.now() - start }) + '\n');
       throw error;
     }
-    if (response.model !== 'typesafe/jev-1.13-20260917') throw new Error('Model snapshot changed; stop diagnostic');
+    if (response.model !== 'typesafe/jev-1.13-20260917') {
+      await appendFile(out, JSON.stringify({ fixture: f.id, variant, request, response, failure: 'Model snapshot changed; stop diagnostic' }) + '\n');
+      throw new Error('Model snapshot changed; stop diagnostic');
+    }
     const direction = response.decision.plan[0].direction, grade = gradeAction(f, direction);
     const executed = pilot ? executeDiagnosticMove(f, direction) : null;
     await appendFile(out, JSON.stringify({ fixture: f.id, variant, request, response, responseMs: performance.now() - start, grade, executed }) + '\n');

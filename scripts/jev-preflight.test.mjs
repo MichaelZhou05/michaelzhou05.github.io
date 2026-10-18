@@ -37,19 +37,21 @@ test('named runner sends structured state, preserves request audit, and executes
  const {pathToFileURL}=await import('node:url');
  const {execFile}=await import('node:child_process');const {promisify}=await import('node:util');
  const {verifyRacePhysics}=await import('./verify-race-physics.mjs');
+ for (const format of ['absolute-named', 'surface-focused']) {
  const dir=await mkdtemp(join(tmpdir(),'jev-structured-'));
  try {
   const fixture={model:'test-fixture',answers:{direction:{type:'choice',choice:'right',confidence:1,probabilities:Object.fromEntries([...DIRECTION_KEYS.keys()].map(k=>[k,+(k==='right')]))}},usage:{cost:0}};
   const preload=join(dir,'mock.mjs'),output=join(dir,'lap.mjs');
   await writeFile(preload,`globalThis.fetch=async(url,options)=>{const request=JSON.parse(options.body);if(typeof request.state.car?.x!=='number'||!Array.isArray(request.state.roadCenterlineInForwardOrder)||request.state.screenStateAndFeedback)throw new Error('not structured');return {ok:true,json:async()=>(${JSON.stringify(fixture)})};};`);
-  await promisify(execFile)(process.execPath,['--import',preload,'scripts/run-opus-racer.mjs','--agent','jev','--mode','reactive','--observation-format','absolute-named','--max-calls','2','--out',output],{env:{...process.env,OPENROUTER_API_KEY:'test-only'}});
+  await promisify(execFile)(process.execPath,['--import',preload,'scripts/run-opus-racer.mjs','--agent','jev','--mode','reactive','--observation-format',format,'--max-calls','2','--out',output],{env:{...process.env,OPENROUTER_API_KEY:'test-only'}});
   const {jevLap}=await import(pathToFileURL(output));
   const [config,...rows]=(await readFile(output+'.audit.jsonl','utf8')).trim().split('\n').map(JSON.parse);
   assert.equal(jevLap.modelCalls,2);assert.equal(jevLap.finishTime,0.2);
-  assert.equal(jevLap.protocolVersion,'screen-named-v3-six-frames');
-  assert.equal(config.observationFormat,'absolute-named');
+  assert.equal(jevLap.protocolVersion,format === 'absolute-named' ? 'screen-named-v3-six-frames' : 'screen-focused-v5-six-frames');
+  assert.equal(config.observationFormat,format);
   assert.equal(rows[1].request.state.previousAction.keys[0].direction,'right');
   assert.equal(rows[1].request.state.previousAction.keys[0].frames,6);
   verifyRacePhysics(jevLap,rows);
  }finally{await rm(dir,{recursive:true,force:true});}
+ }
 });

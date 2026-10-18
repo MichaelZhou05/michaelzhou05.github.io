@@ -53,6 +53,15 @@ test('HTTP failures expose status without echoing provider bodies', async () => 
   await assert.rejects(askJev({}, { apiKey: 'test-only', fetchImpl: async () => ({ ok: false, status: 401 }) }), /^Error: Jev HTTP 401$/);
 });
 
+test('network, timeout and malformed JSON failures retain safe categories only', async () => {
+  for (const [error, expected] of [
+    [Object.assign(new Error('secret-bearing message'), { cause: { code: 'ECONNRESET' } }), 'Jev network failure (ECONNRESET)'],
+    [Object.assign(new Error('secret-bearing message'), { cause: { code: 'untrusted-secret' } }), 'Jev network failure (UNKNOWN)'],
+    [Object.assign(new Error('secret-bearing message'), { name: 'TimeoutError' }), 'Jev request timed out'],
+  ]) await assert.rejects(askJev({}, { apiKey: 'test-only', fetchImpl: async () => { throw error; } }), e => e.message === expected);
+  await assert.rejects(askJev({}, { apiKey: 'test-only', fetchImpl: async () => ({ ok: true, json: async () => { throw new Error('secret-bearing body'); } }) }), e => e.message === 'Jev response was not valid JSON');
+});
+
 test('runner records a bounded incomplete trial and latency with a mock provider', async () => {
   const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
