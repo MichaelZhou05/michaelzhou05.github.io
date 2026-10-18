@@ -94,13 +94,13 @@
           </tbody>
         </table>
       </div>
-      <p id="jev-record-status">Real Jev trial artifacts are available above. Only a finished lap enables the blue replay car.</p>
+      <p id="jev-record-status">Real Jev trial artifacts are available above. The blue car replays the real trial and stops at its recorded endpoint. Incomplete trials are classified DNF.</p>
       <p>Sol’s saved lap is 18.184 seconds faster and spends less time on grass. The legacy Opus/Sol artifacts do not record response latency, so they cannot tell us which model answered faster. A zero cost field is also not evidence that a run was free.</p>
     </section>
 
     <section id="jev" aria-labelledby="jev-title">
       <h2 id="jev-title">Would JEV have an advantage?</h2>
-      <p><strong>Jev is TypeSafe AI’s decision model.</strong> Its <a href="https://docs.typesafe.ai/api">official API</a> returns typed choices, yes/no probabilities and scores. Unlike the current Opus/Sol interface, it does not write an arbitrary driving plan. The blue car stays in the garage until a real completed recording is available.</p>
+      <p><strong>Jev is TypeSafe AI’s decision model.</strong> Its <a href="https://docs.typesafe.ai/api">official API</a> returns typed choices, yes/no probabilities and scores. Unlike the current Opus/Sol interface, it does not write an arbitrary driving plan. The blue car is active on the grid. It replays the real trial and stops at 4.99 km with a DNF result.</p>
       <p>Selecting among a fixed set of actions is a natural fit for Jev’s Choice interface. But the current task asks for a whole sequence of directions <em>and durations</em>. Choosing “right” is only part of the problem: holding it too long can put the car on the grass.</p>
       <p><strong>JSON is just the container.</strong> The Opus/Sol response contains actions, not probabilities. Producing valid JSON does not by itself show good spatial planning. Jev’s action probabilities are not measured probabilities of finishing the lap or avoiding a crash; that interpretation would need its own testing.</p>
       <p>The new Jev adapter asks for one of the nine directions, uses the returned choice (and logs whether it matches the highest probability), and holds it for 12 frames (0.2 simulated seconds). It then sends a fresh road observation. It allows up to 125 calls per sector, uses the same movement physics and camera as the offline runner, and saves action probabilities plus response times. Each request uses the current state and latest feedback, without a resumed chat history. This is a separate <strong>reactive mode</strong>: its shorter actions and more frequent feedback mean its times are not a controlled head-to-head comparison with the existing plan-mode recordings. Track A now implements matched action intervals, observation fields and budgets for all three models; transport and reasoning remain configuration differences.</p>

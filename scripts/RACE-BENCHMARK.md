@@ -25,7 +25,7 @@ Latency quantiles use nearest rank on valid responses. The total includes failed
 attempts; failed count stays visible. No harness retries; any internal CLI retries remain inside the measured invocation. Cold first calls are
 included. No inference-overlap or real-time driving claim is supported.
 
-## Reproduce without overwriting the garage
+## Reproduce without overwriting the current recording
 
 Node 20+ and the existing Claude/Codex CLIs are required. Jev uses
 `OPENROUTER_API_KEY` from the environment via OpenRouter’s Decisions API. Never place credentials in an artifact.
@@ -69,8 +69,8 @@ per-call ratios from whole-workflow ratios. No such claim is currently supported
 
 To publish reviewed results, copy recordings **and audit sidecars** into `results/`
 and import each recording in `race-results.js`, preserving failed replicates.
-The methodology table reads that manifest. Existing `jev-lap.js` remains null until
-a real completed run is separately chosen for the playable garage.
+The methodology table reads that manifest. `jev-lap.js` selects the trial played on the grid. Incomplete recordings replay
+their saved frames, stop at their actual endpoint, and are classified DNF.
 
 ## Cost evidence (checked 2026-10-18)
 

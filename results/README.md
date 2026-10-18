@@ -20,8 +20,8 @@ response or a sector budget exhausted before the gate. No hidden retries.
 - Three returned choices differed from the published probability argmax; they were
   executed unchanged and flagged in the recording.
 
-`jev-lap.js` points to r4. Because `finished` is false, it does not enter the replay
-grid. This is one navigation failure, not a measured completion rate or proof of
+`jev-lap.js` points to r4. It is an active replay on the grid, stopping at its recorded endpoint. Because
+`finished` is false, it is classified DNF and excluded from the finish-time ranking. This is one navigation failure, not a measured completion rate or proof of
 an advantage over another model. The command requested all 18 sectors; the stop
 rule ended the run at sector 5. Later sectors were not attempted.
 
@@ -57,4 +57,4 @@ The results demonstrate measured response latency and reported request cost for
 this Jev configuration. They cannot establish a speed/cost advantage over Opus or
 GPT because those configurations have not been measured under the same controls.
 A full-lap command is an attempt, not evidence of a completed lap. Check `finished`
-and `stopReason` in each artifact; incomplete runs never enable the race replay.
+and `stopReason` in each artifact; incomplete replays stop at their recorded endpoint and are classified DNF.
