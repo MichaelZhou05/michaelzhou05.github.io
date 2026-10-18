@@ -11,7 +11,7 @@ function reply(choice = 'up+right') {
 
 test('all nine mutually exclusive controls become a legal fixed-duration move', () => {
   for (const direction of JEV_DIRECTIONS) {
-    assert.deepEqual(parseJevDecision(reply(direction)).plan, [{ direction, frames: 12 }]);
+    assert.deepEqual(parseJevDecision(reply(direction)).plan, [{ direction, frames: 6 }]);
   }
   assert.deepEqual(Object.keys(jevRequest({ car: { x: 0, y: 0 } }).questions.direction.criteria), JEV_DIRECTIONS);
 });
@@ -71,14 +71,14 @@ test('runner records a bounded incomplete trial and latency with a mock provider
     const { jevLap } = await import(pathToFileURL(output).href);
     assert.equal(jevLap.finished, false);
     assert.equal(jevLap.finishTime, 25);
-    assert.equal(jevLap.modelCalls, 125);
+    assert.equal(jevLap.modelCalls, 250);
     assert.equal(jevLap.model, 'jev-test-fixture');
-    assert.equal(jevLap.decisions.length, 125);
-    assert.equal(jevLap.responseLatencyMs.calls, 125);
+    assert.equal(jevLap.decisions.length, 250);
+    assert.equal(jevLap.responseLatencyMs.calls, 250);
     assert.equal(jevLap.costUsd, null);
     assert.equal(jevLap.transport, 'openrouter-decisions-http');
     assert.equal(jevLap.costBasis, 'openrouter-reported-usd');
-    assert.equal(jevLap.controlMode, 'reactive-choice-12-frames');
+    assert.equal(jevLap.controlMode, 'reactive-choice-6-frames');
     assert.ok(jevLap.frames.length > 1);
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -132,7 +132,7 @@ test('executes the supplied legal choice and flags its probability mismatch', ()
   data.answers.direction.probabilities = { up: .03, down: .08, left: .08, right: .07,
     'up+left': .2, 'up+right': .19, 'down+left': .18, 'down+right': .16, none: .01 };
   const decision = parseJevDecision(data);
-  assert.deepEqual(decision.plan, [{ direction: 'up+right', frames: 12 }]);
+  assert.deepEqual(decision.plan, [{ direction: 'up+right', frames: 6 }]);
   assert.equal(decision.choiceMatchesArgmax, false);
   assert.deepEqual(decision.probabilities, data.answers.direction.probabilities);
 });

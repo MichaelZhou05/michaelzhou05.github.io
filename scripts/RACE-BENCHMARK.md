@@ -8,7 +8,7 @@ not response speed. Do not combine their scores with matched runs into one ranki
 
 * **Matched reactive**: `--mode reactive`, all three providers. Same physics,
   observation fields, current state plus latest action feedback, nine directions,
-  one 12-frame action, 125 calls and exactly 1,500 simulated frames per sector.
+  one 6-frame action, 250 calls and exactly 1,500 simulated frames per sector.
   Stateless requests. A missed gate or failed response ends the trial. The offline
   camera eases identically for all models. Their trajectories and inputs diverge;
   this is closed-loop navigation, not an identical-prompt latency microbenchmark.
@@ -123,3 +123,51 @@ published probability. The runner now executes the returned choice and records
 `choiceMatchesArgmax`, rather than rejecting or overriding that action. See
 [the retained live-trial evidence](../results/README.md). Validation failures before
 this correction are separate diagnostic trials, not comparable repeated runs.
+
+## Corrected protocol v2 (18 October 2026)
+
+`local-road-v2-six-frames` replaces r1–r4's 12-frame observation contract for
+**all** new providers in reactive mode. Legacy recorded laps stay unchanged.
+
+- All geometry is in settled-sector pixels relative to the car at `[0,0]`, with
+  x right and y down. Up to 18 road samples cover 40 pixels behind to 300 ahead
+  of the actual nearest centreline point at 20-pixel intervals. Each row is
+  `[alongRoadPx, x, y]`. This is geometric resampling, not a suggested action or
+  computed racing line. The sector gate is also supplied. Backtracking uses the
+  current nearest point, not monotonic scored progress.
+- Dynamic road/corridor widths and asphalt/grass/current per-frame speeds are
+  authoritative. Speeds include the settled/current camera scale ratio. The
+  old prompt incorrectly labeled world-unit widths as screen pixels.
+- Positive camera-minus-view angle rotates movement counterclockwise in screen
+  coordinates. All nine initial movement unit vectors are explicit. These are
+  coordinate transforms, not scored candidate outcomes; no action is selected
+  by the harness. Camera easing and surface changes still occur during a move.
+- Previous keys, actual executed frames, displacement in the current axes,
+  progress gain, grass and walls persist across sector transitions. Requests
+  remain stateless. Jev gets typed Choice instructions; Opus/GPT get a one-move
+  JSON schema. Both share the same driving objective and numeric observations.
+- Six frames is 0.1 simulated seconds, approximately 17 settled asphalt pixels,
+  versus 34 at 12 frames. That is below the 23–32 pixel road half-width observed
+  in r4. This is a defensible finer correction interval, not an optimized one.
+  The 1,500-frame / 25-second sector budget remains, now up to 250 calls. The
+  authorized r5 full-course attempt retains the **2,250 total-call cap**, so its
+  maximum driving time is 225 seconds (less if gates truncate actions), versus
+  450 seconds for r4's 12-frame cap. This tighter total simulation ceiling and
+  doubled potential call rate are explicit tradeoffs.
+
+Run exactly one corrected full-course Jev attempt, no retries or tuning after
+seeing its result:
+
+```sh
+source ~/.bashrc
+export OPENROUTER_API_KEY
+node scripts/run-opus-racer.mjs --agent jev --model typesafe/jev-1.13 --mode reactive --sectors 18 --max-calls 2250 --out results/jev-2026-10-18-r5.js
+```
+
+Stop at the first failed/invalid response, missed sector gate, total call cap, or
+finish. The API timeout is 30 seconds per call; no harness retries. A cap is not
+a guaranteed dollar ceiling. The new artifact and audit store protocol, source
+hashes, runtime and returned model snapshot. Only Jev is authorized for this
+live rerun. No matched Opus/GPT measurement has been collected. r4 versus r5 is
+one before/after observation with multiple simultaneous changes, not an ablation,
+repeatability estimate or matched cross-model benchmark.

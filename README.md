@@ -109,13 +109,13 @@ npm run jev-lap -- --sectors 1 --out tmp/jev-trial.js
 ```
 
 For a full recording, run `npm run jev-lap`. This makes real, billed API calls
-(up to 125 calls per sector; no harness retries). `--model` can pin an
+(up to 250 calls per sector; no harness retries). `--model` can pin an
 available model version instead of `typesafe/jev-1.13`; the returned model id is saved.
 The site imports `jev-lap.js`, which points to the latest real trial. The blue car and its progress gauge replay the saved trial. Partial runs stop at their
 recorded endpoint and are classified DNF, never ranked as completed laps.
 
-Jev's **reactive-choice-12-frames** mode chooses one of nine actions every 0.2
-simulated seconds. It receives current state and latest feedback, without chat
+Jev's **reactive-choice-6-frames** mode chooses one of nine actions every 0.1
+simulated seconds. It receives car-relative road geometry, movement vectors and previous-action feedback, without chat
 history. Opus/Sol's existing plan mode permits longer action sequences and five
 calls per sector. These are different control configurations, not an isolated
 model comparison. Repeat all models under matched control rules for a fair ranking.
@@ -131,8 +131,15 @@ npm run test:jev
 
 ### Matched speed and cost experiment
 
-Use `--mode reactive` on any racer for matched 12-frame controls and stateless
+Use `--mode reactive` on any racer for matched six-frame controls and stateless
 observations. The methodology page separates these measurements from legacy laps.
 See [the benchmark protocol](scripts/RACE-BENCHMARK.md) for bounded pilot commands,
 pricing sources, audit artifacts, clocks, and publication rules. Real Jev trials and audit logs are saved in `results/`; see [the findings](results/README.md).
 No cross-model speed or cost advantage is claimed without matched Opus/GPT measurements.
+
+The corrected v2 protocol uses dynamic pixel widths and speeds, the verified
+counterclockwise camera convention, and interface-specific output instructions.
+All new reactive providers use the same six-frame interval and observation fields.
+The original Jev r1–r4 trials used 12 frames; they remain separate historical
+configurations. See the protocol document for the 2,250-call rerun cap and its
+225-second maximum driving-time tradeoff.

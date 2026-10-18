@@ -1,6 +1,7 @@
 // Verify the published measurements against their persisted audit evidence.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { verifyRacePhysics } from './verify-race-physics.mjs';
 import { matchedRuns } from '../race-results.js';
 for (const { label, lap, artifact } of matchedRuns) {
   const audit = (await readFile(new URL(`../${artifact}.audit.jsonl`, import.meta.url), 'utf8'))
@@ -9,6 +10,7 @@ for (const { label, lap, artifact } of matchedRuns) {
   assert.equal(config.type, 'config', label);
   assert.deepEqual(lap.hashes, config.hashes, label);
   assert.equal(lap.startedAt, config.startedAt, label);
+  if (lap.protocolVersion === 'local-road-v2-six-frames') verifyRacePhysics(lap, attempts);
   const valid = attempts.filter(row => row.status === 'ok');
   assert.equal(lap.responseLatencyMs.attempts, attempts.length, label);
   assert.equal(lap.responseLatencyMs.calls, valid.length, label);
@@ -18,7 +20,7 @@ for (const { label, lap, artifact } of matchedRuns) {
   assert.equal(lap.decisions.length, valid.length, label);
   for (const row of valid) {
     assert.ok(Number.isFinite(row.responseMs) && row.responseMs >= 0, label);
-    assert.equal(JSON.parse(row.reply).plan[0].frames, 12, label);
+    assert.equal(JSON.parse(row.reply).plan[0].frames, lap.actionFrames, label);
     assert.equal(row.resolvedModel, lap.model, label);
   }
   if (lap.costUsd !== null) {

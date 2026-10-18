@@ -2,16 +2,15 @@
  * Puts a real model behind the wheel of the Nordschleife lap.
  *
  * There is no driving-line heuristic in this file. The model is shown the same
- * thing the player is shown — the sector window, the road as it appears on the
- * 900x600 canvas, and where its car currently sits in it — and it replies with
+ * local road and gate as car-relative coordinates in the settled sector window,
+ * with explicit movement vectors and previous-action feedback. It replies with
  * arrow-key presses. Those presses go through `stepDriver` from `race-sim.js`,
  * which is the exact function the browser calls on the player's keyboard input.
  * Whatever the model does with the grass, the corridor walls and the clock is
  * what gets recorded.
  *
- * Inference runs through either the Claude Code or Codex CLI in headless mode.
- * The whole lap is one resumed session, so the model carries what it learned
- * from sector to sector.
+ * Inference uses the OpenRouter Decisions API or the Claude Code / Codex CLI.
+ * Legacy plans resume a session; reactive requests are stateless with explicit last-action feedback.
  *
  * Output: a replayable recording of the lap it drove.
  *
@@ -21,7 +20,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { askJev, JEV_ACTION_FRAMES } from './jev-driver.mjs';
+import { askJev } from './jev-driver.mjs';
 import { latencySummary, jevCost, PRICING, validateReactive } from './race-metrics.mjs';
 import { randomUUID, createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -30,13 +29,10 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
-  ASPHALT_PIXELS_PER_SECOND,
   buildCourse,
   createCamera,
   createDriver,
-  CORRIDOR_HALF_WIDTH,
   FINISH_MARGIN,
-  GRASS_PIXELS_PER_SECOND,
   LAP_LENGTH_METERS,
   locate,
   ROAD_HALF_WIDTH,
@@ -45,6 +41,8 @@ import {
   VIEW_HEIGHT,
   VIEW_WIDTH,
 } from '../race-sim.js';
+
+import { ACTION_FRAMES, PROTOCOL_VERSION, DIRECTION_KEYS, buildObservation, drivingPrompt } from './racer-protocol.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -95,7 +93,7 @@ if (readArg('--mode', '') && !matched) throw new Error('Use --mode reactive or o
 const reactive = isJev || matched;
 const maxAttempts = Number(readArg('--max-calls', '10000'));
 if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new Error('--max-calls must be a positive integer');
-const MAX_CALLS_PER_SECTOR = reactive ? SECTOR_FRAME_BUDGET / JEV_ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
+const MAX_CALLS_PER_SECTOR = reactive ? SECTOR_FRAME_BUDGET / ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
 if (isJev && !process.env.OPENROUTER_API_KEY) {
   throw new Error('Set OPENROUTER_API_KEY in your terminal before running jev-lap. No recording was changed.');
 }
@@ -117,122 +115,19 @@ const startSector = Math.max(0, Number(readArg('--start-sector', resumeLap ? '18
 const course = buildCourse(VIEW_WIDTH, VIEW_HEIGHT);
 const { track } = course;
 
-/* ------------------------------ what it sees ------------------------------ */
-
-/** The projection the canvas uses, so screen coordinates mean the same thing. */
-function worldToScreen(camera, x, y) {
-  const dx = x - camera.x;
-  const dy = y - camera.y;
-  const cos = Math.cos(camera.angle);
-  const sin = Math.sin(camera.angle);
-  return {
-    x: VIEW_WIDTH / 2 + (dx * cos + dy * sin) * camera.scale,
-    y: VIEW_HEIGHT / 2 - (dy * cos - dx * sin) * camera.scale,
-  };
-}
-
 const round = (value, places = 0) => Number(value.toFixed(places));
-
-/**
- * The road ahead, in screen pixels, from just behind the car to the sector's
- * exit gate. This is the whole of what the model gets to plan against.
- */
-function roadAhead(view, sector, fromDistance) {
-  const points = [];
-  const start = Math.max(0, fromDistance - 60);
-  const end = Math.min(LAP_LENGTH_METERS, sector.endDistance + 120);
-  const stepMeters = Math.max(18, (end - start) / 48);
-
-  for (let distance = start; distance <= end; distance += stepMeters) {
-    const point = pointOn(distance);
-    const screen = worldToScreen(view, point.x, point.y);
-    points.push([round(screen.x), round(screen.y)]);
-  }
-  return points;
-}
-
-function pointOn(distance) {
-  const points = track.points;
-  const target = Math.max(0, Math.min(LAP_LENGTH_METERS, distance));
-  let low = 0;
-  let high = points.length - 1;
-  while (low < high - 1) {
-    const middle = (low + high) >> 1;
-    if (points[middle].distance <= target) low = middle;
-    else high = middle;
-  }
-  const a = points[low];
-  const b = points[high];
-  const mix = (target - a.distance) / Math.max(0.001, b.distance - a.distance);
-  return { x: a.x + (b.x - a.x) * mix, y: a.y + (b.y - a.y) * mix, angle: a.angle };
-}
-
-/** Screen-space endpoints of the gate that closes the sector. */
-function gateOn(view, sector) {
-  const point = pointOn(sector.endDistance);
-  const nx = -Math.sin(point.angle);
-  const ny = Math.cos(point.angle);
-  const left = worldToScreen(view, point.x - nx * ROAD_HALF_WIDTH, point.y - ny * ROAD_HALF_WIDTH);
-  const right = worldToScreen(view, point.x + nx * ROAD_HALF_WIDTH, point.y + ny * ROAD_HALF_WIDTH);
-  return [[round(left.x), round(left.y)], [round(right.x), round(right.y)]];
-}
-
-/* --------------------------------- the model --------------------------------- */
-
-const LEGACY_SYSTEM_PROMPT = `You are driving a car around a top-down scale replica of the Nürburgring
-Nordschleife, on the same 900x600 screen a human player sees, using the same four arrow keys.
-
-HOW THE CAR MOVES — read carefully, it is not a normal car:
-- There is no inertia, no throttle and no steering radius. The car translates instantly in the
-  direction of whichever keys are held, at a fixed speed, and stops dead when no key is held.
-- Screen axes: x grows RIGHT, y grows DOWN. "up" moves toward y=0. Diagonals like "up+right" are
-  allowed and move at the same total speed as a single key (they are normalised), so a diagonal is
-  never a shortcut — the fastest route is simply the shortest one.
-- One frame is 1/60 s. On asphalt you cover PX_ASPHALT pixels per frame. On grass you cover only
-  PX_GRASS pixels per frame, so leaving the road is expensive.
-- The asphalt is ROAD_W pixels either side of the centreline. Past that is grass. At CORRIDOR_W
-  pixels you hit the treeline, which is a hard wall — you get shoved back and lose the time.
-- Holding no key ("none") wastes time; you are timed from the moment the lap starts.
-
-YOUR JOB each turn: you are given the centreline of the current sector as a screen-space polyline,
-your car's screen position, and the gate that ends the sector. Reply with a key programme that
-drives your car along that road and through the gate as fast as you can. Think of it as a sequence
-of straight-line moves: each move is a direction held for a number of frames, and the car travels
-(frames x pixels-per-frame) pixels in that direction. Chain enough short moves to trace the curves —
-a corner needs several segments, not one.
-
-REPLY FORMAT — output nothing but a single JSON object, no prose, no code fences:
-{"plan": [{"direction":"up","frames":24},{"direction":"up+right","frames":18}], "note":"short remark about your line"}
-Directions: "up", "down", "left", "right", "up+left", "up+right", "down+left", "down+right", "none".
-Frame counts are integers from 1 to 240. The whole plan must be at most MAX_FRAMES frames.
-You may stop short of the gate and get another turn with fresh feedback — but every frame is on the
-clock, so prefer to cover the whole sector in one plan when the road ahead is clear to you.
-
-ONE CATCH: when a new sector window opens, the camera swings round to frame it and takes about half a
-second to settle. The coordinates you are given are for the settled window, so while it is still
-swinging your keys are deflected by roughly "windowSwingDegrees" (given when it applies, positive =
-your movement is rotated clockwise on screen), decaying to zero over about 30 frames. A player sees
-this happen and drives round it; budget for it in your opening move.`
-  .replace('PX_ASPHALT', (ASPHALT_PIXELS_PER_SECOND / 60).toFixed(2))
-  .replace('PX_GRASS', (GRASS_PIXELS_PER_SECOND / 60).toFixed(2))
-  .replace('ROAD_W', String(round(ROAD_HALF_WIDTH)))
-  .replace('CORRIDOR_W', String(round(CORRIDOR_HALF_WIDTH)))
-  .replace('MAX_FRAMES', String(MAX_PLAN_FRAMES));
-
-const SYSTEM_PROMPT = reactive ? LEGACY_SYSTEM_PROMPT.split('YOUR JOB each turn:')[0]
-  + '\n' + LEGACY_SYSTEM_PROMPT.slice(LEGACY_SYSTEM_PROMPT.indexOf('ONE CATCH:'))
-  + '\nChoose exactly one of up, down, left, right, up+left, up+right, down+left, down+right, none. Hold it for exactly 12 frames (0.2 simulated seconds), then receive a fresh observation. Reach the gate quickly while staying on asphalt. Return {"plan":[{"direction":"up","frames":12}],"note":""} with your chosen direction.'
-  : LEGACY_SYSTEM_PROMPT;
+const SYSTEM_PROMPT = drivingPrompt({ reactive, typedChoice: isJev, maxPlanFrames: MAX_PLAN_FRAMES });
 const attempts = [];
 const startedAt = new Date().toISOString();
 const runStarted = performance.now();
 const hashes = {};
-for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
+for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/racer-protocol.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
   hashes[file] = createHash('sha256').update(await readFile(resolve(here, '..', file))).digest('hex');
 }
 await writeFile(auditPath, JSON.stringify({ type: 'config', startedAt, model: MODEL, provider: agent.provider,
-  mode: reactive ? 'reactive-choice-12-frames' : 'legacy-plan', stateless: reactive, maxAttempts,
+  mode: reactive ? `reactive-choice-${ACTION_FRAMES}-frames` : 'legacy-plan', stateless: reactive, protocolVersion: PROTOCOL_VERSION, actionFrames: reactive ? ACTION_FRAMES : null, sectorFrameBudget: SECTOR_FRAME_BUDGET, maxAttempts,
   sectorLimit, startSector, reasoningEffort: agent.reasoningEffort, maxCallsPerSector: MAX_CALLS_PER_SECTOR,
+  runtime: { node: process.version, platform: process.platform, arch: process.arch },
   systemPrompt: SYSTEM_PROMPT, hashes }) + '\n', { flag: 'wx' });
 let lastUsage = null;
 let lastCost = null;
@@ -432,17 +327,7 @@ async function askMeasured(prompt) {
   }
 }
 
-const DIRECTIONS = new Map([
-  ['none', {}],
-  ['up', { up: true }],
-  ['down', { down: true }],
-  ['left', { left: true }],
-  ['right', { right: true }],
-  ['up+left', { up: true, left: true }],
-  ['up+right', { up: true, right: true }],
-  ['down+left', { down: true, left: true }],
-  ['down+right', { down: true, right: true }],
-]);
+const DIRECTIONS = DIRECTION_KEYS;
 
 /** Pull the plan out of the reply and reject anything that isn't a legal key programme. */
 function parsePlan(reply) {
@@ -454,8 +339,8 @@ function parsePlan(reply) {
   const payload = JSON.parse(text.slice(start, end + 1));
   if (!Array.isArray(payload.plan) || payload.plan.length === 0) throw new Error('plan is empty');
 
-  if (reactive && (payload.plan.length !== 1 || payload.plan[0]?.frames !== 12)) {
-    throw new Error('Reactive mode requires exactly one integer 12-frame move');
+  if (reactive && (payload.plan.length !== 1 || payload.plan[0]?.frames !== ACTION_FRAMES)) {
+    throw new Error(`Reactive mode requires exactly one integer ${ACTION_FRAMES}-frame move`);
   }
   const moves = [];
   let frames = 0;
@@ -516,17 +401,6 @@ if (resumeLap?.frames?.length) {
   record();
 }
 
-/**
- * How far the still-swinging camera currently deflects the model's keys from
- * the settled window it is planning in. Positive reads as clockwise on screen.
- */
-function windowSwingDegrees(view) {
-  let delta = camera.angle - view.angle;
-  while (delta > Math.PI) delta -= Math.PI * 2;
-  while (delta < -Math.PI) delta += Math.PI * 2;
-  return round(delta * (180 / Math.PI), 1);
-}
-
 /** Run one move through the shared physics. Stops early at the sector gate. */
 function runMove(move, gateDistance) {
   const before = driver.distance;
@@ -554,12 +428,12 @@ function runMove(move, gateDistance) {
   return { ranFrames, gained: driver.distance - before, leftTrackEvents, grassFrames, walls };
 }
 
+let previousAction = null;
 const sectorLog = resumeLap?.sectors ? resumeLap.sectors.slice(0, startSector) : [];
 
-raceLoop: for (let index = startSector; index < track.sectors.length && index < startSector + sectorLimit; index += 1) {
+for (let index = startSector; index < track.sectors.length && index < startSector + sectorLimit; index += 1) {
   activeSector = index;
   const sector = track.sectors[index];
-  const view = course.sectorViews[index];
   const isFinalSector = index === track.sectors.length - 1;
   // The lap ends a few metres before the theoretical centreline end, exactly as
   // the browser's finish check does.
@@ -573,22 +447,7 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
   for (let call = 0; call < MAX_CALLS_PER_SECTOR; call += 1) {
     if (driver.distance >= gateDistance) break;
 
-    const car = worldToScreen(view, driver.x, driver.y);
-    const swing = windowSwingDegrees(view);
-    const observation = {
-      sector: `${index + 1}/${track.sectors.length} — ${sector.name} (${sector.note})`,
-      car: { x: round(car.x), y: round(car.y), onGrass: driver.offTrack },
-      // The centreline as drawn on screen, from just behind the car to the gate.
-      road: roadAhead(view, sector, driver.distance),
-      gate: gateOn(view, sector),
-      metresToGate: round(gateDistance - driver.distance),
-      lapProgressPercent: round((driver.distance / LAP_LENGTH_METERS) * 100, 1),
-      roadHalfWidthPx: round(ROAD_HALF_WIDTH * view.scale),
-      corridorHalfWidthPx: round(CORRIDOR_HALF_WIDTH * view.scale),
-      pixelsPerFrame: round((ASPHALT_PIXELS_PER_SECOND / 60) * (view.scale / camera.scale), 2),
-      ...(Math.abs(swing) >= 1 ? { windowSwingDegrees: swing } : {}),
-      ...(isFinalSector ? { finalSector: 'this gate is the finish line' } : {}),
-    };
+    const observation = buildObservation(course, driver, camera, index, gateDistance, previousAction);
 
     const prompt = [
       call === 0 && index === 0
@@ -598,9 +457,7 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
       'Screen state:',
       JSON.stringify(observation),
       '',
-      '"road" is the centreline as a list of [x, y] screen points in the direction of travel;'
-      + ' "gate" is the two ends of the line you must cross to finish this sector.',
-      reactive ? 'Choose the next fixed-duration move.' : 'Reply with the JSON key programme only.',
+      reactive ? 'Choose the next fixed-duration move using the movement rules.' : 'Reply with the JSON key programme only.',
     ].join('\n');
 
     let plan;
@@ -608,15 +465,18 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
       plan = await askMeasured(prompt);
     } catch (error) {
       stopReason = error.message;
-      break raceLoop;
+      break;
     }
 
+    const beforePosition = { x: driver.x, y: driver.y };
+    const executedMoves = [];
     let ran = 0;
     let gained = 0;
     let grass = 0;
     let walls = 0;
     for (const move of plan.moves) {
       const result = runMove({ ...move, frames: Math.min(move.frames, SECTOR_FRAME_BUDGET - sectorFrames) }, gateDistance);
+      executedMoves.push({ direction: move.name, frames: result.ranFrames });
       ran += result.ranFrames;
       gained += result.gained;
       grass += result.grassFrames;
@@ -625,8 +485,9 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
       if (driver.distance >= gateDistance || sectorFrames >= SECTOR_FRAME_BUDGET) break;
     }
 
+    previousAction = { moves: executedMoves, ranFrames: ran, gained, grass, walls,
+      dx: driver.x - beforePosition.x, dy: driver.y - beforePosition.y };
     note = plan.note || note;
-    const carAfter = worldToScreen(view, driver.x, driver.y);
     const done = driver.distance >= gateDistance;
 
     process.stdout.write(
@@ -644,7 +505,7 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
 
     feedback = [
       `Result of your last programme: it ran ${ran} frames (${(ran / 60).toFixed(2)} s) and gained`,
-      `${gained.toFixed(0)} m. You are now at screen [${round(carAfter.x)}, ${round(carAfter.y)}],`,
+      `${gained.toFixed(0)} m. Car-relative geometry is refreshed below; you are`,
       driver.offTrack ? 'currently ON THE GRASS — get back on the asphalt.' : 'on the asphalt.',
       grass ? `You spent ${grass} frames on grass.` : '',
       walls ? `You hit the treeline ${walls} times.` : '',
@@ -652,7 +513,7 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
     ].filter(Boolean).join(' ');
   }
 
-  if (reactive && driver.distance < gateDistance) stopReason = 'Sector budget exhausted before gate';
+  if (!stopReason && reactive && driver.distance < gateDistance) stopReason = 'Sector budget exhausted before gate';
   const sectorTime = raceTime - sectorStartTime;
   sectorLog.push({
     sector: index + 1,
@@ -662,7 +523,7 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
     note,
   });
   process.stdout.write(
-    `  → ${sector.name} done in ${sectorTime.toFixed(2)} s`
+    `  → ${sector.name} ${driver.distance >= gateDistance ? 'cleared' : 'stopped'} in ${sectorTime.toFixed(2)} s`
     + ` (lap ${(driver.distance / 1000).toFixed(2)} km`
     + `${agent.provider === 'claude' ? `, $${totalCostUsd.toFixed(3)} so far` : ''})\n`,
   );
@@ -674,26 +535,29 @@ raceLoop: for (let index = startSector; index < track.sectors.length && index < 
 record();
 
 const finished = driver.distance >= LAP_LENGTH_METERS - FINISH_MARGIN;
+if (!finished && !stopReason) stopReason = 'Requested sector limit reached';
 const lap = {
   model: resolvedJevModel ?? MODEL,
   ...(isJev ? {
     requestedModel: MODEL,
-    controlMode: 'reactive-choice-12-frames',
-    actionFrames: JEV_ACTION_FRAMES,
+    controlMode: `reactive-choice-${ACTION_FRAMES}-frames`,
+    actionFrames: ACTION_FRAMES,
     maxCallsPerSector: MAX_CALLS_PER_SECTOR,
     decisions,
   } : {}),
-  measurementVersion: 1,
+  measurementVersion: 2,
+  protocolVersion: PROTOCOL_VERSION,
+  sectorFrameBudget: SECTOR_FRAME_BUDGET,
   startedAt,
   wallTimeMs: round(performance.now() - runStarted, 3),
   responseLatencyMs: latencySummary(attempts),
-  controlMode: reactive ? 'reactive-choice-12-frames' : 'legacy-plan',
+  controlMode: reactive ? `reactive-choice-${ACTION_FRAMES}-frames` : 'legacy-plan',
   historyPolicy: reactive ? 'stateless-current-state-and-last-feedback' : 'resumed-session',
   transport: isJev ? 'openrouter-decisions-http' : `${agent.provider}-cli`,
   stopReason,
   sectorLimit,
   maxAttempts,
-  actionFrames: reactive ? 12 : null,
+  actionFrames: reactive ? ACTION_FRAMES : null,
   maxCallsPerSector: MAX_CALLS_PER_SECTOR,
   hashes,
   costBasis: isJev ? 'openrouter-reported-usd' : agent.provider === 'claude' ? 'cli-reported-not-invoice' : 'unknown',
