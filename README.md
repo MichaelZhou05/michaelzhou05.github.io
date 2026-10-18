@@ -121,11 +121,18 @@ calls per sector. These are different control configurations, not an isolated
 model comparison. Repeat all models under matched control rules for a fair ranking.
 
 New Jev recordings save probabilities, confidence, per-call response latency,
-usage and the returned model id. Latency includes the HTTP round trip and excludes
-retry backoff; it is not pure model compute time. Existing recordings have no
-latency measurements. Unknown Jev cost is null, not zero. The simulation still
+usage and the returned model id. Latency includes the HTTP round trip; it is not pure model compute time. Existing recordings have no
+latency measurements. Jev cost is estimated from verified list pricing and reported input usage; unknown cost is null, not zero. The simulation still
 pauses during inference. Test the adapter without credentials or network calls:
 
 ```bash
 npm run test:jev
 ```
+
+### Matched speed and cost experiment
+
+Use `--mode reactive` on any racer for matched 12-frame controls and stateless
+observations. The methodology page separates these measurements from legacy laps.
+See [the benchmark protocol](scripts/RACE-BENCHMARK.md) for bounded pilot commands,
+pricing sources, audit artifacts, clocks, and publication rules. No measured Jev
+speed or cost advantage is claimed until authorized runs produce evidence.

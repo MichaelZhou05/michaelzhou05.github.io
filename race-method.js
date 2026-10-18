@@ -22,3 +22,35 @@ if (jevLap?.frames?.length > 1) {
     status.textContent += ` Mean response time: ${jevLap.responseLatencyMs.mean} ms per successful call, including the network round trip. Different control mode from Opus/Sol; compare with care.`;
   }
 }
+
+import { matchedRuns } from './race-results.js';
+const body = document.querySelector('#matched-results');
+for (const { label, lap, artifact } of matchedRuns) {
+  if (lap.measurementVersion !== 1 || lap.controlMode !== 'reactive-choice-12-frames') continue;
+  if (body.querySelector('[data-empty]')) body.replaceChildren();
+  const row = document.createElement('tr');
+  const heading = document.createElement('th');
+  heading.scope = 'row';
+  const link = document.createElement('a');
+  link.href = artifact;
+  link.textContent = label;
+  heading.append(link);
+  const audit = document.createElement('a');
+  audit.href = `${artifact}.audit.jsonl`;
+  audit.textContent = ' · audit';
+  heading.append(audit);
+  row.append(heading);
+  const ms = value => Number.isFinite(value) ? `${value.toFixed(0)} ms` : 'Unknown';
+  const latency = lap.responseLatencyMs;
+  for (const value of [
+    lap.finished ? `${lap.finishTime.toFixed(3)} s` : `Incomplete · ${lap.distance} m`,
+    `${lap.offTrackSeconds} s / ${lap.wallHits}`,
+    ms(latency?.p50), ms(latency?.p95),
+    Number.isFinite(lap.wallTimeMs) ? `${(lap.wallTimeMs / 1000).toFixed(1)} s` : 'Unknown',
+    `${latency?.calls ?? '?'} / ${latency?.attempts ?? '?'}`,
+    Number.isFinite(lap.costUsd) ? `$${lap.costUsd.toFixed(6)} · ${lap.costBasis}` : 'Unknown',
+  ]) {
+    const cell = document.createElement('td'); cell.textContent = value; row.append(cell);
+  }
+  body.append(row);
+}
