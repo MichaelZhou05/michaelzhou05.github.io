@@ -1,10 +1,10 @@
-/** TypeSafe's Choice API -> one fixed-duration move; never generates a racing line. */
+/** OpenRouter's Decisions API -> one fixed-duration move; never generates a racing line. */
 export const JEV_ACTION_FRAMES = 12;
 export const JEV_DIRECTIONS = [
   'up', 'down', 'left', 'right', 'up+left', 'up+right', 'down+left', 'down+right', 'none',
 ];
 
-export function jevRequest(state, model = 'jev-latest') {
+export function jevRequest(state, model = 'typesafe/jev-1.13') {
   return {
     model,
     state,
@@ -43,9 +43,9 @@ export function parseJevDecision(response) {
   };
 }
 
-export async function askJev(state, { model = 'jev-latest', apiKey = process.env.TYPESAFE_API_KEY, fetchImpl = fetch } = {}) {
-  if (!apiKey) throw new Error('Set TYPESAFE_API_KEY in your terminal to record a real Jev lap. Never put it in browser code.');
-  const response = await fetchImpl('https://api.typesafe.ai/v1/systemone', {
+export async function askJev(state, { model = 'typesafe/jev-1.13', apiKey = process.env.OPENROUTER_API_KEY, fetchImpl = fetch } = {}) {
+  if (!apiKey) throw new Error('Set OPENROUTER_API_KEY in your terminal to record a real Jev lap. Never put it in browser code.');
+  const response = await fetchImpl('https://openrouter.ai/api/alpha/decisions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(jevRequest(state, model)),
@@ -54,5 +54,5 @@ export async function askJev(state, { model = 'jev-latest', apiKey = process.env
   // Do not print provider bodies: diagnostics should never echo credentials.
   if (!response.ok) throw new Error(`Jev HTTP ${response.status}${response.status === 429 ? ' rate limit' : ''}`);
   const payload = await response.json();
-  return { decision: parseJevDecision(payload), model: payload.model, usage: payload.usage };
+  return { decision: parseJevDecision(payload), model: payload.model, usage: payload.usage, requestId: payload.id ?? null, provider: payload.provider ?? null };
 }

@@ -37,7 +37,7 @@
           <tbody id="matched-results"><tr data-empty><td colspan="8">Awaiting authorized measurements. No speedup or cost-saving ratio is claimed.</td></tr></tbody>
         </table>
       </div>
-      <p>Transport remains different: Jev uses direct HTTP; Opus and GPT use local CLIs, with GPT at xhigh reasoning. This compares deployed configurations, not isolated model compute. The harness does not retry; internal CLI retries, if any, remain inside the measured invocation. A failed or invalid response ends the trial and remains in its audit log.</p>
+      <p>Transport remains different: Jev uses OpenRouter’s Decisions API over HTTP; Opus and GPT use local CLIs, with GPT at xhigh reasoning. This compares deployed configurations, not isolated model compute. The harness does not retry; internal CLI retries, if any, remain inside the measured invocation. A failed or invalid response ends the trial and remains in its audit log.</p>
       <details><summary>Published prices: the hypothesis, not the result</summary>
         <p>Verified 18 October 2026. USD per million tokens; standard short-context API rates.</p>
         <div class="results-scroll"><table><thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Source</th></tr></thead><tbody>
@@ -45,7 +45,7 @@
           <tr><th>Claude Opus 5</th><td>$5</td><td>$25</td><td><a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic</a></td></tr>
           <tr><th>GPT-5.6 Sol</th><td>$4</td><td>$20</td><td><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">OpenAI</a></td></tr>
         </tbody></table></div>
-        <p>Jev estimates use returned input tokens and a verified versioned model ID. Missing usage or any failed request makes total cost unknown. Claude costs are CLI-reported estimates; GPT CLI cost stays unknown. Cache discounts, cache writes, context tiers and subscription billing prevent treating this price table as a bill.</p>
+        <p>Jev run costs use OpenRouter’s reported USD charge, saved with its request ID. Missing cost or any failed request makes total cost unknown. The TypeSafe list prices above are context, not a fallback bill for routed calls. Claude costs are CLI-reported estimates; GPT CLI cost stays unknown. Cache discounts, cache writes, context tiers and subscription billing prevent treating this price table as a bill.</p>
       </details>
       <p><a href="./scripts/RACE-BENCHMARK.md">Reproduce the experiment and review the evidence →</a></p>
     </section>

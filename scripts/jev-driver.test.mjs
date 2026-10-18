@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { jevRequest, parseJevDecision, askJev, JEV_DIRECTIONS } from './jev-driver.mjs';
 
 function reply(choice = 'up+right') {
-  return { model: 'jev-test-fixture', answers: { direction: {
+  return { model: 'jev-test-fixture', id: 'fixture-request', provider: 'TypeSafe', answers: { direction: {
     type: 'choice', choice, confidence: 1,
     probabilities: Object.fromEntries(JEV_DIRECTIONS.map((key) => [key, Number(key === choice)])),
   } }, usage: { input_tokens: 10, output_tokens: 3 } };
@@ -31,13 +31,13 @@ test('invalid probabilities, unknown actions and inconsistent choices cannot dri
 });
 
 test('missing credentials fail before any network call', async () => {
-  await assert.rejects(askJev({}, { apiKey: '', fetchImpl: () => assert.fail('must not call API') }), /TYPESAFE_API_KEY/);
+  await assert.rejects(askJev({}, { apiKey: '', fetchImpl: () => assert.fail('must not call API') }), /OPENROUTER_API_KEY/);
 });
 
 test('request uses official endpoint and preserves state, resolved model and usage', async () => {
   const state = { car: { x: 3, y: 8 }, road: [[0, 0], [12, 12]] };
   const result = await askJev(state, { apiKey: 'test-only', model: 'jev-test-fixture', fetchImpl: async (url, options) => {
-    assert.equal(url, 'https://api.typesafe.ai/v1/systemone');
+    assert.equal(url, 'https://openrouter.ai/api/alpha/decisions');
     assert.equal(options.headers.Authorization, 'Bearer test-only');
     assert.deepEqual(JSON.parse(options.body).state, state);
     assert.equal(JSON.parse(options.body).model, 'jev-test-fixture');
@@ -45,6 +45,9 @@ test('request uses official endpoint and preserves state, resolved model and usa
   } });
   assert.equal(result.model, 'jev-test-fixture');
   assert.equal(result.usage.input_tokens, 10);
+  assert.equal(result.requestId, 'fixture-request');
+  assert.equal(result.provider, 'TypeSafe');
+  assert.equal(jevRequest(state).model, 'typesafe/jev-1.13');
 });
 
 test('HTTP failures expose status without echoing provider bodies', async () => {
@@ -65,7 +68,7 @@ test('runner records a bounded incomplete trial and latency with a mock provider
     await writeFile(preload, `globalThis.fetch = async () => ({ok:true,json:async () => (${JSON.stringify(reply('none'))})});`);
     await promisify(execFile)(process.execPath, [
       '--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--sectors', '1', '--out', output,
-    ], { cwd: new URL('..', import.meta.url), env: { ...process.env, TYPESAFE_API_KEY: 'test-only' } });
+    ], { cwd: new URL('..', import.meta.url), env: { ...process.env, OPENROUTER_API_KEY: 'test-only' } });
     const { jevLap } = await import(pathToFileURL(output).href);
     assert.equal(jevLap.finished, false);
     assert.equal(jevLap.finishTime, 25);
@@ -74,8 +77,39 @@ test('runner records a bounded incomplete trial and latency with a mock provider
     assert.equal(jevLap.decisions.length, 125);
     assert.equal(jevLap.responseLatencyMs.calls, 125);
     assert.equal(jevLap.costUsd, null);
+    assert.equal(jevLap.transport, 'openrouter-decisions-http');
+    assert.equal(jevLap.costBasis, 'openrouter-reported-usd');
     assert.equal(jevLap.controlMode, 'reactive-choice-12-frames');
     assert.ok(jevLap.frames.length > 1);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('runner totals reported OpenRouter charges and saves reconciliation IDs', async () => {
+  const { mkdtemp, writeFile, readFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { pathToFileURL } = await import('node:url');
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const directory = await mkdtemp(join(tmpdir(), 'openrouter-cost-test-'));
+  try {
+    const preload = join(directory, 'provider.mjs');
+    const output = join(directory, 'lap.mjs');
+    const payload = reply('none');
+    payload.usage.cost = 0.0000042;
+    await writeFile(preload, `globalThis.fetch = async () => ({ok:true,json:async () => (${JSON.stringify(payload)})});`);
+    await promisify(execFile)(process.execPath, [
+      '--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--mode', 'reactive', '--max-calls', '2', '--out', output,
+    ], { cwd: new URL('..', import.meta.url), env: { ...process.env, OPENROUTER_API_KEY: 'test-only' } });
+    const { jevLap } = await import(pathToFileURL(output).href);
+    assert.equal(jevLap.costUsd, 0.0000084);
+    const audit = (await readFile(`${output}.audit.jsonl`, 'utf8')).trim().split('\n').map(JSON.parse);
+    assert.equal(audit[0].provider, 'openrouter');
+    assert.equal(audit[1].requestId, 'fixture-request');
+    assert.equal(audit[1].provider, 'TypeSafe');
+    assert.equal(audit[1].costUsd, 0.0000042);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

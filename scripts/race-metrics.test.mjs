@@ -6,10 +6,12 @@ test('quantiles exclude failures but total time includes them', () => {
     { calls: 2, attempts: 3, failed: 1, total: 140, mean: 20, p50: 10, p95: 30 });
   assert.equal(latencySummary([]).p50, null);
 });
-test('cost is only known for verified model and valid usage', () => {
-  assert.equal(jevCost('jev-1.13.0', { input_tokens: 1000 }), 0.000042);
-  for (const usage of [null, {}, { input_tokens: -1 }, { input_tokens: 1.5 }]) assert.equal(jevCost('jev-1.13.0', usage), null);
-  assert.equal(jevCost('jev-latest', { input_tokens: 1000 }), null);
+test('cost uses OpenRouter reported USD and never substitutes direct token pricing', () => {
+  assert.equal(jevCost({ cost: 0.000042, input_tokens: 1000 }), 0.000042);
+  assert.equal(jevCost({ cost: 0 }), 0);
+  for (const usage of [null, {}, { input_tokens: 1000 }, { cost: -1 }, { cost: '0.1' }, { cost: Infinity }]) {
+    assert.equal(jevCost(usage), null);
+  }
 });
 test('reactive output cannot sneak in a longer action or plan', () => {
   assert.throws(() => validateReactive({ moves: [{ frames: 13 }] }));
@@ -56,7 +58,7 @@ test('failed HTTP request is preserved without leaking response body', async () 
     await writeFile(preload, 'globalThis.fetch=async()=>({ok:false,status:401,json:async()=>({secret:"NEVER_PRINT"})});');
     const out = join(directory, 'result.mjs');
     await promisify(execFile)(process.execPath, ['--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--mode', 'reactive', '--out', out],
-      { env: { ...process.env, TYPESAFE_API_KEY: 'fixture-only' } });
+      { env: { ...process.env, OPENROUTER_API_KEY: 'fixture-only' } });
     const { jevLap } = await import(pathToFileURL(out).href);
     assert.equal(jevLap.responseLatencyMs.failed, 1);
     assert.equal(jevLap.costUsd, null);

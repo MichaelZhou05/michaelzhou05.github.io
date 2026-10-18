@@ -64,8 +64,8 @@ const readArg = (name, fallback) => {
 const agentName = readArg('--agent', 'opus');
 const AGENTS = {
   jev: {
-    provider: 'typesafe',
-    model: readArg('--model', 'jev-latest'),
+    provider: 'openrouter',
+    model: readArg('--model', 'typesafe/jev-1.13'),
     reasoningEffort: null,
     output: 'jev-lap.js',
     exportName: 'jevLap',
@@ -89,15 +89,15 @@ const agent = AGENTS[agentName];
 if (!agent) throw new Error(`Unknown --agent ${agentName}. Use opus, sol or jev.`);
 
 const MODEL = agent.model;
-const isJev = agent.provider === 'typesafe';
+const isJev = agent.provider === 'openrouter';
 const matched = readArg('--mode', '') === 'reactive';
 if (readArg('--mode', '') && !matched) throw new Error('Use --mode reactive or omit for legacy mode');
 const reactive = isJev || matched;
 const maxAttempts = Number(readArg('--max-calls', '10000'));
 if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new Error('--max-calls must be a positive integer');
 const MAX_CALLS_PER_SECTOR = reactive ? SECTOR_FRAME_BUDGET / JEV_ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
-if (isJev && !process.env.TYPESAFE_API_KEY) {
-  throw new Error('Set TYPESAFE_API_KEY in your terminal before running jev-lap. No recording was changed.');
+if (isJev && !process.env.OPENROUTER_API_KEY) {
+  throw new Error('Set OPENROUTER_API_KEY in your terminal before running jev-lap. No recording was changed.');
 }
 const outputPath = resolve(here, '..', readArg('--out', matched ? `tmp/${agentName}-reactive.js` : agent.output));
 await mkdir(dirname(outputPath), { recursive: true });
@@ -237,6 +237,8 @@ await writeFile(auditPath, JSON.stringify({ type: 'config', startedAt, model: MO
 let lastUsage = null;
 let lastCost = null;
 let lastResolvedModel = null;
+let lastRequestId = null;
+let lastProvider = null;
 let costComplete = true;
 let estimatedJevCost = 0;
 let stopReason = null;
@@ -385,7 +387,9 @@ async function askJevTurn(prompt) {
   resolvedJevModel = result.model;
   lastResolvedModel = result.model;
   lastUsage = result.usage ?? null;
-  lastCost = jevCost(result.model, result.usage);
+  lastRequestId = result.requestId;
+  lastProvider = result.provider;
+  lastCost = jevCost(result.usage);
   estimatedJevCost += lastCost ?? 0;
   calls += 1;
   inputTokens += result.usage?.input_tokens ?? 0;
@@ -398,7 +402,7 @@ const ask = isJev ? askJevTurn : agent.provider === 'codex' ? askCodex : askClau
 async function askMeasured(prompt) {
   if (attempts.length >= maxAttempts) throw new Error('Call budget exhausted');
   const started = performance.now();
-  lastUsage = null; lastCost = null; lastResolvedModel = null;
+  lastUsage = null; lastCost = null; lastResolvedModel = null; lastRequestId = null; lastProvider = null;
   const item = { sector: activeSector + 1, simulationTime: round(raceTime, 3), prompt };
   try {
     const reply = await ask(prompt);
@@ -416,6 +420,8 @@ async function askMeasured(prompt) {
     item.usage = lastUsage;
     item.costUsd = lastCost;
     item.resolvedModel = lastResolvedModel;
+    item.requestId = lastRequestId;
+    item.provider = lastProvider;
     if (lastCost === null || item.status !== 'ok') costComplete = false;
     attempts.push(item);
     await appendFile(auditPath, JSON.stringify(item) + '\n');
@@ -679,14 +685,14 @@ const lap = {
   responseLatencyMs: latencySummary(attempts),
   controlMode: reactive ? 'reactive-choice-12-frames' : 'legacy-plan',
   historyPolicy: reactive ? 'stateless-current-state-and-last-feedback' : 'resumed-session',
-  transport: isJev ? 'direct-http' : `${agent.provider}-cli`,
+  transport: isJev ? 'openrouter-decisions-http' : `${agent.provider}-cli`,
   stopReason,
   sectorLimit,
   maxAttempts,
   actionFrames: reactive ? 12 : null,
   maxCallsPerSector: MAX_CALLS_PER_SECTOR,
   hashes,
-  costBasis: isJev ? 'list-price-estimate' : agent.provider === 'claude' ? 'cli-reported-not-invoice' : 'unknown',
+  costBasis: isJev ? 'openrouter-reported-usd' : agent.provider === 'claude' ? 'cli-reported-not-invoice' : 'unknown',
   pricing: isJev ? PRICING : null,
   ...(agent.reasoningEffort ? { reasoningEffort: agent.reasoningEffort } : {}),
   drivenAt: new Date().toISOString().slice(0, 10),
