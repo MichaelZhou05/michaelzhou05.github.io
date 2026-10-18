@@ -411,10 +411,14 @@ async function askMeasured(prompt) {
     if (reactive) validateReactive(plan);
     item.status = 'ok';
     return plan;
-  } catch {
-    // Raw CLI errors may contain credentials or provider diagnostics. Never persist them.
+  } catch (error) {
+    // Only locally defined Jev messages/statuses are safe to persist; never raw CLI stderr.
+    const safeJevError = isJev && /^(Jev HTTP [0-9]{3}( rate limit)?|Jev returned an invalid direction choice|Jev returned an invalid probability distribution|Jev returned invalid confidence|Jev response is missing the resolved model id|Jev model changed during the run; pin --model to a version\.)$/.test(error.message);
     item.status = 'failed';
-    throw new Error('Provider call or action validation failed; inspect local provider configuration');
+    item.failure = safeJevError ? error.message : 'Provider call or action validation failed';
+    if (safeJevError && error.validation) item.validation = error.validation;
+    throw new Error(item.failure);
+
   } finally {
     item.responseMs = round(performance.now() - started, 3);
     item.usage = lastUsage;

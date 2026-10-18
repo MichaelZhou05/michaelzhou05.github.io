@@ -1,0 +1,28 @@
+{
+  "kind": "diagnostic-only-not-a-race",
+  "sourceTrial": "jev-2026-10-18-r2",
+  "startedAt": "2026-10-18T07:37:18.655Z",
+  "httpStatus": 200,
+  "model": "typesafe/jev-1.13-20260917",
+  "usage": {
+    "input_tokens": 1688,
+    "output_tokens": 90,
+    "cost": 0.000070896
+  },
+  "requestId": "gen-dec-1792309039-vawDGGjnPI4hDMJw2LrP",
+  "choice": "down+right",
+  "probabilities": {
+    "up": 0.02,
+    "down": 0.08,
+    "left": 0.01,
+    "right": 0.07,
+    "up+left": 0.02,
+    "up+right": 0.36,
+    "down+left": 0.01,
+    "down+right": 0.43,
+    "none": 0
+  },
+  "probabilityKeys": 9,
+  "confidence": 0.36,
+  "valid": true
+}

@@ -13,6 +13,7 @@
     "check": "node --check app.js && node --check race-sim.js && node --check vim-game.js && node --check scripts/run-opus-racer.mjs && node --check scripts/jev-driver.mjs && node --check jev-lap.js && node --check race-method.js && node --check race-results.js && node --check scripts/race-metrics.mjs",
     "jev-lap": "node scripts/run-opus-racer.mjs --agent jev",
     "test:jev": "node --test scripts/jev-driver.test.mjs",
-    "test:race": "node --test scripts/jev-driver.test.mjs scripts/race-metrics.test.mjs"
+    "test:race": "node --test scripts/jev-driver.test.mjs scripts/race-metrics.test.mjs",
+    "test:race-results": "node scripts/check-race-results.mjs"
   }
 }

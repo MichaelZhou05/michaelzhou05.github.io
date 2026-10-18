@@ -28,9 +28,14 @@ export function parseJevDecision(response) {
   const probabilities = answer.probabilities;
   if (!probabilities || Object.keys(probabilities).length !== JEV_DIRECTIONS.length
     || JEV_DIRECTIONS.some((key) => !Number.isFinite(probabilities[key]) || probabilities[key] < 0 || probabilities[key] > 1)
-    || Math.abs(Object.values(probabilities).reduce((sum, value) => sum + value, 0) - 1) > 0.01
-    || probabilities[answer.choice] + 1e-6 < Math.max(...Object.values(probabilities))) {
-    throw new Error('Jev returned an invalid probability distribution');
+    || Math.abs(Object.values(probabilities).reduce((sum, value) => sum + value, 0) - 1) > 0.01 + 1e-9) {
+    const error = new Error('Jev returned an invalid probability distribution');
+    error.validation = {
+      probabilityCount: probabilities && typeof probabilities === 'object' ? Object.keys(probabilities).length : 0,
+      probabilities: Object.fromEntries(JEV_DIRECTIONS.map(key => [key, Number.isFinite(probabilities?.[key]) ? probabilities[key] : null])),
+      choice: answer.choice,
+    };
+    throw error;
   }
   if (!Number.isFinite(answer.confidence) || answer.confidence < 0 || answer.confidence > 1) {
     throw new Error('Jev returned invalid confidence');
@@ -40,6 +45,7 @@ export function parseJevDecision(response) {
     note: 'Jev Choice; fixed 12-frame action',
     probabilities,
     confidence: answer.confidence,
+    choiceMatchesArgmax: probabilities[answer.choice] + 1e-6 >= Math.max(...Object.values(probabilities)),
   };
 }
 

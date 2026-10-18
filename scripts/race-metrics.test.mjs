@@ -61,6 +61,7 @@ test('failed HTTP request is preserved without leaking response body', async () 
       { env: { ...process.env, OPENROUTER_API_KEY: 'fixture-only' } });
     const { jevLap } = await import(pathToFileURL(out).href);
     assert.equal(jevLap.responseLatencyMs.failed, 1);
+    assert.equal(jevLap.stopReason, 'Jev HTTP 401');
     assert.equal(jevLap.costUsd, null);
     assert.equal(jevLap.finished, false);
     const audit = await readFile(`${out}.audit.jsonl`, 'utf8');

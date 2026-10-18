@@ -16,14 +16,13 @@ test('all nine mutually exclusive controls become a legal fixed-duration move', 
   assert.deepEqual(Object.keys(jevRequest({ car: { x: 0, y: 0 } }).questions.direction.criteria), JEV_DIRECTIONS);
 });
 
-test('invalid probabilities, unknown actions and inconsistent choices cannot drive', () => {
+test('invalid probabilities, unknown actions and invalid confidence cannot drive', () => {
   for (const mutate of [
     (a) => { a.choice = 'teleport'; },
     (a) => { delete a.probabilities.left; },
     (a) => { a.probabilities.left = -0.1; },
     (a) => { a.probabilities.left = 0.5; },
     (a) => { a.confidence = NaN; },
-    (a) => { a.choice = 'down'; },
   ]) {
     const data = reply(); mutate(data.answers.direction);
     assert.throws(() => parseJevDecision(data));
@@ -113,4 +112,27 @@ test('runner totals reported OpenRouter charges and saves reconciliation IDs', a
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('probability validation diagnostics contain only expected numeric fields', () => {
+  const payload = reply();
+  payload.answers.direction.probabilities.unexpected = 'do-not-log';
+  assert.throws(() => parseJevDecision(payload), error => {
+    assert.equal(error.validation.probabilityCount, 10);
+    assert.ok(!JSON.stringify(error.validation).includes('do-not-log'));
+    assert.deepEqual(Object.keys(error.validation.probabilities), JEV_DIRECTIONS);
+    return true;
+  });
+});
+
+// Observed OpenRouter response: a legal returned choice need not equal argmax.
+test('executes the supplied legal choice and flags its probability mismatch', () => {
+  const data = reply();
+  data.answers.direction.choice = 'up+right';
+  data.answers.direction.probabilities = { up: .03, down: .08, left: .08, right: .07,
+    'up+left': .2, 'up+right': .19, 'down+left': .18, 'down+right': .16, none: .01 };
+  const decision = parseJevDecision(data);
+  assert.deepEqual(decision.plan, [{ direction: 'up+right', frames: 12 }]);
+  assert.equal(decision.choiceMatchesArgmax, false);
+  assert.deepEqual(decision.probabilities, data.answers.direction.probabilities);
 });

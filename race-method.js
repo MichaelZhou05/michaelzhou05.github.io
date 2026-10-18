@@ -19,7 +19,7 @@ if (jevLap?.frames?.length > 1) {
   const status = document.querySelector('#jev-record-status');
   status.textContent = `Jev recording: ${jevLap.drivenAt}. ${jevLap.finished ? 'The blue car replays this completed run.' : 'This trial did not finish and is not ranked.'}`;
   if (Number.isFinite(jevLap.responseLatencyMs?.mean)) {
-    status.textContent += ` Mean response time: ${jevLap.responseLatencyMs.mean} ms per successful call, including the network round trip. Different control mode from Opus/Sol; compare with care.`;
+    status.textContent += ` Mean response time: ${jevLap.responseLatencyMs.mean.toFixed(1)} ms per successful call, including the network round trip. Different control mode from Opus/Sol; compare with care.`;
   }
 }
 

@@ -111,7 +111,7 @@ npm run jev-lap -- --sectors 1 --out tmp/jev-trial.js
 For a full recording, run `npm run jev-lap`. This makes real, billed API calls
 (up to 125 calls per sector, before transient retries). `--model` can pin an
 available model version instead of `typesafe/jev-1.13`; the returned model id is saved.
-The site imports `jev-lap.js`, initially null. Only a completed recording enables
+The site imports `jev-lap.js`, which points to the latest real trial. Only a completed recording enables
 the blue replay car and its progress gauge. Partial runs are not ranked.
 
 Jev's **reactive-choice-12-frames** mode chooses one of nine actions every 0.2
@@ -134,5 +134,5 @@ npm run test:jev
 Use `--mode reactive` on any racer for matched 12-frame controls and stateless
 observations. The methodology page separates these measurements from legacy laps.
 See [the benchmark protocol](scripts/RACE-BENCHMARK.md) for bounded pilot commands,
-pricing sources, audit artifacts, clocks, and publication rules. No measured Jev
-speed or cost advantage is claimed until authorized runs produce evidence.
+pricing sources, audit artifacts, clocks, and publication rules. Real Jev trials and audit logs are saved in `results/`; see [the findings](results/README.md).
+No cross-model speed or cost advantage is claimed without matched Opus/GPT measurements.

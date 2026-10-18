@@ -115,3 +115,11 @@ node -e 'console.log(process.env.OPENROUTER_API_KEY ? "OpenRouter key available"
 
 Do not paste the key into chat, commit it, or put it in a command-line argument.
 Opus and GPT continue to use their existing CLIs; this change routes Jev only.
+
+### Live-run adapter finding
+
+The 18 October OpenRouter trials returned a legal Choice that was not the highest
+published probability. The runner now executes the returned choice and records
+`choiceMatchesArgmax`, rather than rejecting or overriding that action. See
+[the retained live-trial evidence](../results/README.md). Validation failures before
+this correction are separate diagnostic trials, not comparable repeated runs.

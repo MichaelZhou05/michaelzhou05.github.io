@@ -1,2 +1,2 @@
-/** No measured Jev lap yet. npm run jev-lap replaces this after a real API run. */
-export const jevLap = null;
+/** Latest real Jev trial. The game enables this replay only when finished is true. */
+export { jevLap } from './results/jev-2026-10-18-r4.js';
