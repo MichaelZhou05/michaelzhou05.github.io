@@ -29,3 +29,13 @@
   .plan-example { padding: 12px; }
   .plan-example pre { font-size: 12px; }
 }
+.comparison { margin-top: 32px; }
+.metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 28px 0; }
+.metric-grid article { border: 1px solid var(--edge); padding: 18px; background: var(--shell-grey); }
+.metric-grid span, .track-label { font: 12px/1.6 monospace; color: var(--amber); letter-spacing: .05em; }
+.metric-grid h3 { margin: 12px 0; color: var(--bright); font-size: 25px; }
+.metric-grid p { font-size: 19px; margin-bottom: 0; }
+.comparison details { margin: 24px 0; border: 1px solid var(--edge); padding: 18px; }
+.comparison summary { cursor: pointer; color: var(--bright); }
+.comparison summary:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
+@media (max-width: 640px) { .metric-grid { grid-template-columns: 1fr; } }

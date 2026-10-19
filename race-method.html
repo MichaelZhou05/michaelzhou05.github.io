@@ -20,11 +20,43 @@
       <p class="clock-callout"><strong>The lap clock stops while the model thinks.</strong> A quick answer and a quick lap are two different things.</p>
     </header>
 
+    <section class="comparison" aria-labelledby="comparison-title">
+      <p class="eyebrow">decision latency × driving quality × cost</p>
+      <h2 id="comparison-title">Can a small decision beat a long plan?</h2>
+      <p>Jev makes one typed choice. Opus and GPT can write whole programmes. This experiment tests whether frequent, inexpensive decisions can navigate well enough to make the trade worthwhile.</p>
+      <div class="metric-grid">
+        <article><span>01 / SIMULATION</span><h3>Drive well</h3><p>Completion, lap seconds, grass and wall hits. Waiting for inference adds no lap time.</p></article>
+        <article><span>02 / RESPONSE</span><h3>Decide quickly</h3><p>Median and p95 request-to-validated-action time. Includes network and, for Opus/GPT, CLI startup.</p></article>
+        <article><span>03 / END TO END</span><h3>Spend less</h3><p>Total wall time and known run cost. More frequent decisions can erase a per-call advantage.</p></article>
+      </div>
+      <div class="track-label">TRACK A / MATCHED REACTIVE CONTROL</div>
+      <p>All models choose one of nine actions every 12 frames, receive the same observation fields and latest feedback, and start without chat history. Each sector has a strict 1,500-frame / 125-call limit. Missing a gate ends the run. Paths diverge as models act; observations are matched in format, not identical snapshots.</p>
+      <div class="results-scroll" tabindex="0" role="region" aria-label="Matched measurements">
+        <table><caption>Real OpenRouter trials · no cross-model winner declared</caption>
+          <thead><tr><th scope="col">Run / artifact</th><th scope="col">Simulation</th><th scope="col">Grass / wall frames</th><th scope="col">p50 response</th><th scope="col">p95 response</th><th scope="col">Wall time</th><th scope="col">Valid / attempts</th><th scope="col">Run cost</th></tr></thead>
+          <tbody id="matched-results"><tr data-empty><td colspan="8">Live trials are available in the linked artifacts; enable JavaScript to display measurements.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="clock-callout"><strong>Latest Jev trial: 4,991 m, incomplete.</strong> It cleared four sectors before exhausting the sector-5 budget. Across 509 valid calls: 409 ms median response, 652 ms p95, 226.9 seconds wall time and $0.03420 reported cost. These are trial measurements, not a completed lap or a cross-model speedup.</p>
+      <p>Trials r1–r3 stopped on adapter validation. Trial r4 uses the corrected adapter; these are not four comparable repeats. <a href="./results/README.md">Read the findings and retained failure evidence.</a></p>
+      <p>Transport remains different: Jev uses OpenRouter’s Decisions API over HTTP; Opus and GPT use local CLIs, with GPT at xhigh reasoning. This compares deployed configurations, not isolated model compute. The harness does not retry; internal CLI retries, if any, remain inside the measured invocation. A failed or invalid response ends the trial and remains in its audit log.</p>
+      <details><summary>Published prices: the hypothesis, not the result</summary>
+        <p>Verified 18 October 2026. USD per million tokens; standard short-context API rates.</p>
+        <div class="results-scroll"><table><thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Source</th></tr></thead><tbody>
+          <tr><th>Jev 1.13 / 1.14</th><td>$0.042</td><td>$0</td><td><a href="https://docs.typesafe.ai/models">TypeSafe</a></td></tr>
+          <tr><th>Claude Opus 5</th><td>$5</td><td>$25</td><td><a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic</a></td></tr>
+          <tr><th>GPT-5.6 Sol</th><td>$4</td><td>$20</td><td><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">OpenAI</a></td></tr>
+        </tbody></table></div>
+        <p>Jev run costs use OpenRouter’s reported USD charge, saved with its request ID. Missing cost or any failed request makes total cost unknown. The TypeSafe list prices above are context, not a fallback bill for routed calls. Claude costs are CLI-reported estimates; GPT CLI cost stays unknown. Cache discounts, cache writes, context tiers and subscription billing prevent treating this price table as a bill.</p>
+      </details>
+      <p><a href="./scripts/RACE-BENCHMARK.md">Reproduce the experiment and review the evidence →</a></p>
+    </section>
+
     <section aria-labelledby="loop-title">
       <h2 id="loop-title">One turn behind the wheel</h2>
       <ol class="method-loop">
         <li><strong>Read the road.</strong> The model gets text containing JSON: its position, road centreline coordinates, the sector’s exit gate, road width and movement speed. It receives coordinates, not a screenshot.</li>
-        <li><strong>Choose a plan.</strong> It replies with directions and durations. There are nine choices: four directions, four diagonals, or no movement. It also chooses how long to hold each one.</li>
+        <li><strong>Choose a plan.</strong> It replies with directions and durations. There are nine choices: four directions, four diagonals, or no movement. Legacy plan mode also chooses how long to hold each one; reactive mode fixes the duration at 12 frames.</li>
         <li><strong>Drive, then check.</strong> The harness runs those keys at 60 simulation frames per second. If the car has not reached the gate, the model gets updated coordinates and feedback about grass, walls and distance remaining.</li>
         <li><strong>Save the lap.</strong> Positions and headings are recorded 20 times per simulated second. This website replays those positions while you drive. Visiting the page makes no model calls.</li>
       </ol>
@@ -49,7 +81,7 @@
     </section>
 
     <section aria-labelledby="results-title">
-      <h2 id="results-title">The recordings on the grid</h2>
+      <h2 id="results-title">Track B / legacy recordings</h2>
       <p>The Opus and Sol values below come from saved lap files dated 25 July 2026. Model names are the identifiers stored in those files.</p>
       <div class="results-scroll" tabindex="0" role="region" aria-label="Recorded lap results; scroll horizontally on small screens">
         <table>
@@ -58,28 +90,28 @@
           <tbody>
             <tr><th scope="row"><a href="./sol-lap.js">gpt-5.6-sol · xhigh</a></th><td>95.933 s</td><td>8.32 s</td><td>0</td><td>70</td></tr>
             <tr><th scope="row"><a href="./opus-lap.js">claude-opus-5</a></th><td>114.117 s</td><td>33.77 s</td><td>72</td><td>32</td></tr>
-            <tr id="jev-result"><th scope="row">Jev · reactive mode</th><td colspan="4">No recorded run yet</td></tr>
+            <tr id="jev-result"><th scope="row">Jev · reactive mode</th><td colspan="4">See the live reactive trials above</td></tr>
           </tbody>
         </table>
       </div>
-      <p id="jev-record-status">No real Jev run has been recorded yet.</p>
-      <p>Sol’s saved lap is 18.184 seconds faster and spends less time on grass. These artifacts do not record response latency, so they cannot tell us which model answered faster. A zero cost field is also not evidence that a run was free.</p>
+      <p id="jev-record-status">Real Jev trial artifacts are available above. The blue car replays the real trial and stops at its recorded endpoint. Incomplete trials are classified DNF.</p>
+      <p>Sol’s saved lap is 18.184 seconds faster and spends less time on grass. The legacy Opus/Sol artifacts do not record response latency, so they cannot tell us which model answered faster. A zero cost field is also not evidence that a run was free.</p>
     </section>
 
     <section id="jev" aria-labelledby="jev-title">
       <h2 id="jev-title">Would JEV have an advantage?</h2>
-      <p><strong>Jev is TypeSafe AI’s decision model.</strong> Its <a href="https://docs.typesafe.ai/api">official API</a> returns typed choices, yes/no probabilities and scores. Unlike the current Opus/Sol interface, it does not write an arbitrary driving plan. The blue car stays in the garage until a real completed recording is available.</p>
+      <p><strong>Jev is TypeSafe AI’s decision model.</strong> Its <a href="https://docs.typesafe.ai/api">official API</a> returns typed choices, yes/no probabilities and scores. Unlike the current Opus/Sol interface, it does not write an arbitrary driving plan. The blue car is active on the grid. It replays the real trial and stops at 4.99 km with a DNF result.</p>
       <p>Selecting among a fixed set of actions is a natural fit for Jev’s Choice interface. But the current task asks for a whole sequence of directions <em>and durations</em>. Choosing “right” is only part of the problem: holding it too long can put the car on the grass.</p>
       <p><strong>JSON is just the container.</strong> The Opus/Sol response contains actions, not probabilities. Producing valid JSON does not by itself show good spatial planning. Jev’s action probabilities are not measured probabilities of finishing the lap or avoiding a crash; that interpretation would need its own testing.</p>
-      <p>The new Jev adapter asks for one of the nine directions, uses the returned highest-probability choice, and holds it for 12 frames (0.2 simulated seconds). It then sends a fresh road observation. It allows up to 125 calls per sector, uses the same movement physics and camera as the offline runner, and saves action probabilities plus response times. Each request uses the current state and latest feedback, without a resumed chat history. This is a separate <strong>reactive mode</strong>: its shorter actions and more frequent feedback mean its times are not a controlled head-to-head comparison with the existing plan-mode recordings. To isolate the model’s contribution, run all models with the same action interval, observations and budgets.</p>
+      <p>The new Jev adapter asks for one of the nine directions, uses the returned choice (and logs whether it matches the highest probability), and holds it for 12 frames (0.2 simulated seconds). It then sends a fresh road observation. It allows up to 125 calls per sector, uses the same movement physics and camera as the offline runner, and saves action probabilities plus response times. Each request uses the current state and latest feedback, without a resumed chat history. This is a separate <strong>reactive mode</strong>: its shorter actions and more frequent feedback mean its times are not a controlled head-to-head comparison with the existing plan-mode recordings. Track A now implements matched action intervals, observation fields and budgets for all three models; transport and reasoning remain configuration differences.</p>
       <p><a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev">TypeSafe reports fast responses on its own decision tasks</a>; that is not a measured racing result. Faster individual calls could shorten the time needed to generate a recording, although reactive mode makes more calls. It does <strong>not</strong> reduce the current lap time directly. To test both strengths, report simulated lap time and model response latency separately, alongside completion rate and mistakes. A future real-time mode would need an explicit rule for what the car does while waiting.</p>
     </section>
 
     <section aria-labelledby="limits-title">
       <h2 id="limits-title">How much should you trust the ranking?</h2>
-      <p>Treat this as a playable experiment, not a general intelligence leaderboard. It shows two saved laps on one track, with no repeated-run averages or uncertainty estimates. The replay files preserve positions and summaries, not a complete audit trail of every prompt and response.</p>
+      <p>Treat this as a playable experiment, not a general intelligence leaderboard. It shows two saved laps on one track, with no repeated-run averages or uncertainty estimates. The legacy replay files preserve positions and summaries, not a complete prompt/response audit. New runs include an audit sidecar.</p>
       <p>The human and offline models share the same movement function, but the surrounding conditions differ. Humans see an image and steer continuously; models read coordinates and act in batches. The browser currently cuts immediately to a new sector view, while the offline harness eases its camera. Browser updates use elapsed frame time; the runner uses fixed 1/60-second steps.</p>
-      <p>The model interfaces differ too: Opus runs through Claude Code, and Sol runs through Codex at xhigh reasoning with an output schema. Both resume their own session for feedback. These details matter when comparing results. A stricter benchmark would align camera behaviour, preserve full run logs, and repeat each configuration before making broader claims.</p>
+      <p>The model interfaces differ too: Opus runs through Claude Code, and Sol runs through Codex at xhigh reasoning with an output schema. Legacy runs resume their own session for feedback; matched reactive runs do not. These details matter when comparing results. Matched runs now preserve full run logs. Repeated measurements are still required before making broader claims.</p>
     </section>
 
     <section aria-labelledby="source-title">

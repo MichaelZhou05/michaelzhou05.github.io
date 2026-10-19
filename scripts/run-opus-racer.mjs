@@ -22,9 +22,10 @@
 
 import { spawn } from 'node:child_process';
 import { askJev, JEV_ACTION_FRAMES } from './jev-driver.mjs';
-import { randomUUID } from 'node:crypto';
+import { latencySummary, jevCost, PRICING, validateReactive } from './race-metrics.mjs';
+import { randomUUID, createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { writeFile, mkdir, appendFile, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -63,22 +64,22 @@ const readArg = (name, fallback) => {
 const agentName = readArg('--agent', 'opus');
 const AGENTS = {
   jev: {
-    provider: 'typesafe',
-    model: readArg('--model', 'jev-latest'),
+    provider: 'openrouter',
+    model: readArg('--model', 'typesafe/jev-1.13'),
     reasoningEffort: null,
     output: 'jev-lap.js',
     exportName: 'jevLap',
   },
   opus: {
     provider: 'claude',
-    model: 'claude-opus-5',
+    model: readArg('--model', 'claude-opus-5'),
     reasoningEffort: null,
     output: 'opus-lap.js',
     exportName: 'opusLap',
   },
   sol: {
     provider: 'codex',
-    model: 'gpt-5.6-sol',
+    model: readArg('--model', 'gpt-5.6-sol'),
     reasoningEffort: 'xhigh',
     output: 'sol-lap.js',
     exportName: 'solLap',
@@ -88,19 +89,29 @@ const agent = AGENTS[agentName];
 if (!agent) throw new Error(`Unknown --agent ${agentName}. Use opus, sol or jev.`);
 
 const MODEL = agent.model;
-const isJev = agent.provider === 'typesafe';
-const MAX_CALLS_PER_SECTOR = isJev ? SECTOR_FRAME_BUDGET / JEV_ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
-if (isJev && !process.env.TYPESAFE_API_KEY) {
-  throw new Error('Set TYPESAFE_API_KEY in your terminal before running jev-lap. No recording was changed.');
+const isJev = agent.provider === 'openrouter';
+const matched = readArg('--mode', '') === 'reactive';
+if (readArg('--mode', '') && !matched) throw new Error('Use --mode reactive or omit for legacy mode');
+const reactive = isJev || matched;
+const maxAttempts = Number(readArg('--max-calls', '10000'));
+if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new Error('--max-calls must be a positive integer');
+const MAX_CALLS_PER_SECTOR = reactive ? SECTOR_FRAME_BUDGET / JEV_ACTION_FRAMES : LEGACY_CALLS_PER_SECTOR;
+if (isJev && !process.env.OPENROUTER_API_KEY) {
+  throw new Error('Set OPENROUTER_API_KEY in your terminal before running jev-lap. No recording was changed.');
 }
-const outputPath = resolve(here, '..', readArg('--out', agent.output));
-const sectorLimit = Number(readArg('--sectors', '0')) || Infinity;
-const planSchemaPath = resolve(here, 'racer-plan.schema.json');
+const outputPath = resolve(here, '..', readArg('--out', matched ? `tmp/${agentName}-reactive.js` : agent.output));
+await mkdir(dirname(outputPath), { recursive: true });
+const auditPath = `${outputPath}.audit.jsonl`;
+if (existsSync(auditPath)) throw new Error('Audit file already exists; choose a fresh --out path');
+const sectorLimit = Number(readArg('--sectors', '18'));
+if (!Number.isInteger(sectorLimit) || sectorLimit < 1 || sectorLimit > 18) throw new Error('--sectors must be 1–18');
+const planSchemaPath = resolve(here, reactive ? 'racer-reactive.schema.json' : 'racer-plan.schema.json');
 const resumeLapArg = readArg('--resume-lap', '');
 const resumeLap = resumeLapArg
   ? (await import(`${pathToFileURL(resolve(here, '..', resumeLapArg)).href}?resume=${Date.now()}`))[agent.exportName]
   : null;
-if (isJev && (resumeLapArg || readArg('--start-sector', '1') !== '1')) throw new Error('Jev runs must start from sector 1.');
+if (reactive && readArg('--session', '')) throw new Error('Reactive mode is stateless; omit --session');
+if (reactive && (resumeLapArg || readArg('--start-sector', '1') !== '1')) throw new Error('Reactive runs must start from sector 1.');
 const startSector = Math.max(0, Number(readArg('--start-sector', resumeLap ? '18' : '1')) - 1);
 
 const course = buildCourse(VIEW_WIDTH, VIEW_HEIGHT);
@@ -168,7 +179,7 @@ function gateOn(view, sector) {
 
 /* --------------------------------- the model --------------------------------- */
 
-const SYSTEM_PROMPT = `You are driving a car around a top-down scale replica of the Nürburgring
+const LEGACY_SYSTEM_PROMPT = `You are driving a car around a top-down scale replica of the Nürburgring
 Nordschleife, on the same 900x600 screen a human player sees, using the same four arrow keys.
 
 HOW THE CAR MOVES — read carefully, it is not a normal car:
@@ -208,6 +219,29 @@ this happen and drives round it; budget for it in your opening move.`
   .replace('CORRIDOR_W', String(round(CORRIDOR_HALF_WIDTH)))
   .replace('MAX_FRAMES', String(MAX_PLAN_FRAMES));
 
+const SYSTEM_PROMPT = reactive ? LEGACY_SYSTEM_PROMPT.split('YOUR JOB each turn:')[0]
+  + '\n' + LEGACY_SYSTEM_PROMPT.slice(LEGACY_SYSTEM_PROMPT.indexOf('ONE CATCH:'))
+  + '\nChoose exactly one of up, down, left, right, up+left, up+right, down+left, down+right, none. Hold it for exactly 12 frames (0.2 simulated seconds), then receive a fresh observation. Reach the gate quickly while staying on asphalt. Return {"plan":[{"direction":"up","frames":12}],"note":""} with your chosen direction.'
+  : LEGACY_SYSTEM_PROMPT;
+const attempts = [];
+const startedAt = new Date().toISOString();
+const runStarted = performance.now();
+const hashes = {};
+for (const file of ['race-sim.js', 'nordschleife.js', 'scripts/run-opus-racer.mjs', 'scripts/jev-driver.mjs', 'scripts/race-metrics.mjs', 'scripts/racer-reactive.schema.json']) {
+  hashes[file] = createHash('sha256').update(await readFile(resolve(here, '..', file))).digest('hex');
+}
+await writeFile(auditPath, JSON.stringify({ type: 'config', startedAt, model: MODEL, provider: agent.provider,
+  mode: reactive ? 'reactive-choice-12-frames' : 'legacy-plan', stateless: reactive, maxAttempts,
+  sectorLimit, startSector, reasoningEffort: agent.reasoningEffort, maxCallsPerSector: MAX_CALLS_PER_SECTOR,
+  systemPrompt: SYSTEM_PROMPT, hashes }) + '\n', { flag: 'wx' });
+let lastUsage = null;
+let lastCost = null;
+let lastResolvedModel = null;
+let lastRequestId = null;
+let lastProvider = null;
+let costComplete = true;
+let estimatedJevCost = 0;
+let stopReason = null;
 let sessionId = readArg('--session', null);
 let totalCostUsd = 0;
 let calls = resumeLap?.modelCalls ?? 0;
@@ -217,6 +251,7 @@ let outputTokens = resumeLap?.usage?.outputTokens ?? 0;
 
 /** One headless turn against the model. The session is resumed so it remembers. */
 function askClaude(prompt) {
+  if (reactive) sessionId = null;
   const first = sessionId === null;
   if (first) sessionId = randomUUID();
 
@@ -252,7 +287,9 @@ function askClaude(prompt) {
       try {
         const envelope = JSON.parse(stdout);
         if (envelope.is_error) throw new Error(envelope.result ?? 'model reported an error');
-        totalCostUsd += envelope.total_cost_usd ?? 0;
+        lastCost = Number.isFinite(envelope.total_cost_usd) ? envelope.total_cost_usd : null;
+        lastUsage = envelope.usage ?? null;
+        totalCostUsd += lastCost ?? 0;
         calls += 1;
         resolvePromise(envelope.result ?? '');
       } catch (error) {
@@ -270,6 +307,7 @@ function codexBinary() {
 
 /** One structured, read-only Codex turn. Later turns resume the same thread. */
 function askCodex(prompt) {
+  if (reactive) sessionId = null;
   const first = sessionId === null;
   const fullPrompt = first
     ? `${SYSTEM_PROMPT}\n\nDo not inspect files or call tools. Drive only from the screen state below.\n\n${prompt}`
@@ -315,6 +353,7 @@ function askCodex(prompt) {
             reply = event.item.text ?? reply;
           }
           if (event.type === 'turn.completed' && event.usage) {
+            lastUsage = event.usage;
             inputTokens += event.usage.input_tokens ?? 0;
             cachedInputTokens += event.usage.cached_input_tokens ?? 0;
             outputTokens += event.usage.output_tokens ?? 0;
@@ -339,14 +378,19 @@ let resolvedJevModel = null;
 async function askJevTurn(prompt) {
   const started = performance.now();
   const result = await askJev({
-    movementRules: SYSTEM_PROMPT.split('YOUR JOB each turn:')[0],
-    cameraRule: SYSTEM_PROMPT.slice(SYSTEM_PROMPT.indexOf('ONE CATCH:')),
+    movementRules: SYSTEM_PROMPT,
     screenStateAndFeedback: prompt,
   }, { model: MODEL });
   const responseMs = Math.round(performance.now() - started);
   if (typeof result.model !== 'string' || !result.model) throw new Error('Jev response is missing the resolved model id');
   if (resolvedJevModel && result.model !== resolvedJevModel) throw new Error('Jev model changed during the run; pin --model to a version.');
   resolvedJevModel = result.model;
+  lastResolvedModel = result.model;
+  lastUsage = result.usage ?? null;
+  lastRequestId = result.requestId;
+  lastProvider = result.provider;
+  lastCost = jevCost(result.usage);
+  estimatedJevCost += lastCost ?? 0;
   calls += 1;
   inputTokens += result.usage?.input_tokens ?? 0;
   outputTokens += result.usage?.output_tokens ?? 0;
@@ -355,20 +399,37 @@ async function askJevTurn(prompt) {
 }
 const ask = isJev ? askJevTurn : agent.provider === 'codex' ? askCodex : askClaude;
 
-async function askWithRetry(prompt) {
-  let lastError;
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    try {
-      return await ask(prompt);
-    } catch (error) {
-      lastError = error;
-      if (!/rate limit|stream disconnected|reconnecting/i.test(error.message) || attempt === 3) throw error;
-      const delay = 15_000 * (attempt + 1);
-      process.stdout.write(`  ! transient model limit; retrying in ${delay / 1000}s\n`);
-      await new Promise((resolvePromise) => setTimeout(resolvePromise, delay));
-    }
+async function askMeasured(prompt) {
+  if (attempts.length >= maxAttempts) throw new Error('Call budget exhausted');
+  const started = performance.now();
+  lastUsage = null; lastCost = null; lastResolvedModel = null; lastRequestId = null; lastProvider = null;
+  const item = { sector: activeSector + 1, simulationTime: round(raceTime, 3), prompt };
+  try {
+    const reply = await ask(prompt);
+    item.reply = reply;
+    const plan = parsePlan(reply);
+    if (reactive) validateReactive(plan);
+    item.status = 'ok';
+    return plan;
+  } catch (error) {
+    // Only locally defined Jev messages/statuses are safe to persist; never raw CLI stderr.
+    const safeJevError = isJev && /^(Jev HTTP [0-9]{3}( rate limit)?|Jev returned an invalid direction choice|Jev returned an invalid probability distribution|Jev returned invalid confidence|Jev response is missing the resolved model id|Jev model changed during the run; pin --model to a version\.)$/.test(error.message);
+    item.status = 'failed';
+    item.failure = safeJevError ? error.message : 'Provider call or action validation failed';
+    if (safeJevError && error.validation) item.validation = error.validation;
+    throw new Error(item.failure);
+
+  } finally {
+    item.responseMs = round(performance.now() - started, 3);
+    item.usage = lastUsage;
+    item.costUsd = lastCost;
+    item.resolvedModel = lastResolvedModel;
+    item.requestId = lastRequestId;
+    item.provider = lastProvider;
+    if (lastCost === null || item.status !== 'ok') costComplete = false;
+    attempts.push(item);
+    await appendFile(auditPath, JSON.stringify(item) + '\n');
   }
-  throw lastError;
 }
 
 const DIRECTIONS = new Map([
@@ -393,6 +454,9 @@ function parsePlan(reply) {
   const payload = JSON.parse(text.slice(start, end + 1));
   if (!Array.isArray(payload.plan) || payload.plan.length === 0) throw new Error('plan is empty');
 
+  if (reactive && (payload.plan.length !== 1 || payload.plan[0]?.frames !== 12)) {
+    throw new Error('Reactive mode requires exactly one integer 12-frame move');
+  }
   const moves = [];
   let frames = 0;
   for (const entry of payload.plan) {
@@ -492,7 +556,7 @@ function runMove(move, gateDistance) {
 
 const sectorLog = resumeLap?.sectors ? resumeLap.sectors.slice(0, startSector) : [];
 
-for (let index = startSector; index < track.sectors.length && index < startSector + sectorLimit; index += 1) {
+raceLoop: for (let index = startSector; index < track.sectors.length && index < startSector + sectorLimit; index += 1) {
   activeSector = index;
   const sector = track.sectors[index];
   const view = course.sectorViews[index];
@@ -536,17 +600,15 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
       '',
       '"road" is the centreline as a list of [x, y] screen points in the direction of travel;'
       + ' "gate" is the two ends of the line you must cross to finish this sector.',
-      isJev ? 'Choose the next fixed-duration move.' : 'Reply with the JSON key programme only.',
+      reactive ? 'Choose the next fixed-duration move.' : 'Reply with the JSON key programme only.',
     ].join('\n');
 
     let plan;
     try {
-      plan = parsePlan(await askWithRetry(prompt));
+      plan = await askMeasured(prompt);
     } catch (error) {
-      if (isJev) throw error; // Fail without overwriting a recording on auth/API/validation errors.
-      feedback = `Your last reply could not be used (${error.message}). Reply with the JSON object only.`;
-      process.stdout.write(`  ! ${error.message}\n`);
-      continue;
+      stopReason = error.message;
+      break raceLoop;
     }
 
     let ran = 0;
@@ -554,13 +616,13 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
     let grass = 0;
     let walls = 0;
     for (const move of plan.moves) {
-      const result = runMove(move, gateDistance);
+      const result = runMove({ ...move, frames: Math.min(move.frames, SECTOR_FRAME_BUDGET - sectorFrames) }, gateDistance);
       ran += result.ranFrames;
       gained += result.gained;
       grass += result.grassFrames;
       walls += result.walls;
       sectorFrames += result.ranFrames;
-      if (driver.distance >= gateDistance || sectorFrames > SECTOR_FRAME_BUDGET) break;
+      if (driver.distance >= gateDistance || sectorFrames >= SECTOR_FRAME_BUDGET) break;
     }
 
     note = plan.note || note;
@@ -575,8 +637,8 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
     );
 
     if (done) break;
-    if (sectorFrames > SECTOR_FRAME_BUDGET) {
-      process.stdout.write('  ! sector budget spent, moving on\n');
+    if (sectorFrames >= SECTOR_FRAME_BUDGET) {
+      process.stdout.write('  ! sector budget spent\n');
       break;
     }
 
@@ -590,6 +652,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
     ].filter(Boolean).join(' ');
   }
 
+  if (reactive && driver.distance < gateDistance) stopReason = 'Sector budget exhausted before gate';
   const sectorTime = raceTime - sectorStartTime;
   sectorLog.push({
     sector: index + 1,
@@ -603,6 +666,7 @@ for (let index = startSector; index < track.sectors.length && index < startSecto
     + ` (lap ${(driver.distance / 1000).toFixed(2)} km`
     + `${agent.provider === 'claude' ? `, $${totalCostUsd.toFixed(3)} so far` : ''})\n`,
   );
+  if (stopReason) break;
 }
 
 /* --------------------------------- the record --------------------------------- */
@@ -618,12 +682,22 @@ const lap = {
     actionFrames: JEV_ACTION_FRAMES,
     maxCallsPerSector: MAX_CALLS_PER_SECTOR,
     decisions,
-    responseLatencyMs: {
-      calls: decisions.length,
-      total: decisions.reduce((sum, item) => sum + item.responseMs, 0),
-      mean: decisions.length ? round(decisions.reduce((sum, item) => sum + item.responseMs, 0) / decisions.length, 1) : null,
-    },
   } : {}),
+  measurementVersion: 1,
+  startedAt,
+  wallTimeMs: round(performance.now() - runStarted, 3),
+  responseLatencyMs: latencySummary(attempts),
+  controlMode: reactive ? 'reactive-choice-12-frames' : 'legacy-plan',
+  historyPolicy: reactive ? 'stateless-current-state-and-last-feedback' : 'resumed-session',
+  transport: isJev ? 'openrouter-decisions-http' : `${agent.provider}-cli`,
+  stopReason,
+  sectorLimit,
+  maxAttempts,
+  actionFrames: reactive ? 12 : null,
+  maxCallsPerSector: MAX_CALLS_PER_SECTOR,
+  hashes,
+  costBasis: isJev ? 'openrouter-reported-usd' : agent.provider === 'claude' ? 'cli-reported-not-invoice' : 'unknown',
+  pricing: isJev ? PRICING : null,
   ...(agent.reasoningEffort ? { reasoningEffort: agent.reasoningEffort } : {}),
   drivenAt: new Date().toISOString().slice(0, 10),
   finishTime: Number(raceTime.toFixed(3)),
@@ -633,7 +707,7 @@ const lap = {
   offTrackSeconds: Number((offTrackFrames / 60).toFixed(2)),
   wallHits,
   modelCalls: calls,
-  costUsd: isJev ? null : Number(totalCostUsd.toFixed(4)),
+  costUsd: costComplete && !resumeLap && reactive ? (isJev ? estimatedJevCost : agent.provider === 'claude' ? totalCostUsd : null) : null,
   ...(agent.provider !== 'claude' ? {
     usage: { inputTokens, cachedInputTokens, outputTokens },
   } : {}),
@@ -647,13 +721,16 @@ const source = `/**\n`
   + ` * A lap of the Nordschleife driven by ${MODEL}.\n`
   + ` *\n`
   + ` * Generated by scripts/run-opus-racer.mjs --agent ${agentName}. The model was shown the sector window\n`
-  + ` * exactly as the player sees it and replied with arrow-key programmes; those keys\n`
+  + ` * as coordinates and replied with arrow-key actions; those keys\n`
   + ` * were run through race-sim.js, the same physics the player drives. This file is\n`
   + ` * the resulting line — ${lap.finishTime.toFixed(2)} s, ${lap.offTrackCount} off-track moments.\n`
   + ` */\n\n`
   + `export const ${agent.exportName} = ${JSON.stringify(lap, null, 2)
     .replace(/\[\n\s+(-?[\d.]+),\n\s+(-?[\d.]+),\n\s+(-?[\d.]+),\n\s+(-?[\d.]+)\n\s+\]/g, '[$1, $2, $3, $4]')};\n`;
 
+if (!finished && existsSync(outputPath)) {
+  throw new Error('Incomplete run: existing recording preserved. Audit sidecar saved; use a fresh --out for trials.');
+}
 await writeFile(outputPath, source, 'utf8');
 
 process.stdout.write(

@@ -15,6 +15,7 @@ import {
 import { opusLap } from './opus-lap.js';
 import { solLap } from './sol-lap.js';
 import { jevLap } from './jev-lap.js';
+import { sampleLap } from './race-replay.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -243,7 +244,7 @@ const minimap = (() => {
  * `scripts/run-opus-racer.mjs` regenerates it. USV GPT 5.6 is a second real
  * replay, driven by gpt-5.6-sol at xhigh reasoning through the same harness.
  */
-const hasJevLap = jevLap?.finished === true && jevLap.frames?.length > 1;
+const hasJevLap = jevLap?.frames?.length > 1;
 const RACERS = [
   ...(hasJevLap ? [{ id: 'jev', label: 'JEV · REACTIVE', tag: 'JEV', color: '#6bcbef', kind: 'replay', lap: jevLap }] : []),
   {
@@ -271,38 +272,6 @@ RACERS.forEach((racer) => {
   racer.bar = $(`#${racer.id}-progress`);
 });
 
-/**
- * Sample the recorded lap at `time`, interpolating between the stored frames.
- * Frames are `[time, x, y, heading]`, so a full lap stays a small payload.
- */
-function sampleLap(lap, time) {
-  const frames = lap.frames;
-  const last = frames[frames.length - 1];
-  if (time >= last[0]) return { x: last[1], y: last[2], heading: last[3], done: true };
-
-  let low = 0;
-  let high = frames.length - 1;
-  while (low < high - 1) {
-    const middle = (low + high) >> 1;
-    if (frames[middle][0] <= time) low = middle;
-    else high = middle;
-  }
-  const a = frames[low];
-  const b = frames[high];
-  const mix = (time - a[0]) / Math.max(0.0001, b[0] - a[0]);
-
-  let turn = b[3] - a[3];
-  while (turn > Math.PI) turn -= Math.PI * 2;
-  while (turn < -Math.PI) turn += Math.PI * 2;
-
-  return {
-    x: a[1] + (b[1] - a[1]) * mix,
-    y: a[2] + (b[2] - a[2]) * mix,
-    heading: a[3] + turn * mix,
-    done: false,
-  };
-}
-
 /* ---------------------------------- state ---------------------------------- */
 
 const keys = { up: false, down: false, left: false, right: false };
@@ -326,6 +295,7 @@ function resetRacers() {
     racer.distance = 0;
     racer.lateral = 0;
     racer.finished = false;
+    racer.stopped = false;
     racer.finishTime = null;
 
     if (racer.kind === 'replay') {
@@ -455,7 +425,7 @@ function finishRace() {
 
   const board = [
     { name: 'YOU', time: player.finishTime, projected: player.finishTime },
-    ...RACERS.map((racer) => ({
+    ...RACERS.filter((racer) => racer.lap.finished === true).map((racer) => ({
       name: racer.label,
       // The recorded lap already knows its own finish time, even if the player
       // beat it to the line.
@@ -473,6 +443,7 @@ function finishRace() {
   lines[0].textContent = `${formatTime(player.finishTime)} · ${player.offTrackCount} OFF-TRACK MOMENTS`;
   lines[1].textContent = board
     .map((entry, index) => `${index + 1}. ${entry.name} ${entry.time ? formatTime(entry.time) : `~${formatTime(entry.projected)}`}`)
+    .concat(RACERS.filter((racer) => racer.lap.finished !== true).map((racer) => `${racer.label} DNF`))
     .join('    ');
   ui.start.textContent = 'RUN IT AGAIN';
   ui.overlay.classList.remove('hidden');
@@ -495,10 +466,13 @@ function updateRacers(delta) {
       racer.pointIndex = found.index;
       racer.distance = Math.max(racer.distance, found.distance);
 
-      if (!racer.finished && pose.done) {
-        racer.finished = true;
-        racer.finishTime = racer.lap.finishTime;
-        racer.distance = LAP_LENGTH_METERS;
+      if (pose.done) {
+        const newlyStopped = !racer.stopped;
+        racer.stopped = true;
+        racer.finished = pose.finished;
+        racer.finishTime = pose.finished ? racer.lap.finishTime : null;
+        racer.distance = pose.finished ? LAP_LENGTH_METERS : racer.lap.distance;
+        if (newlyStopped && !pose.finished) setLog(`${racer.label} · DNF at ${(racer.distance / 1000).toFixed(2)} km. Recording ended.`);
       }
       return;
     }
@@ -992,7 +966,7 @@ function drawScene() {
 
   RACERS.forEach((racer) => {
     if (racer.kind === 'replay') {
-      drawCar(racer.pose.x, racer.pose.y, racer.pose.heading, racer.color, racer.tag);
+      drawCar(racer.pose.x, racer.pose.y, racer.pose.heading, racer.color, racer.stopped && !racer.finished ? `${racer.tag} DNF` : racer.tag);
       return;
     }
     const point = pointAtDistance(racer.distance);
@@ -1027,10 +1001,11 @@ function frame(timestamp) {
 ui.start.addEventListener('click', startRace);
 ui.restart.addEventListener('click', resetRace);
 
-// Jev joins only after a completed real recording; no invented baseline.
+// Replay the real trial, including its recorded stopping point.
 $('#jev-gauge').hidden = !hasJevLap;
-$('#jev-garage').hidden = hasJevLap;
-if (hasJevLap) $('#jev-lap-note').textContent = `${formatTime(jevLap.finishTime)} · reactive mode`;
+if (hasJevLap) $('#jev-lap-note').textContent = jevLap.finished
+  ? `${formatTime(jevLap.finishTime)} · reactive mode`
+  : `DNF · ${(jevLap.distance / 1000).toFixed(2)} km recorded`;
 
 // Recorded laps know their times before you turn a wheel.
 if (ui.opusLapNote) ui.opusLapNote.textContent = `${formatTime(opusLap.finishTime)} recorded`;

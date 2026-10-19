@@ -100,8 +100,8 @@ The race links to `race-method.html`, a plain-language explanation of the actual
 runner, recorded results, response latency versus simulation time, and current
 fairness limitations (including different browser/offline camera transitions).
 
-Jev uses TypeSafe AI's official Choice API via `scripts/jev-driver.mjs`:
-https://docs.typesafe.ai/api . Set `TYPESAFE_API_KEY` in your terminal environment;
+Jev uses OpenRouter's Decisions API via `scripts/jev-driver.mjs`:
+https://openrouter.ai/blog/insights/what-is-jev/ . Export `OPENROUTER_API_KEY` in the shell launching the runner;
 never put a credential in a tracked file or browser code. Then record a short trial:
 
 ```bash
@@ -109,10 +109,10 @@ npm run jev-lap -- --sectors 1 --out tmp/jev-trial.js
 ```
 
 For a full recording, run `npm run jev-lap`. This makes real, billed API calls
-(up to 125 calls per sector, before transient retries). `--model` can pin an
-available model version instead of `jev-latest`; the returned model id is saved.
-The site imports `jev-lap.js`, initially null. Only a completed recording enables
-the blue replay car and its progress gauge. Partial runs are not ranked.
+(up to 125 calls per sector; no harness retries). `--model` can pin an
+available model version instead of `typesafe/jev-1.13`; the returned model id is saved.
+The site imports `jev-lap.js`, which points to the latest real trial. The blue car and its progress gauge replay the saved trial. Partial runs stop at their
+recorded endpoint and are classified DNF, never ranked as completed laps.
 
 Jev's **reactive-choice-12-frames** mode chooses one of nine actions every 0.2
 simulated seconds. It receives current state and latest feedback, without chat
@@ -121,11 +121,18 @@ calls per sector. These are different control configurations, not an isolated
 model comparison. Repeat all models under matched control rules for a fair ranking.
 
 New Jev recordings save probabilities, confidence, per-call response latency,
-usage and the returned model id. Latency includes the HTTP round trip and excludes
-retry backoff; it is not pure model compute time. Existing recordings have no
-latency measurements. Unknown Jev cost is null, not zero. The simulation still
+usage and the returned model id. Latency includes the HTTP round trip; it is not pure model compute time. Existing recordings have no
+latency measurements. Jev cost uses OpenRouter’s returned `usage.cost` in USD; unknown cost is null, not zero. The simulation still
 pauses during inference. Test the adapter without credentials or network calls:
 
 ```bash
 npm run test:jev
 ```
+
+### Matched speed and cost experiment
+
+Use `--mode reactive` on any racer for matched 12-frame controls and stateless
+observations. The methodology page separates these measurements from legacy laps.
+See [the benchmark protocol](scripts/RACE-BENCHMARK.md) for bounded pilot commands,
+pricing sources, audit artifacts, clocks, and publication rules. Real Jev trials and audit logs are saved in `results/`; see [the findings](results/README.md).
+No cross-model speed or cost advantage is claimed without matched Opus/GPT measurements.
