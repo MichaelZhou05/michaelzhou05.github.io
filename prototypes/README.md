@@ -1,3 +1,23 @@
+# Current direction: keep the original website
+
+The latest previews modify only navigation and main-column information disclosure on the original page:
+
+- `http://127.0.0.1:4174/?nav=ui` — clickable sections.
+- `http://127.0.0.1:4174/?nav=shell` — the same sections plus a functional navigation shell.
+- Without `?nav=`, the original long page still works as before.
+
+Run `PORT=4174 npm run dev`. About me is the starting section. The original sidebar, espresso, map, secrets, portrait and games remain mounted. Only the selected main section is shown. Project articles open as native disclosures; work experience retains its original expandable work logs, with shorter closed summaries. The Playground entry uses the supplied demo URL.
+
+Shell commands: `cd projects`, `cd experience`, `cd race`, `cd contact`, `cd about`, `cd ..`, `cd /`, `ls`, `pwd`, `help`, `clear`. Nested paths include `projects/playground` and `experience/duke`; `ls` lists available children. Relative and absolute paths work, with top-level section names accepted from anywhere. Up/down recalls commands. This is a portfolio navigator, not an operating-system shell.
+
+Links preserve browser history and reload state. Switching between the two navigation modes keeps the selected directory. Inputs do not propagate keyboard events to the games. Native section links remain the fallback if JavaScript is unavailable. The race harness and benchmark internals are untouched.
+
+Validation: `npm run check`, `node --check section-navigation.js`, and `NODE_PATH=<your Playwright node_modules> node scripts/check-section-navigation.cjs` with the local server running. The smoke test covers both modes at 1280px/390px, folder navigation, back/forward/reload, sidebar preservation, starting the race, missing folders, command history, overflow, runtime errors, and the unchanged default page. Desktop and mobile screenshots inspected. Not a full screen-reader audit.
+
+The earlier standalone experiments below remain available for comparison; they are no longer the proposed overall direction.
+
+---
+
 # Portfolio prototype lab
 
 Three working alternatives for project discovery, designed for quick engineering/team-match review. These are additive experiments: the production entry point, race/benchmark internals, espresso and easter eggs are unchanged. Nothing has been selected as the final design.

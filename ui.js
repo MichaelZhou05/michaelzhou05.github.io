@@ -13,8 +13,9 @@
  * shared #fragment link still anchor normally.
  */
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+const sectionNavigation = ['ui', 'shell'].includes(new URLSearchParams(location.search).get('nav'));
 const navEntry = performance.getEntriesByType('navigation')[0];
-if (navEntry && navEntry.type !== 'navigate') {
+if (!sectionNavigation && navEntry && navEntry.type !== 'navigate') {
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   window.scrollTo(0, 0);
 }
@@ -26,7 +27,7 @@ const sections = indexLinks
 
 /* ------------------------------------------------------------- scroll spy */
 
-if (sections.length) {
+if (sections.length && !sectionNavigation) {
   let current = null;
 
   const setCurrent = (link) => {
