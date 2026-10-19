@@ -91,10 +91,17 @@ const { join } = require("node:path");
         await run("cd race");
         assert(await page.locator("#race-canvas").isVisible());
       }
+      const overflow = await page.evaluate(() => ({
+        width: innerWidth,
+        scroll: document.documentElement.scrollWidth,
+        elements: [...document.querySelectorAll("body *")]
+          .filter((el) => el.getBoundingClientRect().right > innerWidth)
+          .map((el) => el.className)
+          .slice(0, 15),
+      }));
       assert(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth,
-        ),
+        overflow.scroll <= overflow.width,
+        JSON.stringify({ mode, ...overflow }),
       );
     }
   await page.goto(base);

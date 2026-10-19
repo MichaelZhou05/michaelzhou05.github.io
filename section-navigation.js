@@ -21,6 +21,7 @@ function initNavigation(mode) {
     "https://development.playground-learning.space/workspace/yWG2GPqOIy7KqxWbWNbI";
   const projectDetails = [];
   document.body.classList.add("section-navigation");
+  document.documentElement.classList.add("section-navigation-preview");
   // Wrap existing articles rather than clone the games or duplicate their IDs.
   main.querySelectorAll("#projects > .work").forEach((article, i) => {
     const details = document.createElement("details");
