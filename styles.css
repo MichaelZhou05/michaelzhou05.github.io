@@ -1964,6 +1964,61 @@ main section {
   font-size: 17px;
 }
 
+.reading-book {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  color: var(--text);
+}
+
+.reading-cover {
+  flex: none;
+  width: 88px;
+  height: auto;
+  border: 1px solid var(--edge-strong);
+  box-shadow: 3px 3px 0 var(--sunken);
+}
+
+.reading-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.reading-name {
+  color: var(--bright);
+  font-family: var(--display);
+  font-size: 9px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.reading-author {
+  margin-top: var(--s2);
+  color: var(--text);
+}
+
+.reading-publisher {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.reading-link {
+  margin-top: var(--s3);
+  color: var(--teal);
+  font-size: 16px;
+}
+
+.reading-book:hover {
+  text-decoration: none;
+}
+
+.reading-book:hover .reading-link {
+  color: var(--lime);
+  text-decoration: underline;
+}
+
 .rail-tail {
   margin-top: var(--s5);
 }
