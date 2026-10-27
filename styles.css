@@ -3861,7 +3861,17 @@ body.arcade-mode #about .panel-title {
 }
 
 /* Methodology entry point and Jev replay telemetry. */
-.race-method-link { margin: 16px 0 24px; }
-.race-method-link span { color: var(--muted); }
+.race-method-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25em 1ch;
+  margin: 16px 0 24px;
+}
+.race-method-link span {
+  max-width: 100%;
+  color: var(--muted);
+  text-wrap: pretty;
+}
 #jev-gauge[hidden] { display: none; }
 .gauge-label .dot-jev, #jev-progress { background: #6bcbef; }
