@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#08090b" />
+    <meta name="robots" content="noindex" />
+    <title>Michael Zhou / project playground</title>
+    <link rel="stylesheet" href="./lab.css" />
+  </head>
+  <body>
+    <a class="skip" href="#projects">Skip to projects</a>
+    <header class="topbar">
+      <a class="wordmark" href="../index.html">MZ<span>▮</span></a
+      ><span class="lab-label">DESIGN LAB / 3 PLAYABLE DIRECTIONS</span
+      ><a href="../index.html">Original site ↗</a>
+    </header>
+    <nav class="switcher" aria-label="Prototype direction">
+      <a href="?view=arcade" data-view="arcade">01 / Cartridge shelf</a
+      ><a href="?view=terminal" data-view="terminal">02 / Terminal</a
+      ><a href="?view=workbench" data-view="workbench">03 / Workbench</a>
+    </nav>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">MICHAEL ZHOU / DUKE ECE + CS / ’28</p>
+          <h1>Serious about building.<br /><span>Still here to play.</span></h1>
+          <p class="intro-copy">
+            A few things I’ve built, the decisions inside them,<br
+              class="desktop"
+            />
+            and the bits you can try yourself.
+          </p>
+          <div class="personal">
+            <a href="../Michael_Zhou_2026_FSWE.pdf">Résumé ↗</a
+            ><a href="../index.html#experience">Work stories ↗</a
+            ><a href="mailto:michael.zhou@duke.edu">Say hello ↗</a>
+          </div>
+        </div>
+        <div class="identity">
+          <img
+            src="../assets/mz-avatar.svg"
+            alt="Michael’s pixel portrait"
+          /><span>PLAYER 01</span>
+          <p>probably building<br />something at 2am.</p>
+        </div>
+      </section>
+      <section id="projects" tabindex="-1">
+        <div class="section-bar">
+          <div>
+            <p class="eyebrow" id="mode-label"></p>
+            <h2 id="mode-title"></h2>
+          </div>
+          <span id="count" aria-live="polite"></span>
+        </div>
+        <p id="mode-description" class="muted"></p>
+        <div id="filters" class="filters" aria-label="Filter projects"></div>
+        <div id="stage"></div>
+      </section>
+      <section class="interlude">
+        <span class="pixel-cup" aria-hidden="true">☕</span>
+        <div>
+          <p class="eyebrow">SIDE QUESTS ARE PART OF THE POINT</p>
+          <h2>Stay for a coffee?</h2>
+          <p>
+            The espresso bar, race and ten little secrets are still in the
+            original world.
+          </p>
+        </div>
+        <a class="button" href="../index.html#espresso-canvas"
+          >Take a break ↗</a
+        >
+      </section>
+    </main>
+    <footer>
+      <span>© 2026 Michael Zhou / built with curiosity</span
+      ><a href="./README.md">Design notes & evidence ↗</a>
+    </footer>
+    <dialog id="case-dialog" aria-labelledby="case-title">
+      <button class="close" aria-label="Close case study">Close ×</button>
+      <div id="case-content"></div>
+    </dialog>
+    <noscript
+      ><p class="fallback">
+        This comparison uses JavaScript.
+        <a href="../index.html#projects">Browse the original project archive</a
+        >.
+      </p></noscript
+    >
+    <script type="module" src="./lab.js"></script>
+  </body>
+</html>

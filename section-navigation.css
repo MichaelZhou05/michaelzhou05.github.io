@@ -1,0 +1,164 @@
+/* Opt-in only: the original long page keeps its styling and behavior. */
+.section-navigation #main > section[hidden] {
+  display: none !important;
+}
+.section-navigation #main > .panel {
+  margin-top: 16px;
+  animation: none;
+}
+.section-browser {
+  border: 1px solid var(--edge);
+  background: var(--surface);
+  padding: 14px 18px;
+}
+.browser-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 16px;
+}
+.browser-bar > span {
+  color: var(--pink);
+}
+.browser-bar > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.browser-bar [aria-current="page"] {
+  color: var(--amber);
+}
+.folder-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.folder-links a {
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid var(--edge);
+  text-decoration: none;
+  font-size: 18px;
+  min-height: 44px;
+}
+.folder-links a[aria-current="page"] {
+  color: var(--amber);
+  background: var(--shell-grey-2);
+  border-color: var(--indigo-lit);
+}
+.browser-location {
+  display: flex;
+  gap: 8px;
+  color: var(--muted);
+  margin-top: 10px;
+  font-size: 17px;
+}
+.directory-terminal {
+  border-top: 1px solid var(--edge);
+  margin-top: 10px;
+  padding-top: 10px;
+}
+#shell-output {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+#directory-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+#directory-form label {
+  color: var(--pcb);
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+#directory-command {
+  flex: 1;
+  min-width: 100px;
+  background: #000;
+  color: var(--fg);
+  font: 20px var(--mono);
+  border: 1px solid var(--edge);
+  padding: 8px;
+}
+#directory-form button {
+  font: 18px var(--mono);
+  padding: 8px 12px;
+  color: var(--fg);
+  border: 1px solid var(--edge);
+  background: var(--shell-grey);
+  min-height: 44px;
+}
+.section-browser :focus-visible,
+.project-folder > summary:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+.project-folder {
+  border: 1px solid var(--edge);
+  margin-top: 12px;
+}
+.project-folder > summary {
+  cursor: pointer;
+  padding: 14px 18px;
+  color: var(--fg);
+  font: 22px var(--mono);
+}
+.project-folder > summary::after {
+  content: "open →";
+  float: right;
+  color: var(--muted);
+  font-size: 17px;
+}
+.project-folder[open] > summary::after {
+  content: "close ↑";
+}
+.section-navigation .project-folder .work {
+  margin: 0;
+  border: 0;
+  opacity: 1;
+  transform: none;
+}
+.section-navigation .project-folder .work-visual {
+  display: none;
+}
+.section-navigation #experience .log:not([open]) .log-lede {
+  display: none;
+}
+.section-navigation #experience .log {
+  opacity: 1;
+  transform: none;
+}
+@media (max-width: 600px) {
+  .section-browser {
+    padding: 12px;
+  }
+  .browser-bar {
+    font-size: 15px;
+  }
+  .folder-links {
+    gap: 6px;
+  }
+  .folder-links a {
+    padding: 8px;
+    font-size: 17px;
+  }
+  #directory-form label {
+    flex-basis: 100%;
+  }
+  .project-folder > summary {
+    padding: 12px;
+    font-size: 20px;
+  }
+}
+/* Clip animated decorations at the viewport without adding a scroll container. */
+html.section-navigation-preview {
+  overflow-x: clip;
+}
