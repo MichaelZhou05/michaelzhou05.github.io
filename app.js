@@ -330,6 +330,7 @@ function setSectorBanner() {
 /* ---------------------------------- input ---------------------------------- */
 
 window.addEventListener('keydown', (event) => {
+  if (event.metaKey || event.ctrlKey || event.altKey || event.target.closest?.('a, button, input, textarea, select, [contenteditable="true"]')) return;
   const control = keyMap[event.code];
   if (control) {
     keys[control] = true;
@@ -381,7 +382,8 @@ if (touchPad) {
 
 /** What the overlay tells you to drive with — thumbs or keys. */
 const COARSE_POINTER = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-const CONTROLS_NOTE = COARSE_POINTER ? 'ARROW PADS BELOW THE SCREEN' : 'ARROW KEYS OR WASD';
+const COMPACT_ARCADE = document.body.classList.contains('arcade-game') && window.matchMedia('(max-width: 600px)').matches;
+const CONTROLS_NOTE = COMPACT_ARCADE ? 'ARROW PADS ON THE SCREEN' : COARSE_POINTER ? 'ARROW PADS BELOW THE SCREEN' : 'ARROW KEYS OR WASD';
 
 /* ---------------------------------- flow ---------------------------------- */
 

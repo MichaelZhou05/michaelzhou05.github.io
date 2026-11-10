@@ -1,0 +1,69 @@
+.projects-program {
+  --project-ink: #243244;
+  --project-blue: #315ca8;
+  --project-rule: #c8d1dc;
+  display: flex;
+  flex-direction: column;
+  width: 100%; height: 100%; min-height: 0;
+  overflow: hidden; background: #fbfcfd; color: var(--project-ink);
+  font: 14px/1.55 Geneva, Tahoma, sans-serif;
+  text-shadow: none; color-scheme: light; container-type: inline-size;
+}
+.projects-program *, .projects-program *::before, .projects-program *::after { box-sizing: border-box; }
+.projects-program button, .projects-program a { -webkit-tap-highlight-color: transparent; }
+.projects-program button {
+  appearance: none; min-width: 0; border: 1px solid var(--project-rule); border-radius: 4px;
+  box-shadow: none; padding: 8px 12px; color: var(--project-ink); background: #fff; cursor: pointer;
+  font: inherit; text-align: left; text-transform: none; letter-spacing: 0;
+}
+.projects-program button:hover { border-color: var(--project-blue); }
+.projects-program button:focus-visible, .projects-program a:focus-visible, .projects-program .project-player:focus-visible, .projects-program .project-document:focus-visible { outline: 2px solid var(--project-blue); outline-offset: -3px; }
+.projects-program .project-index { display: flex; flex: 0 0 auto; gap: 0; padding: 0 15px; background: #e9eef5; border-bottom: 1px solid var(--project-rule); }
+.projects-program .project-index button { min-height: 44px; position: relative; flex: 1; border: 0; border-radius: 0; padding: 12px 9px; text-align: center; white-space: nowrap; font-size: 13px; }
+.projects-program .project-index button[aria-pressed="true"] { background: #fbfcfd; color: #214781; box-shadow: inset 0 -3px var(--project-blue); font-weight: bold; }
+.projects-program .project-document { min-height: 0; flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-color: #94a4b9 #e9eef5; }
+.projects-program .project-story { margin: 0 auto; padding: 23px 25px 28px; max-width: 850px; }
+.projects-program .project-heading h3 { margin: 0 0 5px; color: var(--project-ink); font: bold 26px/1.18 Geneva, Tahoma, sans-serif; letter-spacing: -.045em; text-transform: none; }
+.projects-program .project-summary { margin: 0 0 18px; font-size: 16px; line-height: 1.45; color: #43536a; }
+.projects-program .project-visual { margin: 0 0 19px; }
+.projects-program .project-player { display: block; width: 100%; height: auto; min-height: 200px; aspect-ratio: 16 / 9; border: 1px solid var(--project-rule); background: #161616; }
+.projects-program figcaption { margin-top: 8px; color: #566476; font-size: 12px; line-height: 1.55; }
+.projects-program .project-purpose { margin: 0 0 18px; max-width: 70ch; }
+.projects-program .project-note { margin: 0; padding: 13px 0; border-top: 1px solid var(--project-rule); }
+.projects-program .project-note h4 { margin: 0 0 5px; color: var(--project-ink); font: bold 14px/1.5 Geneva, Tahoma, sans-serif; text-transform: none; letter-spacing: 0; }
+.projects-program .project-note p { margin: 0; max-width: 70ch; }
+.projects-program .project-tech { margin: 9px 0 13px; font-size: 12px; color: #566476; }
+.projects-program .project-access { margin: 0; padding-top: 12px; border-top: 1px solid var(--project-rule); color: #566476; font-size: 12px; }
+.projects-program .project-links { display: flex; flex-wrap: wrap; gap: 12px 22px; }
+.projects-program a { color: #244f92; text-underline-offset: 3px; }
+.projects-program .project-demo-intro { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 10px 12px; background: #e9eef5; border: 1px solid var(--project-rule); border-bottom: 0; font-size: 13px; }
+.projects-program .project-demo-intro > span { color: #566476; font-size: 11px; }
+.projects-program .project-demo-intro button { padding: 4px 8px; font-size: 12px; }
+.projects-program .project-demo-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.projects-program .project-demo-actions button { font-size: 12px; padding: 7px 10px; }
+.projects-program .project-demo-actions button[aria-pressed="true"] { border-color: #315ca8; background: #e9eef5; }
+.projects-program .extraction-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 18px; border: 1px solid var(--project-rule); background: #e9eef5; }
+.projects-program .extraction-paper { position: relative; background: #fff; border: 1px solid #c8d1dc; box-shadow: 2px 3px #c8d1dc; padding: 17px 13px 33px; font: 12px/1.6 Georgia, serif; }
+.projects-program .extraction-paper > p { margin: 0 0 12px; }
+.projects-program .extraction-paper .extraction-paper-title { margin-bottom: 17px; font-size: 15px; font-weight: bold; line-height: 1.3; border-bottom: 2px solid #243244; padding-bottom: 9px; }
+.projects-program mark { color: inherit; background: transparent; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.projects-program mark.is-source { background: #fbe39a; outline: 2px solid #fbe39a; }
+.projects-program .extraction-page { position: absolute; left: 13px; bottom: 10px; color: #566476; font: 10px/1.4 Geneva, Tahoma, sans-serif; }
+.projects-program .extraction-output { min-width: 0; }
+.projects-program .extraction-output > p { margin: 0 0 10px; font-size: 11px; color: #43536a; }
+.projects-program .extraction-output button { width: 100%; margin-bottom: 8px; padding: 9px 10px; background: #fbfcfd; }
+.projects-program .extraction-output button > span { display: block; color: #566476; font-size: 11px; margin-bottom: 2px; }
+.projects-program .extraction-output button > strong { display: block; font-size: 12px; line-height: 1.4; }
+.projects-program .extraction-output button[aria-pressed="true"] { border-color: #315ca8; box-shadow: inset 3px 0 #315ca8; }
+.projects-program .extraction-explanation { font-size: 12px; margin: 0; padding: 10px 12px; border: 1px solid var(--project-rule); border-top: 0; background: #fff; }
+.projects-program .amdahl-sketch { display: block; width: 100%; height: auto; border: 1px solid var(--project-rule); }
+@container (max-width: 440px) {
+  .projects-program .project-story { padding: 17px 14px 24px; }
+  .projects-program .project-index { padding-inline: 3px; }
+  .projects-program .project-index button { padding: 10px 4px; font-size: 12px; }
+  .projects-program .project-heading h3 { font-size: 23px; }
+  .projects-program .project-summary { font-size: 15px; margin-bottom: 13px; }
+  .projects-program .extraction-demo { gap: 13px; padding: 12px; grid-template-columns: 1fr; }
+  .projects-program .extraction-paper { font-size: 14px; }
+  .projects-program .extraction-output button > strong { font-size: 13px; }
+}

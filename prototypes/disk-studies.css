@@ -1,0 +1,274 @@
+/* A separate hardware study. The homepage and previous prototypes are untouched. */
+.disk-study-page,.disk-fullsite {min-width:0}
+.disk-study-shell {position:relative;z-index:2;width:min(1140px,calc(100% - 48px));margin:0 auto;padding:30px 0 45px}
+.back-to-lab {font:17px/1.4 var(--mono);color:var(--fg-dim);text-decoration:none}
+.disk-study-header {padding:30px 0 26px}
+.disk-study-header .study-kicker {font:14px/1.5 var(--mono);color:var(--amber);letter-spacing:2px;margin:0 0 16px}
+.disk-study-header h1 {font:23px/1.7 var(--display);color:var(--fg);margin:0 0 12px;text-wrap:balance}
+.disk-study-header > p:last-child {font:22px/1.5 var(--mono);color:var(--fg-dim);margin:0}
+.study-nav {display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid var(--edge);margin-bottom:25px}
+.study-nav nav {display:flex;gap:8px;flex-wrap:wrap}
+.study-nav button {display:flex;gap:10px;align-items:center;font:20px var(--mono);background:var(--shell-grey);border:1px solid var(--edge);border-radius:0;color:var(--fg-dim);padding:9px 14px;cursor:pointer;min-height:44px}
+.study-nav button > span {font:13px var(--mono);color:var(--fg-dim)}
+.study-nav button[aria-selected=true] {background:#251e3e;border-color:var(--indigo-lit);color:var(--fg)}
+.study-nav button[aria-selected=true] > span {color:var(--amber)}
+.view-in-site,.single-study-nav a {font:17px/1.5 var(--mono);color:var(--fg-dim)}
+.single-study-nav {display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--edge)}
+.single-study-nav > span {font:12px/1.5 var(--mono);color:var(--fg-dim);letter-spacing:1px}
+.disk-fullsite-panel {padding:26px}
+.disk-stage {--case-top:#474150;--case-side:#302a3a;--case-light:#736c80;--case-edge:#6c647a;--case-dark:#16121d;--screen-bg:#15101f;position:relative;isolation:isolate;color:var(--fg);font:20px/1.4 var(--mono);overflow-wrap:anywhere;min-width:0}
+.disk-stage * {box-sizing:border-box}
+.disk-stage [hidden],.study-designs [hidden] {display:none!important}
+.disk-stage button {font-family:var(--mono);border-radius:0;cursor:pointer;color:inherit}
+.disk-stage button:disabled {cursor:default}
+.disk-stage button:focus-visible,.study-nav button:focus-visible {outline:2px solid var(--amber);outline-offset:5px}
+.study-heading {margin-bottom:27px}
+.study-heading > p {font:13px/1.5 var(--mono);letter-spacing:2px;margin:0 0 11px;color:var(--fg-dim)}
+.study-heading > h2 {font:14px/1.8 var(--display);color:var(--indigo-lit);margin:0 0 12px;text-wrap:balance}
+.study-heading > span {display:block;max-width:65ch;font:20px/1.5 var(--mono);color:var(--fg-dim)}
+.disk-workspace {display:grid;grid-template-columns:200px minmax(0,1fr);gap:40px;align-items:center;min-height:510px;padding:25px;background:#0b0910;border:1px solid var(--edge-soft)}
+.disk-library {min-width:0;position:relative}
+.library-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 18px;padding-bottom:12px;border-bottom:1px solid var(--edge);font:12px/1.4 var(--mono);letter-spacing:1px;color:var(--fg-dim)}
+.library-heading > span:last-child {font-size:10px;letter-spacing:0}
+.disk-shelf {display:grid;gap:13px}
+.disk-choice {display:flex;align-items:center;gap:12px;position:relative;width:100%;min-width:0;border:1px solid transparent;background:transparent;padding:9px 5px;text-align:left;color:var(--fg);transition:background .16s,border-color .16s}
+.disk-choice:hover {background:#241e32}
+.disk-choice[aria-pressed=true] {background:#241d38;border-color:#5e4c9b}
+.disk-choice-copy {display:flex;flex-direction:column;gap:4px;min-width:0}
+.disk-choice-title {font:21px/1.1 var(--mono);color:var(--fg)}
+.disk-choice-caption {font:15px/1.2 var(--mono);color:var(--fg-dim)}
+.disk-choice-state {font:11px/1.3 var(--mono);color:var(--fg-dim);letter-spacing:.3px;margin-top:6px}
+.disk-choice[aria-pressed=true] .disk-choice-state {color:var(--amber)}
+.disk-choice.is-mounted .disk-choice-state {color:var(--pcb)}
+.disk-choice.is-mounted .physical-disk {opacity:.25}
+.disk-choice.is-drag-source .physical-disk {opacity:.2}
+.disk-choice:disabled:not(.is-mounted) {opacity:.65}
+.shelf-footnote {font:11px/1.4 var(--mono);letter-spacing:.6px;color:var(--fg-dim);margin:17px 0 0;padding-top:10px;border-top:2px solid var(--edge)}
+
+/* A 3½-inch floppy, drawn from the same hard-edged shapes as the site. */
+.physical-disk {position:relative;display:block;flex:0 0 auto;width:66px;height:68px;background:var(--disk-plastic,#7260a7);border:2px solid #130f19;box-shadow:inset 2px 0 #ffffff28,inset -3px -3px #0004,3px 3px #0005;clip-path:polygon(0 0,84% 0,100% 14%,100% 100%,0 100%);transition:transform .16s,opacity .16s;image-rendering:pixelated}
+.disk-choice:hover .physical-disk,.disk-choice[aria-pressed=true] .physical-disk {transform:translateY(-3px) rotate(-4deg)}
+.disk-shutter {position:absolute;left:21%;top:0;width:54%;height:31%;background:#a5a0ac;border:1px solid #655d71;border-top:0;box-shadow:inset 2px 0 #ded9e3,inset -2px 0 #7b7485}
+.disk-shutter > span {position:absolute;right:6px;top:2px;bottom:3px;width:7px;background:#3a3444;border:1px solid #b8b2c2}
+.disk-label {position:absolute;left:10%;right:10%;top:40%;height:45%;background:#e0d8c6;border:1px solid #b2a896;box-shadow:inset 1px 1px #f2e9d8;color:#4a3b51;padding:3px 4px;overflow:hidden}
+.label-ruled {display:block;border-bottom:1px solid #b7aaaf;font:8px/1.3 var(--mono);letter-spacing:.2px}
+.disk-handwriting {display:block;font:8px/1.4 var(--display);margin-top:2px;letter-spacing:0}
+.label-line {display:block;height:1px;background:#c1b4b6;margin-top:2px}
+.disk-protect {position:absolute;bottom:5px;left:5px;width:5px;height:5px;background:#1c1725;border:1px solid #c6b8d033}
+.disk-bottom-ridge {position:absolute;right:7px;bottom:4px;left:17px;height:2px;background:#0003;box-shadow:0 -2px #ffffff16}
+.disk-flight {position:absolute;left:0;top:0;z-index:30;pointer-events:none}
+.disk-flight .physical-disk {width:100%;height:100%;transform:none;transition:none}
+
+/* The laptop shell */
+.computer-area {min-width:0;position:relative;padding:15px 0 9px}
+.retro-notebook {position:relative;z-index:2;width:100%;margin:0 auto;filter:drop-shadow(5px 10px 0 #0005)}
+.notebook-lid {position:relative;padding:14px 14px 0;background:var(--case-top);border:2px solid var(--case-edge);border-bottom-color:var(--case-dark);box-shadow:inset 2px 2px #ffffff13,inset -3px -1px #0003;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 9px,100% 100%,0 100%,0 9px)}
+.bezel-screw {position:absolute;top:6px;width:3px;height:3px;background:#aaa0b366;border:1px solid #0004}
+.screw-left {left:7px}.screw-right {right:7px}
+.lcd-screen {border:3px solid #17121e;background:var(--screen-bg);box-shadow:0 0 0 1px #7c728d55,inset 3px 3px #0003;position:relative;overflow:hidden;min-width:0}
+.system-menubar {display:flex;align-items:center;gap:14px;padding:5px 9px;background:#393044;color:#e8e4f4;font:12px/1.4 var(--mono);border-bottom:1px solid #68587c;min-height:24px}
+.system-menubar > span:first-child svg {display:block;width:13px;height:13px}
+.system-clock {margin-left:auto;color:#bbb0c8}
+.screen-workarea {position:relative;min-height:250px;display:flex;align-items:center;justify-content:center;padding:38px 25px 30px;background-image:radial-gradient(#7b68ee20 .7px,transparent .7px);background-size:4px 4px}
+.screen-corner-label {position:absolute;left:12px;top:9px;color:#9d8dac;font:10px/1.3 var(--mono);letter-spacing:1px}
+.mount-window {width:min(100%,330px);background:#1e182b;border:1px solid #786391;box-shadow:4px 4px #08060d99;min-width:0}
+.mount-window-bar {display:flex;align-items:center;gap:8px;border-bottom:1px solid #655377;padding:5px 7px;background:#3c304e;font:12px/1.3 var(--mono);color:#d5cbe4}
+.window-close-mark {width:8px;height:8px;border:1px solid #a08db4;background:#2d233d;flex-shrink:0}
+.window-lines {flex:1;height:7px;margin-left:10px;background:repeating-linear-gradient(0deg,#1e1729 0 1px,transparent 1px 2px)}
+.mount-window-content {text-align:center;padding:21px 16px 18px;min-height:171px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.screen-icon {display:flex;justify-content:center;margin-bottom:13px;min-height:35px}
+.screen-icon svg {width:38px;height:38px}
+.mount-window-content h3 {font:12px/1.8 var(--display);color:#e8e4f4;margin:0 0 10px;text-wrap:balance}
+.mount-window-content > p {font:17px/1.4 var(--mono);color:#b0a0c1;margin:0}
+.screen-state {display:flex;align-items:center;justify-content:center;gap:6px;margin-top:17px;font:10px/1.4 var(--mono);letter-spacing:.3px;color:#9d8dac}
+.screen-state i {width:4px;height:4px;background:#6a567c;flex-shrink:0}
+.desktop-trash {position:absolute;right:11px;bottom:9px;display:flex;align-items:center;gap:4px;color:#b3a3c3}
+.desktop-trash svg {width:11px;height:11px}.desktop-trash small {font:9px var(--mono)}
+.screen-system-line {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 8px;background:#21192e;border-top:1px solid #4c3c61;font:9px/1.4 var(--mono);color:#9687a7}
+.notebook-wordmark {display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:24px;padding:5px 3px;color:#c1b7cd;font:9px/1.4 var(--mono);letter-spacing:1px}
+.wordmark-symbol {display:flex;align-items:center}
+.wordmark-symbol svg {width:11px;height:11px}
+.power-led {width:5px;height:3px;background:#88aa8c;box-shadow:0 0 5px #2ed57322}
+.notebook-hinge {height:7px;background:#17131f;border-inline:13px solid transparent;display:flex;justify-content:space-between;padding-inline:23px}
+.notebook-hinge i {display:block;height:7px;width:55px;background:#75677e;border-left:4px solid #393041;border-right:4px solid #393041}
+.notebook-base {position:relative;background:var(--case-top);border:2px solid var(--case-edge);border-bottom:0;padding:12px 30px 9px;box-shadow:inset 2px 2px #ffffff12,inset -3px 0 #0002;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.keyboard {display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;min-height:67px;padding:4px;background:#1a1521;border:1px solid #776a81}
+.keyboard i {display:block;min-height:9px;background:#4f465c;border:1px solid #776b85;border-bottom:2px solid #292132;box-shadow:inset 0 1px #94859e33}
+.keyboard .space-key {grid-column:span 5}
+.speaker-grille {position:absolute;top:14px;bottom:56px;width:9px;background:repeating-linear-gradient(0deg,#201a29 0 1px,transparent 1px 3px)}
+.grille-left {left:10px}.grille-right {right:10px}
+.palmrest {position:relative;min-height:48px;display:flex;align-items:center;justify-content:center;padding-top:9px}
+.trackpad {width:27%;height:36px;max-width:90px;background:#393140;border:1px solid #71637d;box-shadow:inset 0 1px 1px #0005}
+.hardware-sticker {position:absolute;right:1px;top:14px;font:7px/1.5 var(--display);color:#c8bbd1;border:1px solid #9b8ba755;padding:3px;background:#77678533}
+.notebook-front {display:flex;justify-content:space-between;align-items:center;min-height:31px;padding:4px 20px;background:var(--case-side);border:2px solid var(--case-edge);border-top:1px solid #15111b;box-shadow:inset 0 -3px #0003;clip-path:polygon(0 0,100% 0,100% calc(100% - 5px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 5px))}
+.drive-block {display:flex;align-items:center;gap:7px;width:62%;max-width:265px;position:relative;min-height:23px}
+.drive-led {width:4px;height:3px;background:#698071;flex-shrink:0}
+.disk-drive {position:relative;display:flex;align-items:center;justify-content:center;min-width:0;flex:1;min-height:22px;background:transparent;border:0;padding:0}
+.drive-opening {display:block;position:absolute;left:0;right:0;top:8px;height:6px;background:#0e0b13;border:1px solid #7f728d;box-shadow:inset 0 2px #000}
+.drive-drop-label {position:relative;z-index:1;font:7px/1.4 var(--mono);color:#b6a5c9;letter-spacing:1px;background:#0e0b13;padding:0 6px}
+.hardware-eject {font:15px/1 var(--mono);color:#c0b4cd;border:1px solid #75677f;background:#463b50;min-width:23px;min-height:19px;padding:0 3px;box-shadow:inset 1px 1px #ffffff17}
+.hardware-eject:disabled {opacity:.4}
+.front-latch {width:23px;height:6px;background:#1c1526;border:1px solid #6a5a79;box-shadow:inset 0 -2px #0005}
+.desk-props,.desk-surface {display:none}
+
+/* Interaction state across the three shells */
+.disk-control-deck {display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border:1px solid var(--edge);background:#141019;padding:16px 18px;margin-top:22px}
+.selection-readout {display:flex;align-items:center;gap:10px;min-width:0;flex:1;font:18px/1.4 var(--mono);color:var(--fg-dim)}
+.readout-led {width:6px;height:6px;background:#5d526e;flex-shrink:0}
+.disk-actions {display:flex;gap:9px;flex-shrink:0}
+.disk-actions button {font:18px/1.3 var(--mono);border:1px solid var(--edge-strong);padding:9px 15px;min-height:40px;white-space:nowrap}
+.insert-disk {background:#3a2e58;color:var(--fg)}
+.insert-disk:hover:not(:disabled) {background:#4c3b73;border-color:var(--indigo-lit)}
+.eject-disk {background:#211b2b;color:var(--fg-dim)}
+.disk-actions button:disabled {opacity:.35}
+.disk-instruction {font:16px/1.5 var(--mono);color:var(--fg-dim);margin:15px 0 0}
+.disk-stage[data-phase=selected] .readout-led {background:var(--amber)}
+.disk-stage[data-phase=selected] .drive-opening,.disk-stage.is-dragging .drive-opening {border-color:var(--amber);box-shadow:0 0 0 2px #ffb00022}
+.disk-stage.is-over-drive .drive-opening {border-color:#ddd5ff;box-shadow:0 0 0 5px #7b68ee77}
+.disk-stage.is-dragging .drive-block {outline:1px dashed #a994e5;outline-offset:8px}
+.disk-stage[data-phase=busy] .drive-led,.disk-stage[data-phase=busy] .screen-state i {background:var(--amber);animation:disk-drive-blink .3s steps(2,end) infinite}
+.disk-stage[data-phase=mounted] .screen-state i,.disk-stage[data-phase=mounted] .readout-led {background:var(--pcb)}
+.disk-stage[data-phase=mounted] .screen-state {color:#91b69a}
+.disk-stage[data-phase=mounted] .screen-icon svg {filter:brightness(1.3)}
+@keyframes disk-drive-blink {50%{opacity:.2}}
+.disk-study-footer {display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font:12px/1.5 var(--mono);letter-spacing:1px;color:var(--fg-dim);border-top:1px solid var(--edge);margin:30px 0 0;padding-top:17px}
+.disk-study-footer > span {font-size:15px;letter-spacing:0}
+
+/* Platinum: the disk box moves to the right; the OS becomes classic Mac. */
+.variant-platinum {--case-top:#c2b9ae;--case-side:#9d9288;--case-light:#e4dbcf;--case-edge:#dfd5c8;--case-dark:#68606a;--screen-bg:#a9a3aa}
+.variant-platinum .disk-workspace {grid-template-columns:minmax(0,1fr) 220px;gap:40px;background:#17131a;border-color:#40363e;padding:30px}
+.variant-platinum .disk-library {order:2;background:#2b242e;padding:15px 12px 12px;border:1px solid #524451;box-shadow:inset 2px 2px #ffffff0b,3px 4px #0005}
+.variant-platinum .disk-shelf {grid-template-columns:1fr 1fr;gap:12px 8px}
+.variant-platinum .disk-choice {flex-direction:column;align-items:center;text-align:center;padding:12px 3px 7px;gap:12px;border:1px solid #4d414f;background:#211a25;min-height:165px}
+.variant-platinum .disk-choice[aria-pressed=true] {border-color:#b0a0c4;background:#3b2e48}
+.variant-platinum .disk-choice-copy {align-items:center}
+.variant-platinum .disk-choice-title {font-size:20px}
+.variant-platinum .disk-choice-caption {display:none}
+.variant-platinum .disk-choice-state {font-size:10px;letter-spacing:0}
+.variant-platinum .library-heading {font-size:11px;letter-spacing:.4px;flex-wrap:wrap}
+.variant-platinum .shelf-footnote {font-size:10px;letter-spacing:0}
+.variant-platinum .computer-area {padding:15px 0}
+.variant-platinum .notebook-lid {padding:17px 18px 0;border-width:3px;clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 7px,100% 100%,0 100%,0 7px)}
+.variant-platinum .lcd-screen {border:4px solid #6e6673;box-shadow:0 0 0 1px #e6ded3}
+.variant-platinum .system-menubar {background:#e0dcd3;color:#29252e;border-bottom:2px solid #302a37}
+.variant-platinum .system-clock {color:#5e5664}
+.variant-platinum .system-menubar svg {filter:grayscale(1) brightness(.45)}
+.variant-platinum .screen-workarea {background-color:#a7a3a8;background-image:repeating-conic-gradient(#88828f 0% 25%,#b0aab3 0% 50%);background-size:3px 3px;min-height:266px;padding:38px 20px 32px}
+.variant-platinum .screen-corner-label {color:#3d3546;background:#c4bec9;padding:2px 5px;top:9px;left:8px;font-size:9px}
+.variant-platinum .mount-window {background:#e0dcd3;border:2px solid #34303b;box-shadow:3px 3px #39323e}
+.variant-platinum .mount-window-bar {background:#e0dcd3;color:#332c3b;border-bottom:2px solid #34303b;position:relative}
+.variant-platinum .window-close-mark {background:#e0dcd3;border-color:#332c3b}
+.variant-platinum .window-lines {background:repeating-linear-gradient(0deg,#4c4455 0 1px,transparent 1px 2px)}
+.variant-platinum .mount-window-content {padding:22px 13px 19px}
+.variant-platinum .mount-window-content h3 {color:#373040}
+.variant-platinum .mount-window-content > p {color:#6d5c72}
+.variant-platinum .screen-icon svg {filter:grayscale(.85) brightness(.55)}
+.variant-platinum .screen-state {color:#7a6a7e}
+.variant-platinum[data-phase=mounted] .screen-state {color:#4f7256}
+.variant-platinum .screen-system-line {background:#dbd7cf;color:#6b6271;border-top:1px solid #5b5364}
+.variant-platinum .desktop-trash {color:#514458;background:#b4aeb8;padding:2px}
+.variant-platinum .desktop-trash svg {filter:grayscale(1) brightness(.5)}
+.variant-platinum .notebook-wordmark {color:#5e5365;font-size:8px}
+.variant-platinum .wordmark-symbol svg {filter:grayscale(1) brightness(.4)}
+.variant-platinum .notebook-hinge {background:#6a616e}
+.variant-platinum .notebook-hinge i {background:#b4a99f;border-color:#857a7f}
+.variant-platinum .keyboard {background:#8a7f83;border-color:#6a6169}
+.variant-platinum .keyboard i {background:#ddd3c4;border-color:#eee6d9;border-bottom-color:#847a7e;box-shadow:inset 0 1px #f8eee3}
+.variant-platinum .speaker-grille {background:repeating-linear-gradient(0deg,#7c707a 0 1px,transparent 1px 3px)}
+.variant-platinum .trackpad {background:#a69a94;border-color:#7c707a;box-shadow:inset 0 1px #655963,0 1px #e7ddcd}
+.variant-platinum .hardware-sticker {color:#65566d;background:#ddd0bc77;border-color:#8e8190}
+.variant-platinum .hardware-eject {color:#49404e;background:#c0b3a6;border-color:#7e7181}
+.variant-platinum .front-latch {background:#9e9295;border-color:#685d6e}
+
+/* Night Shift: a miniature desk with a pixel-purple notebook and disk rack. */
+.variant-studio {--case-top:#50456c;--case-side:#382d4c;--case-edge:#8a77a3;--case-dark:#211a2d}
+.variant-studio .disk-workspace {position:relative;align-items:end;grid-template-columns:195px minmax(0,1fr);gap:35px;padding:65px 30px 45px;overflow:hidden;background:linear-gradient(#282236 0 42%,#57402f 42% 43%,transparent 43%),repeating-linear-gradient(0deg,#6a4932 0 3px,#725139 3px 27px,#35261f 27px 29px);border:3px solid #493a51;box-shadow:inset 0 0 0 3px #15101e;min-height:580px}
+.variant-studio .disk-workspace:before {content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 2px,#08050d12 2px 3px);pointer-events:none;z-index:4}
+.variant-studio .disk-library {position:relative;z-index:3;padding:17px 10px 12px;background:#2c2231;border:2px solid #77617f;box-shadow:5px 6px #281b22}
+.variant-studio .library-heading {font-size:11px;letter-spacing:0;border-color:#56405c}
+.variant-studio .disk-shelf {gap:7px}
+.variant-studio .disk-choice {padding:8px 4px;border-bottom:1px solid #59425c;gap:9px}
+.variant-studio .disk-choice:hover,.variant-studio .disk-choice[aria-pressed=true] {background:#483455;border-color:#8a6ea0}
+.variant-studio .physical-disk {width:54px;height:56px}
+.variant-studio .disk-handwriting {font-size:8px}
+.variant-studio .disk-choice-title {font-size:19px}
+.variant-studio .disk-choice-caption {display:none}
+.variant-studio .disk-choice-state {font-size:9px}
+.variant-studio .shelf-footnote {font-size:10px;letter-spacing:0;border-color:#664d6e}
+.variant-studio .computer-area {position:relative;padding:0;z-index:2}
+.variant-studio .retro-notebook {transform:perspective(1100px) rotateY(-7deg) rotateZ(1deg);transform-origin:50% 100%;filter:drop-shadow(8px 12px 0 #24141d88)}
+.variant-studio .notebook-lid {border-width:3px;padding:14px 15px 0}
+.variant-studio .screen-workarea {min-height:225px;background-color:#151328;background-image:radial-gradient(#9284bf33 1px,transparent 1px);background-size:13px 13px}
+.variant-studio .system-menubar {background:#3f345b;border-color:#6c5b8b}
+.variant-studio .mount-window {border:2px solid #9b82b5;background:#29203c;box-shadow:4px 4px #08060d}
+.variant-studio .mount-window-bar {background:#5e4a7a;border-color:#8a6fa4}
+.variant-studio .mount-window-content {min-height:165px}
+.variant-studio .notebook-base {padding-top:12px;padding-bottom:7px}
+.variant-studio .keyboard {background:#2a213d;border-color:#8c74a3;gap:3px}
+.variant-studio .keyboard i {background:#77628d;border-color:#aa90bf;border-bottom-color:#443154;box-shadow:inset 0 1px #c5acdc33}
+.variant-studio .desk-props {display:block;position:absolute;inset:0;pointer-events:none}
+.desk-poster {position:absolute;right:-3px;top:-51px;color:#b8a8cb;font:8px/1.6 var(--display);padding:9px 11px;background:#392e4d;border:2px solid #746080;rotate:3deg;box-shadow:3px 3px #100b1866}
+.desk-coffee {position:absolute;right:-22px;bottom:12px;z-index:5;filter:drop-shadow(3px 5px #2a1c26aa)}
+.desk-coffee svg {width:39px;height:39px}
+.desk-plant {position:absolute;left:-18px;top:-37px;width:20px;height:24px;background:#a48061;border:2px solid #493247;box-shadow:3px 3px #150c19}
+.desk-plant i {position:absolute;bottom:18px;width:9px;height:20px;background:#7d966e;border:2px solid #3d5b49;transform-origin:50% 100%;left:3px}
+.desk-plant i:first-child {rotate:-35deg}.desk-plant i:last-child {rotate:35deg;height:25px}
+.variant-studio .disk-control-deck {background:#20172b;border-color:#5c436d}
+.variant-studio .readout-led {box-shadow:0 0 0 2px #100c16}
+
+/* Both an independent comparison page and a drop-in section of the full site. */
+.disk-fullsite .disk-workspace {padding:19px;gap:22px;grid-template-columns:200px minmax(0,1fr)}
+.disk-fullsite .variant-platinum .disk-workspace {grid-template-columns:minmax(0,1fr) 220px;gap:22px}
+.disk-fullsite .variant-platinum .disk-library {padding:13px 9px}
+.disk-fullsite .variant-platinum .disk-choice-title {font-size:17px}
+.disk-fullsite .variant-studio .disk-choice-title {font-size:18px}
+.disk-fullsite .variant-studio .disk-workspace {padding:60px 20px 35px;grid-template-columns:190px minmax(0,1fr)}
+.disk-fullsite .disk-choice-caption {display:none}
+.disk-fullsite .screen-workarea {padding:35px 17px 29px;min-height:230px}
+.disk-fullsite .mount-window-content h3 {font-size:10px}
+.disk-fullsite .mount-window-content > p {font-size:16px}
+.disk-fullsite .notebook-wordmark {font-size:7px;letter-spacing:.5px}
+.disk-fullsite .notebook-base {padding-inline:24px}
+.disk-fullsite .notebook-front {padding-inline:13px}
+.disk-fullsite .disk-choice-title {font-size:20px}
+.disk-fullsite .disk-control-deck {padding:14px}
+.disk-fullsite .disk-actions button {font-size:17px;padding:8px 12px}
+
+@media(max-width:1000px){
+  .disk-workspace{grid-template-columns:175px minmax(0,1fr);gap:25px;padding:22px}.disk-choice-caption{display:none}.disk-choice-title{font-size:21px}.screen-workarea{padding-inline:17px}.mount-window-content h3{font-size:11px}
+  .variant-platinum .disk-workspace{grid-template-columns:minmax(0,1fr) 200px;gap:25px;padding:24px}.variant-platinum .disk-library{padding:13px 10px}.variant-platinum .disk-choice-title{font-size:19px}
+  .variant-studio .disk-workspace{grid-template-columns:190px minmax(0,1fr);gap:25px;padding:65px 24px 35px}.variant-studio .disk-choice-title{font-size:18px}.variant-studio .disk-library{padding-inline:8px}.variant-studio .disk-choice{gap:7px}
+}
+@media(max-width:780px){
+  .disk-study-shell{width:calc(100% - 32px);padding-top:24px}.disk-study-header h1{font-size:19px}.disk-study-header{padding-top:25px}.study-nav{gap:14px}.study-nav button{font-size:18px;padding-inline:11px}.study-heading > h2{font-size:12px}
+  .disk-workspace,.disk-fullsite .disk-workspace{grid-template-columns:175px minmax(0,1fr);gap:19px;padding:18px}.disk-shelf{gap:8px}.disk-choice{gap:8px;padding:10px 3px}.physical-disk{width:52px;height:54px}.disk-handwriting{font-size:8px}.disk-choice-title,.disk-fullsite .disk-choice-title{font-size:19px}.disk-choice-state{font-size:9px;letter-spacing:0}.library-heading{font-size:10px;letter-spacing:0}.library-heading > span:last-child{display:none}.shelf-footnote{font-size:9px;letter-spacing:0}
+  .notebook-lid{padding:11px 10px 0}.screen-workarea,.disk-fullsite .screen-workarea{padding:32px 12px 28px;min-height:232px}.mount-window-content{padding:19px 9px;min-height:165px}.mount-window-content h3,.disk-fullsite .mount-window-content h3{font-size:9px}.mount-window-content > p{font-size:15px}.system-menubar{gap:11px;font-size:11px}.system-menubar .system-clock{display:none}.screen-corner-label{font-size:9px;letter-spacing:.4px}.mount-window-bar{font-size:11px}.screen-state{font-size:8px}.screen-system-line{font-size:8px}.screen-system-line > span:first-child{display:none}.screen-system-line > span:last-child{margin-left:auto}.notebook-wordmark{font-size:7px;letter-spacing:.3px}.notebook-base,.disk-fullsite .notebook-base{padding-inline:20px}.keyboard{gap:2px;min-height:56px;padding:3px}.keyboard i{min-height:7px}.speaker-grille{width:6px}.grille-left{left:7px}.grille-right{right:7px}.palmrest{min-height:43px}.trackpad{height:29px}.notebook-front{padding-inline:12px}.drive-block{width:78%}.drive-drop-label{font-size:7px;letter-spacing:.4px}.front-latch{width:15px}
+  .variant-platinum .disk-workspace,.disk-fullsite .variant-platinum .disk-workspace{grid-template-columns:minmax(0,1fr) 210px;gap:22px;padding:21px}.variant-platinum .disk-library{padding:12px 7px}.variant-platinum .disk-shelf{gap:9px 5px}.variant-platinum .disk-choice{min-height:145px;padding-inline:2px}.variant-platinum .physical-disk{width:51px;height:53px}.variant-platinum .disk-choice-title,.disk-fullsite .variant-platinum .disk-choice-title{font-size:16px}.variant-platinum .disk-choice-state{font-size:8px}.variant-platinum .notebook-lid{padding:13px 12px 0}.variant-platinum .screen-workarea{min-height:248px;padding-inline:12px}.variant-platinum .mount-window-content{padding-inline:10px}.variant-platinum .shelf-footnote{font-size:8px}
+  .variant-studio .disk-workspace,.disk-fullsite .variant-studio .disk-workspace{grid-template-columns:190px minmax(0,1fr);gap:20px;padding:65px 18px 35px}.variant-studio .physical-disk{width:47px;height:49px}.variant-studio .disk-choice-title{font-size:17px}.variant-studio .disk-choice-state{font-size:8px}.variant-studio .disk-library{padding:13px 7px}.variant-studio .disk-choice{gap:6px;padding-inline:0}.variant-studio .screen-workarea{min-height:230px}.desk-coffee{right:-13px;bottom:12px}.desk-coffee svg{width:30px;height:30px}.desk-poster{right:0;top:-53px;font-size:7px}.desk-plant{left:-11px}
+  .disk-fullsite-panel{padding:22px 17px}.selection-readout{font-size:17px}.disk-control-deck{gap:14px;padding:15px}.disk-actions button{font-size:17px;min-height:40px}.disk-instruction{font-size:15px}
+}
+@media(max-width:580px){
+  .disk-study-shell{width:calc(100% - 24px)}.disk-study-header h1{font-size:16px;line-height:1.9}.disk-study-header .study-kicker{font-size:12px;letter-spacing:1px}.disk-study-header > p:last-child{font-size:20px}.study-nav button{font-size:18px;padding:9px 10px;gap:7px}.study-nav button > span{font-size:11px}.view-in-site{font-size:16px}.study-heading > span{font-size:19px}.study-heading > h2{font-size:11px}.study-heading{margin-bottom:21px}
+  .disk-workspace,.disk-fullsite .disk-workspace,.variant-platinum .disk-workspace,.disk-fullsite .variant-platinum .disk-workspace,.variant-studio .disk-workspace,.disk-fullsite .variant-studio .disk-workspace{display:flex;flex-direction:column;align-items:stretch;gap:22px;padding:18px;min-height:0}
+  .disk-library,.variant-platinum .disk-library,.variant-studio .disk-library{order:0;padding:0;background:transparent;border:0;box-shadow:none}
+  .library-heading,.variant-platinum .library-heading,.variant-studio .library-heading{font-size:11px;padding-bottom:9px;margin-bottom:11px}.library-heading > span:last-child{display:block;font-size:10px}
+  .disk-shelf,.variant-platinum .disk-shelf{grid-template-columns:1fr 1fr;gap:10px}
+  .disk-choice,.variant-platinum .disk-choice,.variant-studio .disk-choice{flex-direction:column;align-items:center;text-align:center;padding:12px 5px;gap:8px;min-height:135px;background:#1b1524;border:1px solid #43344f}
+  .disk-choice-copy,.variant-platinum .disk-choice-copy{align-items:center}
+  .physical-disk,.variant-platinum .physical-disk,.variant-studio .physical-disk{width:48px;height:50px}
+  .disk-choice-title,.disk-fullsite .disk-choice-title,.variant-platinum .disk-choice-title,.disk-fullsite .variant-platinum .disk-choice-title,.variant-studio .disk-choice-title{font-size:19px}
+  .disk-choice-state,.variant-platinum .disk-choice-state,.variant-studio .disk-choice-state{font-size:9px;margin-top:4px}
+  .shelf-footnote,.variant-platinum .shelf-footnote,.variant-studio .shelf-footnote{font-size:10px;padding-top:8px;margin-top:11px}
+  .computer-area,.variant-platinum .computer-area{padding:0}
+  .notebook-lid,.variant-platinum .notebook-lid,.variant-studio .notebook-lid{padding:13px 12px 0}
+  .screen-workarea,.variant-platinum .screen-workarea,.variant-studio .screen-workarea,.disk-fullsite .screen-workarea{min-height:235px;padding:31px 13px 27px}
+  .mount-window-content h3,.disk-fullsite .mount-window-content h3{font-size:10px}.mount-window-content > p,.disk-fullsite .mount-window-content > p{font-size:17px}.screen-state{font-size:9px}.screen-system-line{font-size:9px}.system-menubar{font-size:12px}.notebook-wordmark,.disk-fullsite .notebook-wordmark{font-size:8px;letter-spacing:.5px}
+  .notebook-base,.disk-fullsite .notebook-base{padding-inline:25px}.keyboard{min-height:62px;gap:3px}.palmrest{min-height:47px}.trackpad{height:33px}.notebook-front,.disk-fullsite .notebook-front{min-height:34px;padding-inline:15px}.drive-block{min-height:25px;max-width:260px}.disk-drive{min-height:25px}.drive-opening{top:9px;height:7px}.drive-drop-label{font-size:8px}.hardware-eject{min-height:24px;min-width:24px}.front-latch{width:20px}
+  .variant-studio .disk-workspace,.disk-fullsite .variant-studio .disk-workspace{gap:70px;padding-bottom:30px}.variant-studio .disk-library{background:#2b2133;border:2px solid #77617f;box-shadow:4px 4px #281b22;padding:13px 10px;z-index:5}.variant-studio .disk-shelf{gap:9px}.variant-studio .retro-notebook{transform:none}.variant-studio .computer-area{padding:0 2px}.variant-studio .desk-coffee{right:-12px}.variant-studio .desk-plant{left:6px}.variant-studio .desk-poster{right:9px;top:-56px}
+  .disk-control-deck,.disk-fullsite .disk-control-deck{flex-direction:column;align-items:stretch;padding:15px;gap:15px;margin-top:20px}.disk-actions{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto}.disk-actions button{min-height:44px;font-size:18px}.selection-readout{min-height:38px}.disk-study-footer{font-size:11px;letter-spacing:.5px}.disk-study-footer > span{font-size:14px}.single-study-nav{gap:10px}.single-study-nav > span{font-size:10px}.disk-fullsite-panel{padding:22px 15px}
+}
+@media(max-width:370px){
+  .disk-workspace,.disk-fullsite .disk-workspace,.variant-platinum .disk-workspace,.disk-fullsite .variant-platinum .disk-workspace,.variant-studio .disk-workspace,.disk-fullsite .variant-studio .disk-workspace{padding-inline:12px}
+  .physical-disk,.variant-platinum .physical-disk,.variant-studio .physical-disk{width:39px;height:41px}.disk-shutter > span{right:3px;width:5px}.disk-label{padding:2px}.label-ruled{font-size:6px}.disk-handwriting,.variant-studio .disk-handwriting{font-size:6px;margin-top:1px}.label-line{margin-top:1px}.disk-choice,.variant-platinum .disk-choice,.variant-studio .disk-choice{gap:6px;padding:8px 4px}.disk-choice-title,.disk-fullsite .disk-choice-title,.variant-platinum .disk-choice-title,.disk-fullsite .variant-platinum .disk-choice-title,.variant-studio .disk-choice-title{font-size:17px}.disk-choice-state,.variant-platinum .disk-choice-state,.variant-studio .disk-choice-state{font-size:8px;overflow-wrap:anywhere}.library-heading{gap:5px}.library-heading > span:last-child{font-size:9px}.screen-workarea,.variant-platinum .screen-workarea,.variant-studio .screen-workarea,.disk-fullsite .screen-workarea{padding-inline:9px;min-height:225px}.notebook-lid,.variant-platinum .notebook-lid,.variant-studio .notebook-lid{padding-inline:9px}.mount-window-content h3,.disk-fullsite .mount-window-content h3{font-size:9px}.screen-state{font-size:8px}.mount-window-content > p,.disk-fullsite .mount-window-content > p{font-size:15px}.notebook-wordmark,.disk-fullsite .notebook-wordmark{font-size:6px;letter-spacing:.3px}.disk-control-deck{padding:13px}.disk-instruction{font-size:14px}.variant-studio .disk-library{padding:11px 7px}
+}
+@media(prefers-reduced-motion:reduce){.disk-choice,.physical-disk{transition:none}.disk-stage[data-phase=busy] .drive-led,.disk-stage[data-phase=busy] .screen-state i{animation:none}}

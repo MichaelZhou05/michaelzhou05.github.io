@@ -12,6 +12,26 @@ npm run dev
 
 Open `http://127.0.0.1:4173`.
 
+## Macintosh portfolio
+
+The homepage's Platinum Macintosh runs four floppy programs: Work experience,
+Building now, Past projects, and Cool stuff. Select a disk and click the drive,
+double-click a disk, or drag it into the drive. The disk buttons also support
+arrow keys and Home/End to select, Enter to insert, and native Tab navigation.
+Eject returns to the desktop.
+Existing `#experience`, `#now`, `#projects`, and `#race` links load their disks.
+
+`macintosh.js` owns the hardware and disk lifecycle; `macintosh.css` keeps the
+LCD at 4:3. Each `programs/*.js` module exports `mount(root)` and returns cleanup.
+Portfolio facts live in `work.js` and `projects.js`; Auto Research's intentionally
+sparse notebook is in `now.js`. The arcade uses borderless `race.html` and
+`vim.html` documents that load the original engines. Removing their iframe stops
+game input, clocks, and animation. Prototypes are retained as separate studies.
+
+Run `npm run check` for syntax checks, including all four programs. After changing
+the display, check desktop and phone layouts, both games, disk swaps/ejection,
+keyboard focus, touch controls, and reduced motion in a browser.
+
 ## Race game
 
 Inspired by [GBA Eval](https://gbaeval.com), which grades frontier models by

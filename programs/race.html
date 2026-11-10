@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="./game.css"><title>Nordschleife racing experiment — Michael’s arcade</title></head><body class="arcade-game race-game"><main><div class="race-window">
+            <div class="race-window-bar">
+              <span><i></i> n&uuml;rburgring nordschleife &mdash; night</span>
+              <span id="sector-name">sector 01/18</span>
+            </div>
+            <div class="game-screen">
+              <canvas
+                id="race-canvas"
+                width="300"
+                height="200"
+                tabindex="0"
+                aria-label="Top-down racetrack. Use the arrow keys or WASD to drive to the finish."
+              ></canvas>
+              <div class="game-overlay" id="game-overlay">
+                <p class="overlay-title">NORDSCHLEIFE</p>
+                <button id="start-race" class="button primary" type="button">Start lap</button>
+                <p>20.832 km &middot; 18 sectors &middot; keys or touch arrows</p>
+                <p>the window shifts each sector &middot; grass costs you</p>
+                <p class="arcade-credit">Drive against saved model laps. No live model calls.</p>
+              </div>
+            </div>
+            <!--
+              Touch controls for the race. Available on narrow displays and coarse pointers. app.js wires each pad straight into
+              the same key state the arrow keys set. The car is steered in four
+              directions, not driven with pedals, so the pads are the four
+              arrows the keyboard offers and nothing more.
+            -->
+            <div class="race-touch" id="race-touch">
+              <div class="touch-cluster">
+                <button class="touch-key" type="button" data-control="left" aria-label="Steer left">&#9664;</button>
+                <button class="touch-key" type="button" data-control="right" aria-label="Steer right">&#9654;</button>
+              </div>
+              <div class="touch-cluster">
+                <button class="touch-key" type="button" data-control="up" aria-label="Steer up">&#9650;</button>
+                <button class="touch-key" type="button" data-control="down" aria-label="Steer down">&#9660;</button>
+              </div>
+            </div>
+            <div class="race-readout">
+              <div class="gauge you-gauge">
+                <span class="gauge-label"><i class="dot-you"></i> You</span>
+                <span class="gauge-value"><span id="player-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="player-progress"></span></span>
+              </div>
+              <div class="gauge">
+                <span class="gauge-label">Lap time</span>
+                <span class="gauge-value" id="player-time">0:00.00</span>
+                <span class="gauge-note"><span id="player-hits">0</span> off-track</span>
+              </div>
+              <div class="gauge opus-stat">
+                <span class="gauge-label"><i class="dot-opus"></i> Opus 5</span>
+                <span class="gauge-value"><span id="opus-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="opus-progress"></span></span>
+                <span class="gauge-note" id="opus-lap-note"></span>
+              </div>
+              <div class="gauge gpt-stat">
+                <span class="gauge-label"><i class="dot-gpt"></i> Sol · xhigh</span>
+                <span class="gauge-value"><span id="gpt-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="gpt-progress"></span></span>
+                <span class="gauge-note" id="sol-lap-note"></span>
+              </div>
+              <div id="jev-gauge" class="gauge jev-stat" hidden>
+                <span class="gauge-label"><i class="dot-jev"></i> jev · reactive</span>
+                <span class="gauge-value"><span id="jev-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="jev-progress"></span></span>
+                <span class="gauge-note" id="jev-lap-note"></span>
+              </div>
+            </div>
+            <div class="race-log">
+              <span id="race-log" aria-live="polite">JEV, USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.</span>
+              <button id="restart-race" class="text-button" type="button">Reset lap</button>
+            </div>
+          </div>
+<p class="game-footnote">Arrow keys or WASD move the car. Hold two directions for diagonals. Grass slows you down. Saved trials are an experiment, not a general model ranking.</p>
+</main><script type="module" src="../app.js"></script></body></html>

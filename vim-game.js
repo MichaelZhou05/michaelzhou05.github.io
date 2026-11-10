@@ -439,6 +439,18 @@ function init() {
       out.push(`<div class="vim-line">${label}<span class="vim-gutter">${String(r + 1).padStart(3, ' ')}</span>${body}</div>`);
     }
     buffer.innerHTML = out.join('');
+    // The arcade can be smaller than the complete buffer. Keep the active
+    // cursor in its scrollable code pane without scrolling the portfolio.
+    const cursor = buffer.querySelector('.vim-cursor');
+    if (cursor && buffer.scrollHeight > buffer.clientHeight) {
+      const cursorBox = cursor.getBoundingClientRect();
+      const paneBox = buffer.getBoundingClientRect();
+      const margin = 24;
+      if (cursorBox.top < paneBox.top + margin) buffer.scrollTop += cursorBox.top - paneBox.top - margin;
+      else if (cursorBox.bottom > paneBox.bottom - margin) buffer.scrollTop += cursorBox.bottom - paneBox.bottom + margin;
+      if (cursorBox.left < paneBox.left) buffer.scrollLeft += cursorBox.left - paneBox.left;
+      else if (cursorBox.right > paneBox.right) buffer.scrollLeft += cursorBox.right - paneBox.right + 12;
+    }
   }
 
   /* ------------------------------------------------------------- the race */

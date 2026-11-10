@@ -1,0 +1,81 @@
+/* The Macintosh supplies the enclosure. This surface belongs to the game. */
+html,body.arcade-game { margin:0; width:100%; height:100%; min-width:0; min-height:0; overflow-x:hidden; overflow-y:auto; background:#101218; color:#f1f2f5; }
+body.arcade-game { font:14px/1.5 Geneva,Arial,sans-serif; --arcade-line:#383b48; --arcade-muted:#bac0cf; }
+body.arcade-game::before,body.arcade-game::after { display:none; }
+.arcade-game main { display:block; width:100%; height:100%; min-height:0; max-width:none; margin:0; padding:0; }
+.arcade-game .race-window,.arcade-game .vim-window { position:relative; display:flex; flex-direction:column; width:100%; height:100%; min-height:0; padding:0; border:0; border-radius:0; box-shadow:none; background:#101218; }
+.arcade-game .race-window-bar,.arcade-game .vim-window-bar { display:flex; flex:none; min-height:28px; padding:4px 12px; border:0; border-radius:0; background:#20232d; font:12px/1.5 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; color:var(--arcade-muted); }
+.arcade-game .race-window-bar > span:first-child { display:none; }
+.arcade-game .race-window-bar { position:absolute; inset:0 0 auto; z-index:2; background:#101218da; pointer-events:none; }
+.arcade-game #sector-name { color:#f4d18c; text-shadow:none; }
+.arcade-game .game-screen { flex:1; min-height:210px; aspect-ratio:auto; box-shadow:none; background:#000; }
+.arcade-game .game-screen::after { display:none; }
+.arcade-game #race-canvas { width:100%; height:100%; object-fit:contain; }
+.arcade-game .race-readout { position:relative; display:grid; flex:none; grid-template-columns:repeat(4,minmax(0,1fr)); border-top:1px solid var(--arcade-line); background:#191c25; }
+.arcade-game .race-readout:has(#jev-gauge:not([hidden])) { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.arcade-game .gauge { display:flex; flex-direction:column; gap:4px; padding:9px 10px; border-left:1px solid var(--arcade-line); }
+.arcade-game .gauge:first-child { border-left:0; }
+.arcade-game .gauge[hidden] { display:none; }
+.arcade-game .gauge-label { gap:5px; color:#e1e4ec; font:12px/1.35 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; white-space:normal; }
+.arcade-game .gauge-label i { width:7px; height:7px; }
+.arcade-game .gauge-value { color:#fff; font:500 19px/1.2 ui-monospace,monospace; letter-spacing:-.5px; text-shadow:none; }
+.arcade-game .gauge-value em { color:var(--arcade-muted); font-size:12px; }
+.arcade-game .gauge-note { color:var(--arcade-muted); font:11px/1.4 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; white-space:normal; }
+.arcade-game .progress-track,.arcade-game .race-garage { display:none; }
+.arcade-game .race-log { display:flex; flex:none; align-items:center; gap:12px; min-height:42px; padding:5px 10px; border-top:1px solid var(--arcade-line); border-radius:0; background:#101218; color:var(--arcade-muted); font:12px/1.5 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; }
+.arcade-game #race-log { min-width:0; white-space:normal; }
+.arcade-game #restart-race { flex:none; margin-left:auto; min-height:36px; padding:6px 10px; border:1px solid #62687a; border-radius:4px; background:#282d3b; color:#f1f2f5; box-shadow:none; font:13px/1.4 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; }
+.arcade-game .game-overlay { overflow:auto; justify-content:center; padding:36px 20px 20px; gap:10px; background:#101218f5; }
+.arcade-game .game-overlay p { max-width:52ch; margin:0; color:#c9cedb; font:14px/1.5 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; }
+.arcade-game .game-overlay .overlay-title { margin:0 0 4px; color:#fff; font:600 clamp(22px,4vw,32px)/1.2 Geneva,Arial,sans-serif; letter-spacing:-.6px; text-shadow:none; }
+.arcade-game .game-overlay .button { min-height:44px; margin-top:8px; padding:10px 24px; border:1px solid #c4b6ff; border-radius:5px; background:#bba8fa; color:#1a1330; box-shadow:none; font:600 14px/1.4 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; }
+.arcade-game .game-overlay .button:hover { background:#d5c9ff; }
+.arcade-game .game-overlay.hidden { visibility:hidden; }
+.arcade-game .race-touch { position:relative; z-index:2; flex:none; align-items:center; justify-content:space-between; gap:28px; padding:6px 10px; background:#101218; }
+.arcade-game .touch-cluster { flex:0 1 150px; gap:8px; }
+.arcade-game .touch-key { min-height:44px; min-width:44px; padding:0; border:1px solid #62687a; border-radius:5px; background:#282d3b; color:#f1f2f5; box-shadow:none; font:16px/1 Geneva,Arial,sans-serif; touch-action:none; }
+.arcade-game .touch-key.is-held { background:#bba8fa; color:#1a1330; border-color:#c4b6ff; transform:none; }
+.arcade-game .vim-screen { display:flex; flex:1; flex-direction:column; min-height:0; box-shadow:none; }
+.arcade-game .vim-buffer { flex:1; min-height:0; overflow:auto; padding:12px 10px 18px; font:14px/1.55 ui-monospace,monospace; scrollbar-width:thin; }
+.arcade-game .vim-gutter { color:#9299ae; }
+.arcade-game .vim-status { flex:none; gap:4px; padding:8px 10px; background:#20232d; font:12px/1.4 ui-monospace,monospace; letter-spacing:0; text-transform:none; }
+.arcade-game .vim-status-right { gap:12px; }
+.arcade-game .vim-label { font-size:.9em; }
+.arcade-game .vim-window-bar i { display:none; }
+.arcade-game #vim-clock { color:#ff8f99; }
+.arcade-game .vim-screen .game-overlay { padding:22px; }
+.arcade-game #vim-intro,.arcade-game #vim-results { width:100%; max-width:52ch; }
+.arcade-game #vim-intro p,.arcade-game #vim-results p { margin:0 auto 14px; }
+.arcade-game .vim-touch-link { display:inline-block; margin:12px 0 0; color:#d5c9ff; font:14px/1.5 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; }
+.arcade-game .game-overlay .vim-keyboard-note { color:#d5c9ff; font-size:12px; }
+.arcade-game kbd { display:inline-block; padding:1px 4px; margin:2px 0; border:1px solid #4e5465; border-radius:3px; background:#20232d; color:#eee; font:12px/1.5 ui-monospace,monospace; }
+.arcade-game .game-footnote { margin:0; padding:12px 14px 16px; background:#20232d; color:#c9cedb; font:13px/1.55 Geneva,Arial,sans-serif; letter-spacing:0; text-transform:none; }
+.arcade-game :is(button,a):focus-visible { outline:3px solid #eee5ff; outline-offset:2px; }
+.arcade-game :is(#race-canvas,.vim-screen):focus-visible { outline:2px solid #c4b6ff; outline-offset:-3px; }
+@media(max-width:600px),(hover:none) and (pointer:coarse) { .arcade-game .race-touch { display:flex; } }
+@media(max-width:450px) {
+  .arcade-game .game-screen { min-height:210px; }
+  .arcade-game .game-overlay { padding:32px 12px 14px; gap:8px; }
+  .arcade-game .game-overlay p { font-size:13px; line-height:1.45; }
+  .arcade-game .game-overlay .overlay-title { font-size:23px; }
+  .arcade-game .game-overlay .button { margin-top:2px; }
+  .arcade-game .gauge { padding:8px 6px; gap:4px; }
+  .arcade-game .gauge-label { font-size:11px; }
+  .arcade-game .gauge-value { font-size:15px; }
+  .arcade-game .gauge-note { font-size:11px; }
+  .arcade-game .race-log { gap:6px; padding:6px; }
+  .arcade-game #race-log { font-size:11px; }
+  .arcade-game #restart-race { min-height:44px; padding:6px 8px; }
+  .arcade-game .vim-window-bar { font-size:11px; padding:6px; }
+  .arcade-game .vim-buffer { padding:12px 6px; font-size:13px; }
+  .arcade-game .vim-screen .game-overlay { padding:14px; }
+  .arcade-game #vim-intro p { margin-bottom:10px; }
+}
+@media(prefers-reduced-motion:reduce) { .arcade-game *,.arcade-game *::before,.arcade-game *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+@media(max-width:450px) {
+  .arcade-game.race-game .race-window { height:auto; min-height:100%; padding-bottom:56px; }
+  .arcade-game .game-screen { flex:none; height:calc(100dvh - 56px); min-height:140px; }
+  .arcade-game .race-touch { position:fixed; inset:auto 0 0; border-top:1px solid var(--arcade-line); }
+  .arcade-game .game-overlay { justify-content:flex-start; padding-top:18px; }
+  .arcade-game .game-overlay .overlay-title { font-size:21px; }
+}
