@@ -1,10 +1,11 @@
 /* Platinum hardware is the section itself. No surrounding panel. */
-.macintosh { --mac-cream:#c9c1b4; --mac-light:#eee5d5; --mac-shade:#8e8381; --mac-ink:#302c35; --mac-desktop:#a6a1aa; margin-block:32px; min-width:0; isolation:isolate; }
+.macintosh { --mac-cream:#c9c1b4; --mac-light:#eee5d5; --mac-shade:#8e8381; --mac-ink:#302c35; --mac-desktop:#a6a1aa; --disk-corner:polygon(0 0, 87% 0, 100% 12%, 100% 100%, 0 100%); margin-block:32px; min-width:0; isolation:isolate; }
 .macintosh * { box-sizing:border-box; }
 .macintosh [hidden] { display:none!important; }
 .macintosh button:focus-visible,.mac-display:focus-visible,.macintosh a:focus-visible { outline:3px solid #7b68ee; outline-offset:3px; }
 .disk-anchor {position:absolute;top:0;scroll-margin-top:24px;}
 .mac-machine { width:100%; filter:drop-shadow(3px 7px 0 #0007); }
+.mac-machine:has(.mac-flight) { position:relative; z-index:1; }
 .mac-lid { position:relative; padding:clamp(12px,2.8vw,25px) clamp(12px,2.8vw,25px) 0; background:linear-gradient(160deg,#dbd2c4 0%,var(--mac-cream) 70%); border:2px solid var(--mac-light); border-right-color:var(--mac-shade); border-bottom-color:#6c636a; box-shadow:inset 2px 2px #fff6,inset -3px -2px #0002; border-radius:12px 12px 2px 2px; }
 .mac-screw {position:absolute;top:9px;width:4px;height:4px;border:1px solid #8d8180;background:#b3a99e;}
 .mac-screw-left {left:9px;}.mac-screw-right {right:9px;}
@@ -28,33 +29,101 @@
 .mac-dust svg {width:23px;height:23px;filter:sepia(.4);}
 .mac-front {display:flex;align-items:center;gap:10px;min-height:45px;background:#ada195;border:2px solid #8c7f81;border-top:1px solid #e1d4c2;border-bottom:5px solid #71666e;padding:0 4%;border-radius:0 0 8px 8px;box-shadow:inset 0 2px #c9bdae;}
 .mac-drive-led {width:5px;height:3px;background:#697961;flex-shrink:0;}
-.mac-drive {position:relative;display:grid;place-items:center;background:transparent;border:0;flex:0 1 65%;min-height:44px;padding:0 8px;color:#e8dfd3;}
-.mac-slot {position:absolute;left:0;right:0;top:17px;height:9px;background:#28222d;border-top:2px solid #63545f;box-shadow:0 1px #dbcbba;}
-.mac-drive-label {position:relative;background:#28222d;padding:1px 8px;font:11px/1.4 var(--mono);}
-.mac-drive:disabled .mac-drive-label {color:#bdb1a9;}
-.mac-drive:not(:disabled):hover .mac-drive-label {color:#fff;}
+.mac-drive {position:relative;display:grid;justify-items:center;align-content:end;background:transparent;border:0;flex:0 1 65%;min-height:44px;padding:0 8px 5px;color:#30242c;}
+.mac-slot {
+  position:absolute;
+  top:10px;
+  left:50%;
+  translate:-50% 0;
+  width:min(100%, clamp(86px, 27vw, 132px));
+  height:10px;
+  border-radius:2px;
+  background:linear-gradient(#211b24 0 70%, #3b303b 70%);
+  box-shadow:0 -1px 0 1px #7d6d6d, 0 2px 0 1px #d6c5b6, inset 0 2px 2px #000b;
+}
+.mac-drive-label {font:11px/1.4 var(--mono);}
+.mac-drive:disabled .mac-drive-label {color:#52414b;}
+.mac-drive:not(:disabled):hover .mac-slot {background:#17131b;}
+.mac-drive:not(:disabled):hover .mac-drive-label {color:#180f1a;}
 .mac-eject:not(:disabled):hover {color:#120c18;}
 .mac-eject {display:grid;place-items:center;min-width:44px;min-height:40px;font:23px var(--mono);border:0;background:transparent;color:#3c3240;}
 .mac-eject:disabled {opacity:.4;}
 .mac-latch {margin-left:auto;width:30px;height:7px;background:#756974;border:1px solid #9b8c8b;}
 .macintosh.is-over-drive .mac-slot {outline:3px solid #7b68ee;outline-offset:4px;}
-.macintosh[data-phase=loading] .mac-drive-led {background:#eac15c;}
+.macintosh:is([data-phase=loading], [data-phase=ejecting]) .mac-drive-led {background:#eac15c;}
 .macintosh[data-phase=mounted] .mac-drive-led {background:#598256;box-shadow:0 0 4px #84a5789e;}
 .mac-disks {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:18px;margin:30px 0 0;}
 .mac-disk {border:0;background:transparent;color:var(--fg);padding:0 2px;display:flex;align-items:center;flex-direction:column;gap:10px;min-width:0;font-family:var(--mono);}
-.mac-floppy {position:relative;display:block;aspect-ratio:1; width:min(100%,112px);background:var(--plastic);border:2px solid #241c2b;border-radius:2px;clip-path:polygon(0 0,85% 0,100% 15%,100% 100%,0 100%);box-shadow:inset 2px 2px #fff3,inset -4px -3px #0004;transition:transform .18s,opacity .18s;}
-.mac-disk:hover .mac-floppy,.mac-disk[aria-pressed=true] .mac-floppy {transform:translateY(-5px) rotate(-3deg);}
-.mac-shutter {position:absolute;left:21%;top:0;width:55%;height:31%;background:#a8a1aa;border:1px solid #67616f;box-shadow:inset 3px 0 #ddd8df,inset -2px 0 #817987;}
-.mac-shutter i {position:absolute;top:8%;bottom:10%;right:13%;width:16%;background:#49424f;border:1px solid #ccc4d1;}
-.mac-disk-label {position:absolute;left:10%;right:10%;top:40%;height:45%;background:#e9dec7;border:1px solid #afa293;padding:4% 5%;text-align:left;color:#493c50;}
-.mac-disk-label small {display:block;font:9px/1.2 var(--mono);border-bottom:1px solid #bbaaaf;}
-.mac-disk-label b {color:inherit;display:block;font:clamp(8px,1vw,11px)/2 var(--display);font-weight:400;}
-.mac-disk-label em {display:block;height:1px;background:#bbaaaf;}
-.mac-protect {position:absolute;bottom:6%;left:6%;width:7%;height:7%;background:#211a29;box-shadow:1px 1px #fff2;}
+.mac-disk-bay {
+  position:relative;
+  display:block;
+  width:min(100%, 112px);
+  aspect-ratio:90/94;
+}
+.mac-disk:is(.is-mounted, .is-moving) .mac-disk-bay::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:3px;
+  clip-path:var(--disk-corner);
+  background:#17141c;
+  box-shadow:inset 0 0 0 1px #62576b, inset 3px 4px 0 #0e0c12;
+}
+.mac-floppy {
+  position:relative;
+  display:block;
+  width:100%;
+  height:100%;
+  container-type:inline-size;
+  border:2px solid #241d2a;
+  border-radius:3px;
+  clip-path:var(--disk-corner);
+  background:
+    repeating-linear-gradient(0deg, #0001 0 1px, transparent 1px 3px),
+    linear-gradient(145deg, #fff2, transparent 52%),
+    var(--plastic);
+  box-shadow:inset 1px 1px #fff6, inset -2px -3px #21192370;
+}
+.mac-floppy::after {
+  content:"";
+  position:absolute;
+  inset:auto 12% 4% 18%;
+  height:2px;
+  background:#20192655;
+  box-shadow:0 1px #fff3;
+}
+.mac-shutter {
+  position:absolute;
+  left:21%;
+  top:-1px;
+  width:56%;
+  height:32%;
+  border:1px solid #615c66;
+  border-radius:0 0 3px 3px;
+  background:repeating-linear-gradient(0deg, #fff2 0 1px, transparent 1px 3px), linear-gradient(115deg, #dedbe2, #9f9aa5 76%, #bfbac4);
+  box-shadow:inset 1px 0 #fffd, inset -1px -1px #686372;
+}
+.mac-shutter i {position:absolute;top:8%;bottom:12%;right:14%;width:17%;border:1px solid #e2dce5;background:linear-gradient(90deg,#302935 68%,#5b4e60 68%);}
+.mac-disk-label {
+  position:absolute;
+  inset:38% 9% 15%;
+  overflow:hidden;
+  border:1px solid #afa293;
+  border-radius:2px;
+  padding:6% 6% 0;
+  text-align:left;
+  white-space:nowrap;
+  color:#423645;
+  background:repeating-linear-gradient(to bottom, transparent 0 6px, #9a818643 6px 7px) 0 100% / 100% 42% no-repeat, linear-gradient(#f3e9d1,#e1d3b8);
+  box-shadow:inset 0 1px #fffb, 0 1px #23182647;
+}
+.mac-disk-label small {display:block;font:clamp(5px, 9cqi, 9px)/1.1 var(--mono);border-bottom:1px solid #ad99a0;}
+.mac-disk-label b {color:inherit;display:block;margin-top:6%;font:clamp(6px, 10cqi, 11px)/1 var(--display);font-weight:400;}
+.mac-protect {position:absolute;bottom:6%;left:6%;width:7%;height:8%;background:#211a29;border-top:2px solid #766878;box-shadow:1px 1px #fff3;}
 .mac-disk-title {font:19px/1.15 var(--mono);text-wrap:balance;}
 .mac-disk-state {font:12px/1.2 var(--mono);color:var(--fg-dim);}
 .mac-disk[aria-pressed=true] .mac-disk-state {color:var(--amber);}
-.mac-disk.is-mounted .mac-floppy {opacity:.4;}
+.mac-disk:is(.is-mounted, .is-moving) .mac-floppy {visibility:hidden;}
 .mac-disk.is-mounted .mac-disk-state {color:#a2c29c;}
 .mac-instructions,.mac-status {margin:20px 0 0;text-align:center;color:var(--fg-dim);font:15px/1.4 var(--mono);}
 .mac-status {margin-top:5px;color:#b8a9df;min-height:1.4em;}
@@ -69,11 +138,63 @@
 .mac-idle-welcome p {font:clamp(14px,2.6cqw,22px)/1.4 var(--mono);color:#37303c;margin:0;max-width:33ch;}
 .mac-idle-footer {display:flex;justify-content:space-between;gap:8px;padding:7px 12px;color:#302b35;font:11px/1.2 var(--mono);}
 .mac-loading {display:grid;place-items:center;background:#c8c0bb;font:18px var(--mono);color:#302b35;}
-.mac-flight {position:fixed;pointer-events:none;z-index:50;margin:0;}
-@media(max-width:640px) {
- .macintosh {margin-block:22px;}.mac-lid{padding:12px 10px 0;border-radius:8px 8px 0 0;}.mac-display{border-width:2px;}.mac-wordmark{min-height:26px;font-size:10px;gap:6px;}.mac-mark{font-size:18px;}.mac-screw{top:5px;width:3px;height:3px;}.mac-screw-left{left:5px;}.mac-screw-right{right:5px;}.mac-base{padding-top:7px;}.mac-keyboard{gap:2px;padding:3px;}.mac-palmrest{min-height:42px;}.mac-trackpad{height:25px;bottom:6px;}.mac-model{font-size:8px;}.mac-front{gap:3px;padding:0 3%;min-height:44px;}.mac-drive{flex-basis:77%;}.mac-drive-label{font-size:10px;padding-inline:4px;}.mac-latch{display:none;}.mac-disks{gap:8px;margin-top:24px;}.mac-disk-title{font-size:15px;}.mac-disk-state{font-size:10px;}.mac-disk{gap:8px;}.mac-floppy{width:min(100%,84px);}.mac-disk-label small{font-size:7px;}.mac-disk-label b{font-size:7px;line-height:1.8;}.mac-instructions,.mac-status{font-size:13px;}.mac-idle-bar{height:23px;font-size:11px;padding-inline:8px;}.mac-idle-footer{font-size:9px;padding:5px 8px;}.mac-happy{transform:scale(.75);margin:-5px;}.mac-idle-welcome h2{margin:10px 0 7px;}.mac-idle-welcome p{font-size:14px;}
+.mac-flight {
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  clip-path:inset(0 -100vmax -100vmax);
 }
-@media(prefers-reduced-motion:reduce){.mac-floppy{transition:none;}.mac-disk:hover .mac-floppy,.mac-disk[aria-pressed=true] .mac-floppy{transform:none;}}
+.mac-flight-disk {
+  --disk-thickness:4px;
+  position:absolute;
+  left:50%;
+  top:50%;
+  translate:-50% -50%;
+  transform-style:preserve-3d;
+}
+.mac-flight-disk .mac-floppy {
+  transform:translateZ(calc(var(--disk-thickness) / 2));
+}
+.mac-flight-disk::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  clip-path:var(--disk-corner);
+  transform:translateZ(calc(var(--disk-thickness) / -2));
+  background:color-mix(in srgb, var(--plastic), #25212a 52%);
+}
+.mac-flight-disk::after {
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:var(--disk-thickness);
+  transform:translateY(50%) rotateX(-90deg);
+  background:linear-gradient(color-mix(in srgb, var(--plastic), #211922 40%), #2c2532);
+}
+.mac-flight-side {
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:var(--disk-thickness);
+  background:color-mix(in srgb, var(--plastic), #1d1721 56%);
+}
+.mac-flight-side-left {
+  left:0;
+  transform:translateX(-50%) rotateY(-90deg);
+}
+.mac-flight-side-right {
+  right:0;
+  top:12%;
+  transform:translateX(50%) rotateY(90deg);
+}
+@media(max-width:640px) {
+ .macintosh {margin-block:22px;}.mac-lid{padding:12px 10px 0;border-radius:8px 8px 0 0;}.mac-display{border-width:2px;}.mac-wordmark{min-height:26px;font-size:10px;gap:6px;}.mac-mark{font-size:18px;}.mac-screw{top:5px;width:3px;height:3px;}.mac-screw-left{left:5px;}.mac-screw-right{right:5px;}.mac-base{padding-top:7px;}.mac-keyboard{gap:2px;padding:3px;}.mac-palmrest{min-height:42px;}.mac-trackpad{height:25px;bottom:6px;}.mac-model{font-size:8px;}.mac-front{gap:3px;padding:0 3%;min-height:44px;}.mac-drive{flex-basis:77%;}.mac-drive-label{font-size:10px;padding-inline:4px;}.mac-latch{display:none;}.mac-disks{gap:8px;margin-top:24px;}.mac-disk-title{font-size:15px;}.mac-disk-state{font-size:10px;}.mac-disk{gap:8px;}.mac-disk-bay{width:min(100%,84px);}.mac-instructions,.mac-status{font-size:13px;}.mac-idle-bar{height:23px;font-size:11px;padding-inline:8px;}.mac-idle-footer{font-size:9px;padding:5px 8px;}.mac-happy{transform:scale(.75);margin:-5px;}.mac-idle-welcome h2{margin:10px 0 7px;}.mac-idle-welcome p{font-size:14px;}
+}
+@media (prefers-reduced-motion:no-preference) {
+  .mac-disk .mac-floppy {transition:transform 180ms ease-out;}
+  .mac-disk:is(:hover, [aria-pressed=true]) .mac-floppy {transform:translateY(-4px) rotate(-2deg);}
+}
 
 /* Small displays keep enough height for the program controls and reading pane. */
 @media (max-width: 560px) {

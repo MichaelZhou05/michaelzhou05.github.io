@@ -139,13 +139,29 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .mac-program { animation: mac-window-open 210ms ease-out both; }
+  .mac-program { animation: var(--mac-open, mac-window-open) var(--mac-open-duration, 210ms) ease-out backwards; }
+  .mac-program[data-disk="now"] { --mac-open: mac-notebook-open; --mac-open-duration: 290ms; }
+  .mac-program[data-disk="projects"] { --mac-open: mac-projects-open; --mac-open-duration: 260ms; }
+  .mac-program[data-disk="fun"] { --mac-open: mac-arcade-open; --mac-open-duration: 310ms; }
   .mac-page-enter { animation: mac-page-enter 190ms ease-out both; }
   .mac-tabs button, .mac-control { transition: background-color 110ms ease-out, color 110ms ease-out; }
 }
 
 @keyframes mac-window-open {
   from { opacity: 0; transform: translateY(4px); }
+}
+@keyframes mac-notebook-open {
+  from { clip-path: inset(0 0 92%); }
+  to { clip-path: inset(0); }
+}
+@keyframes mac-projects-open {
+  from { clip-path: inset(0 100% 0 0); transform: translateX(-10px); }
+  to { clip-path: inset(0); transform: translateX(0); }
+}
+@keyframes mac-arcade-open {
+  0% { clip-path: inset(49.5% 30%); filter: brightness(1.7); }
+  32% { clip-path: inset(48% 0); filter: brightness(1.22); }
+  100% { clip-path: inset(0); filter: brightness(1); }
 }
 @keyframes mac-page-enter {
   from { opacity: .45; transform: translateY(3px); }
