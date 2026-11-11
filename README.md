@@ -10,7 +10,9 @@ of pixel-art easter eggs.
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173`.
+Open the URL printed by `npm run dev`. The server defaults to `http://127.0.0.1:4173`
+and picks an available port if 4173 is in use. To require a specific port, run
+`PORT=8080 npm run dev`.
 
 ## Macintosh portfolio
 

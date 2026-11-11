@@ -1,0 +1,165 @@
+/* Shared window furniture for the four disks and their local game screens. */
+.macintosh,
+.arcade-game {
+  --system-ui: Geneva, "Lucida Grande", system-ui, sans-serif;
+  --system-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --system-ink: #292735;
+  --system-edge: #77727f;
+  --system-paper: #fbfafd;
+  --system-platinum: #e5e1e8;
+  --system-highlight: #fff;
+  --system-accent: #594777;
+  --system-wash: #eee9f3;
+  --system-rule: #cec6d9;
+  --system-dither: repeating-conic-gradient(#2f22351f 0% 25%, transparent 0% 50%) 0 0 / 4px 4px;
+}
+
+.mac-program {
+  height: 100%;
+  min-width: 0;
+  color: var(--system-ink);
+  background: var(--system-paper);
+  color-scheme: light;
+  font: 14px/1.6 var(--system-ui);
+  text-shadow: none;
+}
+
+.mac-program :is(b, strong) { color: inherit; }
+.mac-program :is(a[href], summary) { color: var(--system-accent); }
+.mac-program a[href] { text-decoration: underline; text-underline-offset: 3px; }
+
+.mac-program :is(button, a, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--system-accent);
+  outline-offset: 2px;
+}
+
+.mac-program .mac-pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-color: var(--system-edge) var(--system-wash);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.mac-program .mac-pane:focus-visible { outline-offset: -3px; }
+
+.mac-titlebar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(7px, 1.6cqi, 16px);
+  min-height: 33px;
+  padding: 4px 10px;
+  border-top: 1px solid var(--system-highlight);
+  border-bottom: 1px solid var(--system-edge);
+  background: var(--system-platinum);
+  color: var(--system-ink);
+}
+
+.mac-titlebar::before,
+.mac-titlebar::after {
+  content: "";
+  flex: 1;
+  min-width: 8px;
+  height: 11px;
+  background: repeating-linear-gradient(to bottom, #8c8693 0 1px, #fff9 1px 2px);
+}
+
+.mac-titlebar h2 {
+  color: inherit;
+  font: 700 clamp(12px, 2.9cqi, 15px)/1.25 var(--system-ui);
+  text-align: center;
+}
+
+.mac-tabs {
+  flex: none;
+  display: flex;
+  gap: 5px;
+  padding: 7px clamp(7px, 2cqi, 18px) 0;
+  border-bottom: 1px solid var(--system-edge);
+  background: var(--system-dither), var(--system-rule);
+}
+
+.mac-tabs button {
+  appearance: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  margin-bottom: -1px;
+  padding: 5px clamp(8px, 2.4cqi, 24px) 6px;
+  border: 1px solid var(--system-edge);
+  border-radius: 5px 5px 0 0;
+  color: var(--system-ink);
+  background: var(--system-wash);
+  box-shadow: inset 1px 1px var(--system-highlight);
+  font: 650 clamp(12px, 2.8cqi, 14px)/1.2 var(--system-ui);
+  text-align: center;
+}
+
+.mac-tabs button:hover { background: var(--system-highlight); }
+.mac-tabs button:is([aria-pressed="true"], [aria-selected="true"]) {
+  z-index: 1;
+  border-color: var(--system-accent);
+  border-bottom-color: var(--system-paper);
+  background: var(--system-paper);
+  color: var(--system-accent);
+  box-shadow: inset 0 3px var(--system-accent);
+}
+.mac-tabs button:focus-visible { z-index: 2; outline-offset: -4px; }
+
+.mac-control {
+  appearance: none;
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--system-edge);
+  border-radius: 3px;
+  background: var(--system-wash);
+  box-shadow: inset 1px 1px var(--system-highlight), inset -1px -1px var(--system-rule);
+  color: var(--system-ink);
+  font: 650 13px/1.3 var(--system-ui);
+}
+
+.mac-control:hover { background: var(--system-highlight); }
+.mac-control[aria-pressed="true"],
+.mac-control:active {
+  border-color: var(--system-accent);
+  color: #fff;
+  background: var(--system-accent);
+  box-shadow: inset 1px 1px #0003;
+}
+
+.mac-document-title {
+  margin: 0;
+  color: inherit;
+  font: 750 clamp(24px, 4.3cqi, 36px)/1.09 var(--system-ui);
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mac-program { animation: mac-window-open 210ms ease-out both; }
+  .mac-page-enter { animation: mac-page-enter 190ms ease-out both; }
+  .mac-tabs button, .mac-control { transition: background-color 110ms ease-out, color 110ms ease-out; }
+}
+
+@keyframes mac-window-open {
+  from { opacity: 0; transform: translateY(4px); }
+}
+@keyframes mac-page-enter {
+  from { opacity: .45; transform: translateY(3px); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.macintosh, .arcade-game) {
+    --mac-arrow: url("../assets/programs/mac-arrow.png") 1 1, default;
+    --mac-hand: url("../assets/programs/mac-hand.png") 6 1, pointer;
+    cursor: var(--mac-arrow);
+  }
+  :is(.macintosh, .arcade-game) :is(button:enabled, a[href], summary, select, input[type="radio"]) { cursor: var(--mac-hand); }
+  .macintosh button:disabled { cursor: var(--mac-arrow); }
+  .mac-program :is(p, li, dd, textarea) { cursor: text; }
+  .mac-program :is(button, a, summary) :is(p, li, dd) { cursor: inherit; }
+  .macintosh.is-over-drive .mac-drive { cursor: copy; }
+}

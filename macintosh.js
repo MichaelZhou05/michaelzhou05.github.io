@@ -70,8 +70,9 @@ async function insert(id = selected, {focus = true} = {}) {
   screen.innerHTML = `<div class="mac-loading" role="status">Reading ${disk.title}…</div>`;
   status.textContent = `Reading ${disk.title}…`;
   update();
-  // The animation follows the real floppy to its drive; reduced motion mounts immediately.
-  if (!reducedMotion()) {
+  // Direct links open immediately. A physical insertion leads into the window opening.
+  let insertion = Promise.resolve();
+  if (focus && !reducedMotion()) {
     const source = shelf.querySelector(`[data-disk="${disk.id}"] .mac-floppy`);
     const from = source.getBoundingClientRect();
     const to = drive.getBoundingClientRect();
@@ -79,11 +80,17 @@ async function insert(id = selected, {focus = true} = {}) {
     ghost.classList.add('mac-flight');
     Object.assign(ghost.style,{left:`${from.left}px`,top:`${from.top}px`,width:`${from.width}px`,height:`${from.height}px`});
     document.body.append(ghost);
-    flight = ghost.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${to.left+to.width/2-from.left-from.width/2}px,${to.top+to.height/2-from.top-from.height/2}px) scale(.3,.05)`,opacity:0}],{duration:380,easing:'ease-in'});
-    flight.finished.catch(()=>{}).finally(()=>ghost.remove());
+    const x = to.left + to.width / 2 - from.left - from.width / 2;
+    const y = to.top + to.height / 2 - from.top - from.height / 2;
+    flight = ghost.animate([
+      { transform: 'translateY(-3px) rotate(-3deg)', opacity: 1 },
+      { transform: `translate(${x}px, ${y}px) scale(.56, .22)`, opacity: 1, offset: .79 },
+      { transform: `translate(${x}px, ${y}px) scale(.36, .045)`, opacity: 0 },
+    ], { duration: 285, easing: 'cubic-bezier(.45, 0, .45, 1)', fill: 'forwards' });
+    insertion = flight.finished.catch(() => {}).finally(() => ghost.remove());
   }
   try {
-    const program = await disk.load();
+    const [program] = await Promise.all([disk.load(), insertion]);
     if (current !== version) return;
     screen.replaceChildren();
     const host = document.createElement('div');

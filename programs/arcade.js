@@ -20,15 +20,19 @@ const games = {
 /** Each game owns a browsing context. Removing it also stops its engine. */
 export function mount(root) {
   root.innerHTML = `<div class="arcade-program">
-    <nav class="arcade-toolbar" aria-label="Choose a game">
-      <button type="button" data-game="race" aria-pressed="true">Nordschleife</button>
-      <button type="button" data-game="vim" aria-pressed="false">Vim sprint</button>
-      <button type="button" class="arcade-about" aria-expanded="false" aria-controls="arcade-story">About</button>
-    </nav>
-    <div class="arcade-player"></div>
+    <header class="arcade-chrome">
+      <div class="mac-titlebar"><h2>Cool stuff</h2></div>
+      <nav class="arcade-toolbar mac-tabs" aria-label="Choose a game">
+        <button type="button" data-game="race" aria-pressed="true" aria-controls="arcade-player">Nordschleife</button>
+        <button type="button" data-game="vim" aria-pressed="false" aria-controls="arcade-player">Vim sprint</button>
+        <button type="button" class="arcade-about" aria-expanded="false" aria-controls="arcade-story">About</button>
+      </nav>
+    </header>
+    <div class="arcade-player" id="arcade-player"></div>
     <section class="arcade-story" id="arcade-story" aria-label="About this demo" hidden></section>
   </div>`;
   const program = root.querySelector('.arcade-program');
+  const chrome = root.querySelector('.arcade-chrome');
   const player = root.querySelector('.arcade-player');
   const story = root.querySelector('.arcade-story');
   const about = root.querySelector('.arcade-about');
@@ -48,6 +52,7 @@ export function mount(root) {
     frame.title = games[id].title;
     frame.className = 'arcade-game-frame';
     frame.setAttribute('allow', 'fullscreen');
+    frame.classList.add('mac-page-enter');
     // Remove the previous context before loading the next game.
     player.replaceChildren(frame);
     buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.game === id)));
@@ -62,8 +67,8 @@ export function mount(root) {
     if (event.target.closest('.arcade-about')) {
       story.hidden = !story.hidden;
       about.setAttribute('aria-expanded', String(!story.hidden));
-      if (!story.hidden) program.scrollTop = story.offsetTop - 50;
-      else program.scrollTop = 0;
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      program.scrollTo({ top: story.hidden ? 0 : story.offsetTop - chrome.offsetHeight, behavior: reduceMotion ? 'instant' : 'smooth' });
     }
   };
   const bootRace = () => {

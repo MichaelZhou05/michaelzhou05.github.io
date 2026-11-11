@@ -235,6 +235,20 @@ const minimap = (() => {
   };
 })();
 
+// Reuse the race HUD’s pixel grid for the title screen's full circuit preview.
+const circuit = $('#race-circuit');
+if (circuit) {
+  const preview = circuit.getContext('2d');
+  const cells = minimap.cells.map(({ x, y }) => [(x - minimap.left) / PIXEL, (y - minimap.top) / PIXEL]);
+  preview.fillStyle = '#7e65a9';
+  cells.forEach(([x, y]) => preview.fillRect(x, y, 2, 2));
+  preview.fillStyle = '#f0e8fc';
+  cells.forEach(([x, y]) => preview.fillRect(x, y, 1, 1));
+  const [startX, startY] = cells[0];
+  preview.fillStyle = '#ffc473';
+  preview.fillRect(startX - 1, startY - 1, 3, 3);
+}
+
 /* ---------------------------------- racers ---------------------------------- */
 
 /**
@@ -383,7 +397,7 @@ if (touchPad) {
 /** What the overlay tells you to drive with — thumbs or keys. */
 const COARSE_POINTER = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 const COMPACT_ARCADE = document.body.classList.contains('arcade-game') && window.matchMedia('(max-width: 600px)').matches;
-const CONTROLS_NOTE = COMPACT_ARCADE ? 'ARROW PADS ON THE SCREEN' : COARSE_POINTER ? 'ARROW PADS BELOW THE SCREEN' : 'ARROW KEYS OR WASD';
+const CONTROLS_NOTE = COMPACT_ARCADE || COARSE_POINTER ? 'Touch arrows' : 'Arrow keys or WASD';
 
 /* ---------------------------------- flow ---------------------------------- */
 
@@ -403,11 +417,11 @@ function resetRace() {
   phase = 'idle';
   primeRace();
 
-  ui.overlay.querySelector('.overlay-title').textContent = 'NORDSCHLEIFE';
+  ui.overlay.querySelector('.overlay-title').textContent = 'Nordschleife';
   const lines = ui.overlay.querySelectorAll('p:not(.overlay-title)');
-  lines[0].textContent = `20.832 KM · ${track.sectors.length} SECTORS · ${CONTROLS_NOTE}`;
-  lines[1].textContent = 'THE WINDOW SHIFTS EACH SECTOR · GRASS COSTS YOU';
-  ui.start.textContent = 'START LAP';
+  lines[0].textContent = `20.832 km · ${track.sectors.length} sectors · ${CONTROLS_NOTE}`;
+  lines[1].textContent = 'The camera shifts at every sector. Grass slows you down.';
+  ui.start.textContent = 'Start lap';
   ui.overlay.classList.remove('hidden');
   setLog(`${RACERS.map((racer) => racer.label).join(' and ')} are waiting on the grid.`);
   updateUi();
@@ -441,13 +455,13 @@ function finishRace() {
   const title = ui.overlay.querySelector('.overlay-title');
   const lines = ui.overlay.querySelectorAll('p:not(.overlay-title)');
 
-  title.textContent = place === 1 ? 'P1 · LAP RECORD' : `P${place} OF ${board.length}`;
-  lines[0].textContent = `${formatTime(player.finishTime)} · ${player.offTrackCount} OFF-TRACK MOMENTS`;
+  title.textContent = place === 1 ? 'P1 · Lap record' : `P${place} of ${board.length}`;
+  lines[0].textContent = `${formatTime(player.finishTime)} · ${player.offTrackCount} off-track moments`;
   lines[1].textContent = board
     .map((entry, index) => `${index + 1}. ${entry.name} ${entry.time ? formatTime(entry.time) : `~${formatTime(entry.projected)}`}`)
     .concat(RACERS.filter((racer) => racer.lap.finished !== true).map((racer) => `${racer.label} DNF`))
     .join('    ');
-  ui.start.textContent = 'RUN IT AGAIN';
+  ui.start.textContent = 'Run it again';
   ui.overlay.classList.remove('hidden');
 
   setLog(place === 1

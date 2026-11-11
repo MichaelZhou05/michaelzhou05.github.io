@@ -1,26 +1,10 @@
-// Public-facing summaries checked against the August 2026 full-stack resume.
+// Public-facing summaries draw on the August 2026 full-stack resume and firsthand project details.
 // Earlier resume versions report different Duke metrics; do not mix evaluations.
 const experiences = [
   {
     logo: 'draftkings-logo.svg', brand: 'draftkings',
     id: 'draftkings', short: 'DraftKings', name: 'DraftKings', area: 'Hornet · Data pipelines',
     role: 'Software engineering intern', dates: 'Jun–Aug 2026',
-    heading: 'The data pipelines behind True Price',
-    problem: 'I interned on Hornet, the data pipeline team behind DraftKings’ True Price platform. Hornet connected live sports and market data to the pricing models and services that estimate what a contract is worth as a game unfolds. The team also made past model outputs available for backtesting, so engineers could evaluate pricing changes against historical data.',
-    contribution: [
-      'I sped up backtesting by rebuilding the API that retrieves past pricing-model outputs. Instead of scanning S3 on every request, it looked up each result in Snowflake by calculation ID.',
-      'I added support for external market feeds to the live pricing service and merged six Kafka consumer paths into one. This gave the service a shared path for processing incoming updates and reduced its memory use.',
-      'I built a searchable service catalog that pulled answers from seven runbooks and repositories. Thirteen on-call engineers used it to find out what services did and where to look when something broke.',
-    ],
-    outcomes: [
-      ['63% lower', 'API endpoint latency after replacing S3 scans.'],
-      ['24% better', 'Memory efficiency in the market-making pricing service.'],
-    ],
-    scope: 'DraftKings’ market-making launch traded more than $30 million in contracts during July.',
-    detail: [
-      'I updated the game-state mapper to publish a removal event when a game dropped out of the feed, so downstream services could clear the stale state.',
-      'I fixed a Kafka message-reading error by moving the affected message types into shared contracts and updating the consumers to use them.',
-    ],
     tech: 'C# · Rust · Kafka · Snowflake · AWS S3',
   },
   {
@@ -92,18 +76,180 @@ function brandLogo(job, className = '') {
   return `<span class="work-brand work-brand-${job.brand} ${className}"><img src="./assets/programs/work/${job.logo}" alt="${job.short} logo" width="112" height="56" decoding="async"></span>`;
 }
 
-function pricingPipeline() {
-  const stages = ['Live data feeds', 'Sports ML models', 'Trader input', 'Market making'];
-  return `<figure class="work-pipeline" aria-label="Simplified prediction-market pricing pipeline">
-    <div class="work-pipeline-heading"><h4>Prediction-market pricing</h4></div>
-    <div class="work-flow-chart" role="img" aria-label="Live feeds supply sports machine-learning models. Their outputs inform trader input and market making. Trader input also feeds back into the pipeline.">
-      <div class="work-flow-stages">${stages.map((stage, index) => `<div class="work-flow-node${index === 3 ? ' work-flow-output' : ''}">${stage}${index < 3 ? '<svg class="work-flow-link" viewBox="0 0 22 12" aria-hidden="true"><path class="work-flow-route" d="M0 6 H19"/><path d="m15 2 4 4-4 4"/></svg>' : ''}</div>`).join('')}</div>
-      <svg class="work-flow-return work-flow-return-wide" viewBox="0 0 1000 58" preserveAspectRatio="none" aria-hidden="true"><path class="work-flow-route" d="M625 0 V28 Q625 38 610 38 H140 Q125 38 125 28 V0"/><path d="m118 7 7-7 7 7"/></svg>
-      <svg class="work-flow-return work-flow-return-narrow" viewBox="0 0 44 290" aria-hidden="true"><path class="work-flow-route" d="M44 188 H17 Q10 188 10 181 V35 Q10 28 17 28 H44"/><path d="m37 23 7 5-7 5"/></svg>
-      <span class="work-flow-feedback">Trader feedback</span>
+const counterPageSize = 16;
+const counterNumber = new Intl.NumberFormat('en-US');
+
+function generateCounterRuns() {
+  // Seeded, illustrative box scores. Shared minutes and shot volume link the stats within a run.
+  let seed = 1729;
+  function random() {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  }
+
+  function madeShots(attempts, probability) {
+    let made = 0;
+    for (let shot = 0; shot < attempts; shot++) {
+      if (random() < probability) made++;
+    }
+    return made;
+  }
+
+  return Array.from({ length: 10000 }, () => {
+    const minutes = Math.round(22 + 9 * (random() + random()));
+    const usage = minutes / 35 * (.72 + .56 * random());
+    const twoAttempts = Math.round(13 * usage + 5 * random());
+    const threeAttempts = Math.round(8 * usage + 3 * random());
+    const freeAttempts = Math.round(5 * usage + 5 * random() - 2);
+    const twos = madeShots(twoAttempts, .54);
+    const threes = madeShots(threeAttempts, .36);
+    const freeThrows = madeShots(freeAttempts, .79);
+    const points = twos * 2 + threes * 3 + freeThrows;
+    const rebounds = madeShots(minutes, .21);
+    const assists = madeShots(minutes, .17);
+    const turnovers = madeShots(minutes, .08);
+    return { minutes, points, twos, twoAttempts, threes, threeAttempts, freeThrows, freeAttempts, rebounds, assists, turnovers };
+  });
+}
+
+const counterRuns = generateCounterRuns();
+const counterPageCount = Math.ceil(counterRuns.length / counterPageSize);
+
+const counterFilters = {
+  points: { label: '25+ points', matches: run => run.points >= 25 },
+  threes: { label: '3+ threes', matches: run => run.threes >= 3 },
+  both: { label: 'Both', matches: run => run.points >= 25 && run.threes >= 3 },
+};
+
+for (const filter of Object.values(counterFilters)) {
+  filter.count = counterRuns.filter(filter.matches).length;
+  filter.percent = (filter.count / counterRuns.length * 100).toFixed(2);
+}
+
+const counterColumns = [
+  ['PTS', 'Points', 'points'],
+  ['3PM', 'Three-pointers made', 'threes'],
+  ['Match', 'Matches selected condition'],
+  ['MIN', 'Minutes played', 'minutes'],
+  ['3PA', 'Three-pointers attempted', 'threeAttempts'],
+  ['2PM', 'Two-pointers made', 'twos'],
+  ['2PA', 'Two-pointers attempted', 'twoAttempts'],
+  ['FTM', 'Free throws made', 'freeThrows'],
+  ['FTA', 'Free throws attempted', 'freeAttempts'],
+  ['FT%', 'Free-throw percentage'],
+  ['REB', 'Rebounds', 'rebounds'],
+  ['AST', 'Assists', 'assists'],
+  ['TOV', 'Turnovers', 'turnovers'],
+];
+
+function counterResult(filter) {
+  return `${counterNumber.format(filter.count)} of ${counterNumber.format(counterRuns.length)} runs match · ${filter.percent}%`;
+}
+
+function counterRange(pageNumber) {
+  const start = (pageNumber - 1) * counterPageSize;
+  return [start, Math.min(start + counterPageSize, counterRuns.length)];
+}
+
+function counterRows(pageNumber, filter) {
+  const [start, end] = counterRange(pageNumber);
+  return counterRuns.slice(start, end).map((run, index) => {
+    const match = filter.matches(run);
+    const freePercent = run.freeAttempts ? `${(run.freeThrows / run.freeAttempts * 100).toFixed(1)}%` : '—';
+    return `<tr data-match="${match}">
+      <th scope="row">${start + index + 1}</th>
+      ${counterColumns.map(([label, , key]) => `<td>${key ? run[key] : label === 'Match' ? (match ? 'Yes' : 'No') : freePercent}</td>`).join('')}
+    </tr>`;
+  }).join('');
+}
+
+function counterExample() {
+  return `<figure class="dk-example">
+    <figcaption><strong>Basketball simulation matrix</strong><span>${counterNumber.format(counterRuns.length)} synthetic runs × 12 stats</span></figcaption>
+    <fieldset class="dk-filters">
+      <legend>Share of all runs meeting each condition</legend>
+      ${Object.entries(counterFilters).map(([key, { label, percent }]) => `
+        <label>
+          <input type="radio" name="dk-counter-filter" value="${key}" data-counter-filter${key === 'both' ? ' checked' : ''}>
+          <span class="dk-bar-row">
+            <span>${label}</span>
+            <span class="dk-bar-track" aria-hidden="true"><span style="width: ${percent}%"></span></span>
+            <span class="dk-bar-value">${percent}%</span>
+          </span>
+        </label>`).join('')}
+    </fieldset>
+    <output class="dk-counter-result" data-counter-result aria-live="polite">${counterResult(counterFilters.both)}</output>
+    <div class="dk-matrix-toolbar">
+      <span data-counter-range aria-live="polite">Runs 1–${counterPageSize}</span>
+      <div class="dk-matrix-pagination">
+        <button type="button" data-counter-step="-1" aria-label="Previous page of runs" disabled>‹</button>
+        <label>Page <input type="number" min="1" max="${counterPageCount}" value="1" data-counter-page></label>
+        <span>of ${counterPageCount}</span>
+        <button type="button" data-counter-step="1" aria-label="Next page of runs">›</button>
+      </div>
     </div>
-    <figcaption>Hornet worked on the data layer that supplies pricing models and makes their outputs available to downstream services.</figcaption>
+    <div class="dk-matrix" role="region" aria-label="Counters matrix, scroll horizontally for more stats" tabindex="0">
+      <table aria-label="Synthetic basketball stats by simulation run">
+        <thead><tr><th scope="col">Run</th>${counterColumns.map(([label, description]) => `<th scope="col" title="${description}" aria-label="${description}">${label}</th>`).join('')}</tr></thead>
+        <tbody data-counter-rows>${counterRows(1, counterFilters.both)}</tbody>
+      </table>
+    </div>
   </figure>`;
+}
+
+function ticketFlow(label, before, after) {
+  return `<dl class="dk-flow-compare" aria-label="${label}">
+    ${[['Before', before], ['After', after]].map(([phase, [input, output]]) => `
+      <div><dt>${phase}</dt><dd><span>${input}</span><span class="dk-flow-arrow" aria-hidden="true">→</span><span>${output}</span></dd></div>
+    `).join('')}
+  </dl>`;
+}
+
+function draftkingsExperience(job) {
+  return `<section class="dk-overview">
+      <h4 class="dk-section-title">Hornet · True Price data pipelines</h4>
+      <p>Hornet maintained the data flowing into and out of DraftKings’ models across seven sports.</p>
+      <ol class="dk-pipeline" role="list" aria-label="True Price simulation and probability flow">
+        <li><strong>Game data</strong><span>Model inputs</span></li>
+        <li><strong>Monte Carlo model</strong><span>Simulation counters</span></li>
+        <li><strong>Rust service</strong><span>Single-game probabilities</span></li>
+      </ol>
+      <p>The models ran thousands of simulations per matchup. The resulting matrices of player stats, including minutes, points, threes, and rebounds, were called <strong>counters</strong>. The Rust service estimated joint probabilities using stats from the same simulated game. A made three also contributes to the player’s point total, so the two outcomes are related.</p>
+      <details class="dk-counter-detail">
+        <summary>Example counters and joint probability</summary>
+        <p>Each row is a synthetic box score for one player. Select a bar to highlight matching runs. The joint probability uses runs that meet both thresholds in the same row.</p>
+        ${counterExample()}
+      </details>
+    </section>
+
+    <section class="dk-tickets">
+      <h4 class="dk-section-title">Major tickets</h4>
+      <section class="dk-ticket">
+        <h5>Backtesting API migration from S3 to Snowflake</h5>
+        <p>The old endpoint downloaded and scanned S3 objects to find matching counters. The data team enabled lookup by calculation UUID in Snowflake. I exposed it in the API and kept the original sport ID, time range, and live/pre-live filters in Swagger UI.</p>
+        ${ticketFlow('Backtesting request paths', ['Sport, time, or game-state filters', 'Download and scan S3 objects'], ['Calculation UUID or existing filters', 'Query counters in Snowflake SQL'])}
+        <p class="dk-result"><strong>63% lower</strong> endpoint latency</p>
+      </section>
+
+      <section class="dk-ticket">
+        <h5>Market Making V2 cutover and Kafka topic retirement</h5>
+        <p>I migrated market making from parallel V1 and V2 flows to the existing V2 pipeline. I ensured test coverage for every Kafka topic in the pipeline and coordinated with other teams to retire legacy and unused topic flows.</p>
+        ${ticketFlow('Market-making feed cutover', ['V1 sportsbook risk flag + V2 game data', 'Parallel market-making flows'], ['V2 game data only', 'Single market-making flow'])}
+        <p>The V2 feed gave traders the underlying game data the sports models received.</p>
+        <p class="dk-result"><strong>24% better</strong> memory efficiency in the market-making pricing service</p>
+      </section>
+
+      <section class="dk-ticket">
+        <h5>On-call service catalog</h5>
+        <p>I built a searchable catalog across seven runbooks and repositories. Thirteen on-call engineers used it to understand service responsibilities and find troubleshooting guidance.</p>
+      </section>
+    </section>
+
+    <details class="work-detail">
+      <summary>Game-state and Kafka fixes</summary>
+      <p>I added a removal event so downstream services could clear stale state when a game left the feed. I also moved Kafka message types into shared contracts and updated consumers to resolve a message-reading error.</p>
+    </details>
+    <p class="work-tech"><b>Tools</b> ${job.tech}</p>`;
 }
 
 function dukeVisuals() {
@@ -202,15 +348,15 @@ export function mount(root) {
   let selected = 0;
 
   root.innerHTML = `<section class="work-program" aria-label="Work experience">
-    <header class="work-heading"><h2>Work experience</h2><span>2024–2026</span></header>
+    <header class="mac-titlebar"><h2>Work experience</h2></header>
     <div class="work-layout">
       <nav class="work-index" aria-label="Choose a role">${experiences.map((job, index) => `
         <button type="button" data-work-role="${index}" aria-pressed="${index === 0}" aria-controls="work-role-detail" aria-label="${job.name}: ${job.role}">
-          ${brandLogo(job, 'work-index-logo')}<b>${job.short}</b><span>${job.area}</span>
+          ${brandLogo(job, 'work-index-logo')}<b>${job.short}</b><span class="work-area">${job.area}</span>
         </button>`).join('')}
       </nav>
-      <label class="work-compact"><span>Role</span><select data-work-compact aria-label="Choose a role">${experiences.map((job, index) => `<option value="${index}">${job.short}</option>`).join('')}</select></label>
-      <article class="work-page" id="work-role-detail" tabindex="0"></article>
+      <label class="work-compact"><span>Role</span><select class="mac-control" data-work-compact aria-label="Choose a role">${experiences.map((job, index) => `<option value="${index}">${job.short}</option>`).join('')}</select></label>
+      <div class="work-page mac-pane" id="work-role-detail" tabindex="0" role="region"></div>
     </div>
   </section>`;
   const page = root.querySelector('.work-page');
@@ -222,22 +368,22 @@ export function mount(root) {
     });
     root.querySelector('[data-work-compact]').value = String(selected);
     page.setAttribute('aria-label', `${job.name} experience`);
-    page.innerHTML = `<header class="work-identity">
-        ${brandLogo(job)}<div><h3>${job.name}</h3><p class="work-role">${job.role}</p><p class="work-dates">${job.dates}</p></div>
+    const isDraftKings = job.id === 'draftkings';
+    page.innerHTML = `<article class="work-document mac-page-enter${isDraftKings ? ' dk-story' : ''}"><header class="work-identity">
+        ${brandLogo(job)}<div><h3 class="mac-document-title">${job.name}</h3><p class="work-role">${job.role}</p><p class="work-dates">${job.dates}</p></div>
       </header>
-      <h4 class="work-subject">${job.heading}</h4><p>${job.problem}</p>
+      ${isDraftKings ? draftkingsExperience(job) : `<h4 class="work-subject">${job.heading}</h4><p>${job.problem}</p>
       ${job.id === 'army' ? armyPublication() : ''}
       <h4 class="work-section-title">My contribution</h4>
       <ul class="work-contribution">${job.contribution.map(item => `<li>${item}</li>`).join('')}</ul>
       <dl class="work-outcomes" aria-label="Results">${job.outcomes.map(([value, description]) => `<div><dt>${value}</dt><dd>${description}</dd></div>`).join('')}</dl>
       <p class="work-scope">${job.scope}</p>
-      ${job.id === 'draftkings' ? pricingPipeline() : ''}
       ${job.id === 'duke' ? dukeVisuals() : ''}
       ${job.id === 'army' ? armyVisuals() : ''}
       ${job.id === 'gmu' ? gmuVisuals() : ''}
       <details class="work-detail"><summary>Technical detail</summary>
         <div>${job.detail.map(item => `<p>${item}</p>`).join('')}<p class="work-tech"><b>Tools</b> ${job.tech}</p></div>
-      </details>`;
+      </details>`}</article>`;
     page.scrollTop = 0;
   }
 
@@ -247,13 +393,36 @@ export function mount(root) {
     render();
   }
 
+  function renderCounterRows(pageNumber) {
+    const selectedFilter = page.querySelector('[data-counter-filter]:checked');
+    page.querySelector('[data-counter-rows]').innerHTML = counterRows(pageNumber, counterFilters[selectedFilter.value]);
+  }
+
+  function setCounterPage(requestedPage) {
+    const pageNumber = Math.max(1, Math.min(counterPageCount, Math.trunc(requestedPage) || 1));
+    const [start, end] = counterRange(pageNumber);
+    page.querySelector('[data-counter-page]').value = pageNumber;
+    page.querySelector('[data-counter-range]').textContent = `Runs ${counterNumber.format(start + 1)}–${counterNumber.format(end)}`;
+    page.querySelector('[data-counter-step="-1"]').disabled = pageNumber === 1;
+    page.querySelector('[data-counter-step="1"]').disabled = pageNumber === counterPageCount;
+    renderCounterRows(pageNumber);
+  }
+
   root.addEventListener('click', event => {
     const button = event.target.closest('[data-work-role]');
     if (button) select(Number(button.dataset.workRole));
+    const step = event.target.closest('[data-counter-step]');
+    if (step) setCounterPage(Number(page.querySelector('[data-counter-page]').value) + Number(step.dataset.counterStep));
   }, { signal: controller.signal });
 
   root.addEventListener('change', event => {
     if (event.target.matches('[data-work-compact]')) select(Number(event.target.value));
+    if (event.target.matches('[data-counter-page]')) setCounterPage(Number(event.target.value));
+    if (event.target.matches('[data-counter-filter]')) {
+      const filter = counterFilters[event.target.value];
+      renderCounterRows(Number(page.querySelector('[data-counter-page]').value));
+      page.querySelector('[data-counter-result]').textContent = counterResult(filter);
+    }
   }, { signal: controller.signal });
 
   // Native buttons support Tab/Enter; arrows also browse the four roles.

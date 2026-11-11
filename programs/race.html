@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="./game.css"><title>Nordschleife racing experiment — Michael’s arcade</title></head><body class="arcade-game race-game"><main><div class="race-window">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="./system.css"><link rel="stylesheet" href="./game.css"><title>Nordschleife racing experiment — Michael’s arcade</title></head><body class="arcade-game race-game"><main><div class="race-window">
             <div class="race-window-bar">
-              <span><i></i> n&uuml;rburgring nordschleife &mdash; night</span>
+              <span><i aria-hidden="true"></i> N&uuml;rburgring night lap</span>
               <span id="sector-name">sector 01/18</span>
             </div>
             <div class="game-screen">
@@ -12,12 +12,21 @@
                 tabindex="0"
                 aria-label="Top-down racetrack. Use the arrow keys or WASD to drive to the finish."
               ></canvas>
-              <div class="game-overlay" id="game-overlay">
-                <p class="overlay-title">NORDSCHLEIFE</p>
-                <button id="start-race" class="button primary" type="button">Start lap</button>
-                <p>20.832 km &middot; 18 sectors &middot; keys or touch arrows</p>
-                <p>the window shifts each sector &middot; grass costs you</p>
-                <p class="arcade-credit">Drive against saved model laps. No live model calls.</p>
+              <div class="game-overlay race-overlay" id="game-overlay">
+                <div class="race-intro">
+                  <div class="race-intro-copy">
+                    <h1 class="overlay-title">Nordschleife</h1>
+                    <p class="race-spec">20.832 km · 18 sectors · Arrow keys or WASD</p>
+                    <button id="start-race" class="button primary" type="button">Start lap</button>
+                    <p class="race-tip">The camera shifts at every sector. Grass slows you down.</p>
+                    <p class="arcade-credit">Race against saved model laps.</p>
+                  </div>
+                  <figure class="race-circuit" aria-hidden="true">
+                    <figcaption>Circuit map</figcaption>
+                    <canvas id="race-circuit" width="58" height="58"></canvas>
+                    <span>Start / finish</span>
+                  </figure>
+                </div>
               </div>
             </div>
             <!--
@@ -71,5 +80,5 @@
               <button id="restart-race" class="text-button" type="button">Reset lap</button>
             </div>
           </div>
-<p class="game-footnote">Arrow keys or WASD move the car. Hold two directions for diagonals. Grass slows you down. Saved trials are an experiment, not a general model ranking.</p>
+<p class="game-footnote">Arrow keys or WASD move the car. Hold two directions for diagonals. Grass slows you down. You race against saved model laps. The results apply to these trials.</p>
 </main><script type="module" src="../app.js"></script></body></html>
