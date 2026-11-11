@@ -4,7 +4,7 @@ const games = {
     story: `<h2>A racing experiment you can drive</h2>
       <p>I built a browser racer and an offline runner that turns model-generated directions into replayable laps. Human controls and the runner use the same movement function, making the model’s route visible beside yours.</p>
       <p><strong>The engineering:</strong> shared simulation rules, sector-based observations, structured driving plans, and recorded positions replayed without live API calls.</p>
-      <p><strong>Read the result carefully:</strong> the saved Sol and Opus laps took 95.933 and 114.117 simulated seconds. Thinking time is excluded. Different interfaces and camera behavior, plus no repeated-run averages, limit the comparison. Jev’s recorded trial runs alongside them and stops at its recorded DNF point.</p>
+      <p>The saved laps took 95.933 simulated seconds for Sol, 102.867 for Jev, and 114.117 for Opus. Thinking time is excluded. The recordings use different controls and camera behavior, and each time comes from a single lap.</p>
       <p><a href="./race-method.html" target="_blank" rel="noopener">Method, recordings &amp; limitations</a>. Inspired by <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>; its external benchmark results are separate from these recordings.</p>`,
   },
   vim: {

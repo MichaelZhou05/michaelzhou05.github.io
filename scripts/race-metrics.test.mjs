@@ -14,9 +14,9 @@ test('cost uses OpenRouter reported USD and never substitutes direct token prici
   }
 });
 test('reactive output cannot sneak in a longer action or plan', () => {
-  assert.throws(() => validateReactive({ moves: [{ frames: 13 }] }));
-  assert.throws(() => validateReactive({ moves: [{ frames: 12 }, { frames: 12 }] }));
-  assert.doesNotThrow(() => validateReactive({ moves: [{ frames: 12 }] }));
+  assert.throws(() => validateReactive({ moves: [{ frames: 7 }] }));
+  assert.throws(() => validateReactive({ moves: [{ frames: 6 }, { frames: 6 }] }));
+  assert.doesNotThrow(() => validateReactive({ moves: [{ frames: 6 }] }));
 });
 
 import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
@@ -29,17 +29,17 @@ for (const agent of ['opus', 'sol']) test(`${agent}: stateless matched calls, bo
   const directory = await mkdtemp(join(tmpdir(), 'matched-race-'));
   try {
     const binary = join(directory, agent === 'opus' ? 'claude' : 'codex');
-    const reply = JSON.stringify({ plan: [{ direction: 'none', frames: 12 }], note: '' });
+    const reply = JSON.stringify({ plan: [{ direction: 'none', frames: 6 }], note: '' });
     const script = agent === 'opus'
       ? `console.log(JSON.stringify({result:${JSON.stringify(reply)},total_cost_usd:0.001,usage:{input_tokens:10}}));`
       : `console.log(JSON.stringify({type:'thread.started',thread_id:'fixture'}));console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:${JSON.stringify(reply)}}}));console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:10,output_tokens:5}}));`;
     await writeFile(binary, `#!${process.execPath}\nif(process.argv.includes('--resume')||process.argv.includes('resume'))process.exit(3);\n${script}`, { mode: 0o755 });
     const out = join(directory, 'result.mjs');
-    await promisify(execFile)(process.execPath, ['scripts/run-opus-racer.mjs', '--agent', agent, '--mode', 'reactive', '--max-calls', '2', '--sectors', '1', '--out', out],
+    await promisify(execFile)(process.execPath, ['scripts/run-opus-racer.mjs', '--agent', agent, '--mode', 'reactive', '--observation-format', 'absolute-named', '--max-calls', '2', '--sectors', '1', '--out', out],
       { env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, CODEX_BIN: binary } });
     const lap = (await import(pathToFileURL(out).href))[`${agent}Lap`];
     assert.equal(lap.finished, false);
-    assert.equal(lap.finishTime, 0.4);
+    assert.equal(lap.finishTime, 0.2);
     assert.equal(lap.responseLatencyMs.attempts, 2);
     assert.equal(lap.historyPolicy, 'stateless-current-state-and-last-feedback');
     assert.equal(lap.costUsd, agent === 'opus' ? 0.002 : null);
@@ -48,6 +48,14 @@ for (const agent of ['opus', 'sol']) test(`${agent}: stateless matched calls, bo
     assert.equal(log.length, 3);
     assert.ok(log[1].prompt.includes('Screen state:'));
     assert.ok(log[1].reply.includes('none'));
+    assert.equal(log[0].protocolVersion, 'screen-named-v3-six-frames');
+    const delivered = JSON.parse(log[1].prompt.split('Screen state:\n')[1].split('\n')[0]);
+    assert.equal(typeof delivered.car.x, 'number');
+    assert.ok(Array.isArray(delivered.roadCenterlineInForwardOrder));
+    assert.equal(delivered.actionDurationFrames, 6);
+    assert.equal(delivered.previousAction, null);
+    const next = JSON.parse(log[2].prompt.split('Screen state:\n')[1].split('\n')[0]);
+    assert.deepEqual(next.previousAction.keys, [{direction:'none',frames:6}]);
     assert.ok(lap.wallTimeMs >= lap.responseLatencyMs.total);
   } finally { await rm(directory, { recursive: true, force: true }); }
 });

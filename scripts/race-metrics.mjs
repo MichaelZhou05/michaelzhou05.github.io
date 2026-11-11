@@ -1,3 +1,4 @@
+import { ACTION_FRAMES } from './racer-protocol.mjs';
 // OpenRouter-reported request charges; not an estimate from direct-provider rates.
 export const PRICING = {
   checkedAt: '2026-10-18',
@@ -18,6 +19,6 @@ export function latencySummary(attempts) {
     p50: percentile(0.5), p95: percentile(0.95) };
 }
 export function validateReactive(plan) {
-  if (plan.moves.length !== 1 || plan.moves[0].frames !== 12) throw new Error('Reactive mode requires exactly one 12-frame action');
+  if (plan.moves.length !== 1 || plan.moves[0].frames !== ACTION_FRAMES) throw new Error(`Reactive mode requires exactly one ${ACTION_FRAMES}-frame action`);
   return plan;
 }

@@ -11,7 +11,7 @@ function reply(choice = 'up+right') {
 
 test('all nine mutually exclusive controls become a legal fixed-duration move', () => {
   for (const direction of JEV_DIRECTIONS) {
-    assert.deepEqual(parseJevDecision(reply(direction)).plan, [{ direction, frames: 12 }]);
+    assert.deepEqual(parseJevDecision(reply(direction)).plan, [{ direction, frames: 6 }]);
   }
   assert.deepEqual(Object.keys(jevRequest({ car: { x: 0, y: 0 } }).questions.direction.criteria), JEV_DIRECTIONS);
 });
@@ -53,6 +53,15 @@ test('HTTP failures expose status without echoing provider bodies', async () => 
   await assert.rejects(askJev({}, { apiKey: 'test-only', fetchImpl: async () => ({ ok: false, status: 401 }) }), /^Error: Jev HTTP 401$/);
 });
 
+test('network, timeout and malformed JSON failures retain safe categories only', async () => {
+  for (const [error, expected] of [
+    [Object.assign(new Error('secret-bearing message'), { cause: { code: 'ECONNRESET' } }), 'Jev network failure (ECONNRESET)'],
+    [Object.assign(new Error('secret-bearing message'), { cause: { code: 'untrusted-secret' } }), 'Jev network failure (UNKNOWN)'],
+    [Object.assign(new Error('secret-bearing message'), { name: 'TimeoutError' }), 'Jev request timed out'],
+  ]) await assert.rejects(askJev({}, { apiKey: 'test-only', fetchImpl: async () => { throw error; } }), e => e.message === expected);
+  await assert.rejects(askJev({}, { apiKey: 'test-only', fetchImpl: async () => ({ ok: true, json: async () => { throw new Error('secret-bearing body'); } }) }), e => e.message === 'Jev response was not valid JSON');
+});
+
 test('runner records a bounded incomplete trial and latency with a mock provider', async () => {
   const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
@@ -71,14 +80,14 @@ test('runner records a bounded incomplete trial and latency with a mock provider
     const { jevLap } = await import(pathToFileURL(output).href);
     assert.equal(jevLap.finished, false);
     assert.equal(jevLap.finishTime, 25);
-    assert.equal(jevLap.modelCalls, 125);
+    assert.equal(jevLap.modelCalls, 250);
     assert.equal(jevLap.model, 'jev-test-fixture');
-    assert.equal(jevLap.decisions.length, 125);
-    assert.equal(jevLap.responseLatencyMs.calls, 125);
+    assert.equal(jevLap.decisions.length, 250);
+    assert.equal(jevLap.responseLatencyMs.calls, 250);
     assert.equal(jevLap.costUsd, null);
     assert.equal(jevLap.transport, 'openrouter-decisions-http');
     assert.equal(jevLap.costBasis, 'openrouter-reported-usd');
-    assert.equal(jevLap.controlMode, 'reactive-choice-12-frames');
+    assert.equal(jevLap.controlMode, 'reactive-choice-6-frames');
     assert.ok(jevLap.frames.length > 1);
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -132,7 +141,39 @@ test('executes the supplied legal choice and flags its probability mismatch', ()
   data.answers.direction.probabilities = { up: .03, down: .08, left: .08, right: .07,
     'up+left': .2, 'up+right': .19, 'down+left': .18, 'down+right': .16, none: .01 };
   const decision = parseJevDecision(data);
-  assert.deepEqual(decision.plan, [{ direction: 'up+right', frames: 12 }]);
+  assert.deepEqual(decision.plan, [{ direction: 'up+right', frames: 6 }]);
   assert.equal(decision.choiceMatchesArgmax, false);
   assert.deepEqual(decision.probabilities, data.answers.direction.probabilities);
+});
+
+test('opt-in transient retry preserves state, logs failures, and respects attempt caps', async () => {
+  const { mkdtemp, writeFile, readFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { pathToFileURL } = await import('node:url');
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { verifyRacePhysics } = await import('./verify-race-physics.mjs');
+  for (const [scenario, cap, expectedAttempts, expectedCalls] of [['recover', 3, 3, 2], ['recover-v2', 3, 3, 2], ['always-timeout', 10, 2, 0], ['recover', 1, 1, 0], ['invalid', 10, 1, 0]]) {
+    const dir = await mkdtemp(join(tmpdir(), 'jev-retry-'));
+    try {
+      const preload = join(dir, 'mock.mjs'), output = join(dir, 'lap.mjs');
+      const payload = reply('right'); payload.usage.cost = .01;
+      if (scenario === 'invalid') payload.answers.direction.choice = 'invalid';
+      await writeFile(preload, `let calls=0;globalThis.fetch=async()=>{calls++;if(${JSON.stringify(scenario)}!=='invalid'&&(calls===1||${JSON.stringify(scenario)}==='always-timeout'))throw Object.assign(new Error('private detail'),{name:'TimeoutError'});return {ok:true,json:async()=>(${JSON.stringify(payload)})};};`);
+      await promisify(execFile)(process.execPath, ['--import', preload, 'scripts/run-opus-racer.mjs', '--agent', 'jev', '--network-retries', '1', '--observation-format', scenario === 'recover-v2' ? 'v2-baseline' : 'surface-focused', '--max-calls', String(cap), '--out', output], { env: { ...process.env, OPENROUTER_API_KEY: 'test-only' } });
+      const { jevLap } = await import(pathToFileURL(output));
+      const [config, ...rows] = (await readFile(output + '.audit.jsonl', 'utf8')).trim().split('\n').map(JSON.parse);
+      assert.equal(rows.length, expectedAttempts); assert.equal(jevLap.modelCalls, expectedCalls);
+      assert.equal(config.networkRetries, 1); assert.equal(jevLap.networkRetries, 1);
+      assert.equal(jevLap.costUsd, null);
+      if (rows.length > 1) {
+        assert.equal(rows[1].retryOf, 1);
+        assert.equal(rows[0].simulationTime, rows[1].simulationTime);
+        assert.deepEqual(rows[0].request, rows[1].request);
+        assert.equal(rows[0].prompt, rows[1].prompt);
+      }
+      verifyRacePhysics(jevLap, rows);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  }
 });
