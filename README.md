@@ -10,7 +10,29 @@ of pixel-art easter eggs.
 npm run dev
 ```
 
-Open `http://127.0.0.1:4173`.
+Open the URL printed by `npm run dev`. The server defaults to `http://127.0.0.1:4173`
+and picks an available port if 4173 is in use. To require a specific port, run
+`PORT=8080 npm run dev`.
+
+## Macintosh portfolio
+
+The homepage's Platinum Macintosh runs four floppy programs: Work experience,
+Building now, Past projects, and Cool stuff. Select a disk and click the drive,
+double-click a disk, or drag it into the drive. The disk buttons also support
+arrow keys and Home/End to select, Enter to insert, and native Tab navigation.
+Eject returns to the desktop.
+Existing `#experience`, `#now`, `#projects`, and `#race` links load their disks.
+
+`macintosh.js` owns the hardware and disk lifecycle; `macintosh.css` keeps the
+LCD at 4:3. Each `programs/*.js` module exports `mount(root)` and returns cleanup.
+Portfolio facts live in `work.js` and `projects.js`; Auto Research's intentionally
+sparse notebook is in `now.js`. The arcade uses borderless `race.html` and
+`vim.html` documents that load the original engines. Removing their iframe stops
+game input, clocks, and animation. Prototypes are retained as separate studies.
+
+Run `npm run check` for syntax checks, including all four programs. After changing
+the display, check desktop and phone layouts, both games, disk swaps/ejection,
+keyboard focus, touch controls, and reduced motion in a browser.
 
 ## Race game
 
@@ -109,13 +131,13 @@ npm run jev-lap -- --sectors 1 --out tmp/jev-trial.js
 ```
 
 For a full recording, run `npm run jev-lap`. This makes real, billed API calls
-(up to 125 calls per sector; no harness retries). `--model` can pin an
+(up to 250 calls per sector; no harness retries). `--model` can pin an
 available model version instead of `typesafe/jev-1.13`; the returned model id is saved.
 The site imports `jev-lap.js`, which points to the latest real trial. The blue car and its progress gauge replay the saved trial. Partial runs stop at their
 recorded endpoint and are classified DNF, never ranked as completed laps.
 
-Jev's **reactive-choice-12-frames** mode chooses one of nine actions every 0.2
-simulated seconds. It receives current state and latest feedback, without chat
+Jev's **reactive-choice-6-frames** mode chooses one of nine actions every 0.1
+simulated seconds. It receives named screen geometry, local forward direction, movement vectors and previous-action feedback, without chat
 history. Opus/Sol's existing plan mode permits longer action sequences and five
 calls per sector. These are different control configurations, not an isolated
 model comparison. Repeat all models under matched control rules for a fair ranking.
@@ -131,8 +153,29 @@ npm run test:jev
 
 ### Matched speed and cost experiment
 
-Use `--mode reactive` on any racer for matched 12-frame controls and stateless
+Use `--mode reactive` on any racer for matched six-frame controls and stateless
 observations. The methodology page separates these measurements from legacy laps.
 See [the benchmark protocol](scripts/RACE-BENCHMARK.md) for bounded pilot commands,
 pricing sources, audit artifacts, clocks, and publication rules. Real Jev trials and audit logs are saved in `results/`; see [the findings](results/README.md).
 No cross-model speed or cost advantage is claimed without matched Opus/GPT measurements.
+
+The corrected v2 protocol uses dynamic pixel widths and speeds, the verified
+counterclockwise camera convention, and interface-specific output instructions.
+All new reactive providers use the same six-frame interval and observation fields.
+The original Jev r1–r4 trials used 12 frames; they remain separate historical
+configurations. See the protocol document for the 2,250-call rerun cap and its
+225-second maximum driving-time tradeoff.
+
+The reactive default is `screen-focused-v5-six-frames`: structured state with
+named screen coordinates, the actual car position, nearest road centre, road
+geometry continuing through the gate, and explicit action descriptions. Jev gets
+this object directly through Choice; it no longer receives JSON embedded in a
+prose string. On asphalt it also receives the local forward road tangent, fixed-distance
+road samples ahead, and signed previous progress so backward movement is visible.
+On grass it retains the v3 recovery input that passed the fixed-state checks.
+`--observation-format absolute-named` and `v2-baseline` retain older formats.
+The optional `--network-retries 1` permits one logged retry after a transient Jev
+HTTP/network failure at the identical simulation state. Retries consume attempt
+budgets; an invalid decision still ends the run. Default: no retries.
+The fixed-state comparison and pilot are documented in
+[the input experiment](results/jev-preflight-protocol.md).

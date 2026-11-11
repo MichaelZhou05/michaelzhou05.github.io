@@ -866,7 +866,10 @@ function wireCartridge() {
     // section is missing the secret still unlocks and nothing errors.
     setTimeout(() => {
       const start = document.getElementById('start-race');
-      if (!start) return;
+      if (!start) {
+        document.dispatchEvent(new CustomEvent('portfolio:arcade'));
+        return;
+      }
       start.click();
       document.getElementById('race-canvas')?.scrollIntoView({
         behavior: reduceMotion ? 'auto' : 'smooth',

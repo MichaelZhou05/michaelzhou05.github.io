@@ -1,19 +1,18 @@
 /** OpenRouter's Decisions API -> one fixed-duration move; never generates a racing line. */
-export const JEV_ACTION_FRAMES = 12;
-export const JEV_DIRECTIONS = [
-  'up', 'down', 'left', 'right', 'up+left', 'up+right', 'down+left', 'down+right', 'none',
-];
+import { ACTION_FRAMES, DIRECTION_KEYS } from './racer-protocol.mjs';
+export const JEV_ACTION_FRAMES = ACTION_FRAMES;
+export const JEV_DIRECTIONS = [...DIRECTION_KEYS.keys()];
 
-export function jevRequest(state, model = 'typesafe/jev-1.13') {
+export function jevRequest(state, model = 'typesafe/jev-1.13', question = null) {
   return {
     model,
     state,
     questions: {
-      direction: {
+      direction: question ?? {
         type: 'choice',
-        instructions: `Which direction should the car move for the next ${JEV_ACTION_FRAMES} frames (0.2 simulated seconds) to reach the sector gate quickly while staying on asphalt? Plan ahead using the road polyline. Choose exactly one direction; a fresh observation follows this move.`,
+        instructions: `Which direction should the car move for the next ${JEV_ACTION_FRAMES} frames (${JEV_ACTION_FRAMES / 60} simulated seconds) to reach the sector gate quickly while staying on asphalt? Use the car-relative road and movementUnitVectors in state. Choose exactly one direction; a fresh observation follows this move.`,
         criteria: Object.fromEntries(JEV_DIRECTIONS.map((direction) => [direction,
-          direction === 'none' ? 'Stop for 12 frames; the lap clock still runs.' : `Hold ${direction} for 12 frames in screen coordinates.`,
+          direction === 'none' ? `Stop for ${JEV_ACTION_FRAMES} frames; the lap clock still runs.` : `Hold ${direction} for ${JEV_ACTION_FRAMES} frames along its movementUnitVectors direction.`,
         ])),
       },
     },
@@ -42,23 +41,29 @@ export function parseJevDecision(response) {
   }
   return {
     plan: [{ direction: answer.choice, frames: JEV_ACTION_FRAMES }],
-    note: 'Jev Choice; fixed 12-frame action',
+    note: `Jev Choice; fixed ${JEV_ACTION_FRAMES}-frame action`,
     probabilities,
     confidence: answer.confidence,
     choiceMatchesArgmax: probabilities[answer.choice] + 1e-6 >= Math.max(...Object.values(probabilities)),
   };
 }
 
-export async function askJev(state, { model = 'typesafe/jev-1.13', apiKey = process.env.OPENROUTER_API_KEY, fetchImpl = fetch } = {}) {
+export async function askJev(state, { model = 'typesafe/jev-1.13', apiKey = process.env.OPENROUTER_API_KEY, fetchImpl = fetch, question = null } = {}) {
   if (!apiKey) throw new Error('Set OPENROUTER_API_KEY in your terminal to record a real Jev lap. Never put it in browser code.');
-  const response = await fetchImpl('https://openrouter.ai/api/alpha/decisions', {
+  let response;
+  try { response = await fetchImpl('https://openrouter.ai/api/alpha/decisions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(jevRequest(state, model)),
+    body: JSON.stringify(jevRequest(state, model, question)),
     signal: AbortSignal.timeout(30_000),
-  });
+  }); } catch (error) {
+    // Persist only known categories, never raw network messages, URLs, headers or bodies.
+    const code = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET'].includes(error.cause?.code) ? error.cause.code : 'UNKNOWN';
+    throw new Error(error.name === 'TimeoutError' || error.name === 'AbortError' ? 'Jev request timed out' : `Jev network failure (${code})`);
+  }
   // Do not print provider bodies: diagnostics should never echo credentials.
   if (!response.ok) throw new Error(`Jev HTTP ${response.status}${response.status === 429 ? ' rate limit' : ''}`);
-  const payload = await response.json();
+  let payload;
+  try { payload = await response.json(); } catch { throw new Error('Jev response was not valid JSON'); }
   return { decision: parseJevDecision(payload), model: payload.model, usage: payload.usage, requestId: payload.id ?? null, provider: payload.provider ?? null };
 }

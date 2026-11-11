@@ -24,7 +24,7 @@
           },
           "frames": {
             "type": "integer",
-            "const": 12
+            "const": 6
           }
         },
         "required": [

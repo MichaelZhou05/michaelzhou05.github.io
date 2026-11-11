@@ -1,0 +1,36 @@
+export const sections = {
+  experience: { title: 'Work experience', subtitle: 'A few places I’ve helped build things.', icon: 'book', count: '4 roles' },
+  now: { title: 'Building now', subtitle: 'Currently on the workbench.', icon: 'sparkle', count: '1 active build' },
+  projects: { title: 'Past projects', subtitle: 'Things I’ve built and problems I’ve chased.', icon: 'chest', count: '3 projects' },
+  fun: { title: 'Cool stuff', subtitle: 'Experiments, rabbit holes, and things you can play.', icon: 'dpad', count: '2 experiments' },
+};
+
+export const entries = {
+  experience: [
+    { id: 'draftkings', title: 'DraftKings', meta: 'Software engineering intern · Market making · Jun–Aug 2026', description: 'Rebuilding the data side of automated market making.', body: 'I reworked how market data moves through the pricing stack so trading systems receive faster, richer signals. Along the way I removed obsolete topics and services, improved an API that was scanning entire S3 buckets, and made failures visible instead of silent. I also built an internal AI assistant for understanding the platform.', stats: ['−70% endpoint latency', '+25% pipeline throughput'], tech: 'C# · Rust · Kafka · Snowflake' },
+    { id: 'duke', title: 'Duke School of Medicine', meta: 'Machine learning research assistant · Nov 2025–Jun 2026', description: 'Finding early disease signals in ultrasonic recordings.', body: 'I built a pipeline from raw recordings to high-resolution sonograms, followed by a detector that finds and sorts ultrasonic calls and classifiers that distinguish healthy from symptomatic rats. The goal was to free the study from weeks of manual audio labeling.', stats: ['−85% manual labeling time', '98% recall'], tech: 'PyTorch · MATLAB · CUDA · Faster R-CNN' },
+    { id: 'army', title: 'United States Army', meta: 'Software engineering intern · Resilient networks · May–Aug 2025', description: 'Helping drone networks stay connected under jamming.', body: 'Two problems: keeping the drones on the same clock, and choosing a clean radio channel before the jammer follows. I worked on Bluetooth clock synchronization and reinforcement learning for channel selection, with safety constraints to avoid losing contact while exploring. I co-authored a JSSR publication on the work.', stats: ['95.3% packet delivery under jamming', '−30% time out of contact'], tech: 'C++ · Python · Bluetooth TSCH · Reinforcement learning' },
+    { id: 'gmu', title: 'GMU Wireless Cyber Center', meta: 'Cyber security lab intern · Jun–Aug 2024', description: 'Testing drone security and investigating firmware.', body: 'In a closed lab, I built Python tooling around Aircrack-ng to test the link between drones and their controllers, then investigated Parrot Bebop firmware for another route in. The work turned a hypothetical vulnerability into a documented problem on hardware we owned.', stats: ['80% of tested lab drones remotely taken over'], tech: 'Python · C++ · 802.11 · Firmware reverse engineering' },
+  ],
+  now: [
+    { id: 'auto-research', title: 'Auto Research', meta: 'Actively building · November 2026', description: 'My current project. More about the idea and what’s working soon.', body: 'This spot is reserved for Auto Research. The project description, technical approach, current progress, and links will be filled in later.', stats: ['In progress'], tech: 'Details coming soon', placeholder: true },
+  ],
+  projects: [
+    { id: 'playground', title: 'Playground AI', meta: 'AI learning environment · Canvas / Duke OIT', description: 'Course documents become citation-backed answers and curriculum maps.', body: 'An AI learning environment procured by Duke OIT and engineered for 1,000+ target users. It turns course documents into source-backed answers, helps map curriculum gaps, and deploys through repeatable infrastructure as code.', stats: ['1,000+ target users', 'Citation-backed RAG'], tech: 'Python · Flask · vis.js · Terraform' },
+    { id: 'benchmark', title: 'Everyday dev benchmark', meta: 'Agent evaluation · Private repository', description: 'Which coding model should I use for this particular job?', body: 'Eight categories rather than one blended score. Most categories use public leaderboards; three gaps are measured by an in-house harness: brownfield frontend work, time-to-done, and one-shot UI. Agents run in Docker and are graded with Playwright, including visual fidelity and accessibility gates.', stats: ['8 ranked categories', '3 in-house evaluations'], tech: 'Python · Docker · Playwright · React' },
+    { id: 'amdahl', title: 'Amdahl', meta: 'Document extraction · Government records', description: 'Turning mixed-format records into something people can actually use.', body: 'Automated extraction across more than 10,000 pages of government records, standardized metadata, and cut retention analysis from days to hours.', stats: ['10K+ pages processed', '−85% manual analysis time'], tech: 'LangChain · ChromaDB · Google Cloud' },
+  ],
+  fun: [
+    { id: 'race', title: 'Nordschleife eval', meta: 'Playable experiment · Human vs. model', description: 'Race recorded model laps around a hand-drawn Nürburgring.', body: 'The same racing game from the homepage, with recorded laps, shared simulation physics, and keyboard or touch controls. The full game loads below only when you open it.', stats: ['20.832 km', '18 sectors'], tech: 'Canvas · Recorded laps · Browser-local simulation', game: 'race' },
+    { id: 'vim', title: 'Race me in Vim', meta: 'Keyboard challenge · Twelve marks', description: 'A little Vim sprint against my very beatable time.', body: 'Reach the block, repair the typo, and race the clock. This is the existing native Vim game, with a fixed course so everyone races the same challenge.', stats: ['12 marks', '58.0s to beat'], tech: 'Vim motions · Fixed course · Keyboard only', game: 'vim' },
+  ],
+};
+
+export const concepts = [
+  { id: 'cartridges', name: 'Cartridge Library', tag: 'Load a different part of the collection', description: 'Four physical cartridges, one console. Swap between work, current builds, past projects, and the arcade.', icon: 'cartridge' },
+  { id: 'workbench', name: 'Workbench OS', tag: 'Folders, files, and a real little shell', description: 'A retro Linux desktop for browsing the work. Click a folder, read a file, or use the terminal.', icon: 'crt' },
+  { id: 'overworld', name: 'Overworld', tag: 'Take a walk through the portfolio', description: 'A pixel landscape with four destinations. Click a place or walk there with the arrow keys.', icon: 'pin' },
+  { id: 'room', name: 'Michael’s Room', tag: 'An isometric, point-and-click diorama', description: 'Books on the shelf, notes on the wall, a game console, and a computer you can actually use.', icon: 'hero' },
+  { id: 'bookshelf', name: 'The Bookshelf', tag: 'Pull a book. Open a chapter.', description: 'A small personal library. Each book is a section, and each chapter is a role, project, or experiment.', icon: 'book' },
+  { id: 'fieldboard', name: 'The Pinboard', tag: 'A wall of evidence that I make things', description: 'Pinned notes, project cards, a current-build sticky, and an arcade ticket. Rearrange them or open a dossier.', icon: 'page' },
+];

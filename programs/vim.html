@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="./system.css"><link rel="stylesheet" href="./game.css"><title>Race me in Vim — Michael’s arcade</title></head><body class="arcade-game vim-game"><main><div class="vim-window" data-rival-time="58.0">
+              <div class="vim-window-bar">
+                <span><i></i> nvim &mdash; taskpy/tasks/cli.py</span>
+                <span class="vim-mode" id="vim-mode">-- NORMAL --</span>
+              </div>
+              <div
+                class="vim-screen"
+                id="vim-screen"
+                tabindex="0"
+                aria-label="Race me in vim. A small vim buffer with twelve marks to reach or repair using vim motions, against the clock. Keyboard only."
+              >
+                <div class="vim-buffer" id="vim-buffer" aria-hidden="true"></div>
+                <div class="vim-status" aria-hidden="true">
+                  <span id="vim-hint">nvim sprint &mdash; press a key, the clock starts</span>
+                  <span class="vim-status-right">
+                    <span id="vim-progress">mark 00/12</span>
+                    <span id="vim-clock">you 0:00.0</span>
+                    <span id="vim-rival">michael &mdash;</span>
+                  </span>
+                </div>
+                <div class="game-overlay" id="vim-overlay">
+                  <div id="vim-intro">
+                    <p class="overlay-title">Vim sprint</p><p class="vim-keyboard-note">Keyboard required</p>
+                    <p>Reach each highlighted block or repair its typo. Twelve tasks, one buffer.</p>
+                    <p>Move: <kbd>hjkl</kbd> <kbd>w b e</kbd> <kbd>0 $</kbd> <kbd>f t</kbd> <kbd>{ }</kbd> <kbd>gg G</kbd><br>Repair: <kbd>x</kbd> <kbd>r</kbd> <kbd>ciw</kbd> &middot; undo: <kbd>u</kbd> &middot; counts work</p>
+                    <p>Target: <span id="vim-rival-intro">&mdash;</span>. The clock starts on your first key.</p>
+                    <button id="vim-start" class="button primary" type="button">Start sprint</button>
+                    <a class="arrow-link vim-touch-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">Open the full trainer</a>
+                  </div>
+                  <div id="vim-results" hidden>
+                    <p class="overlay-title" id="vim-verdict">PHOTO FINISH</p>
+                    <p id="vim-result-times">&mdash;</p>
+                    <p id="vim-result-keys">&mdash;</p>
+                    <button id="vim-again" class="button primary" type="button">Run it again</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+<p class="game-footnote">A small companion to my Neovim trainer. The 58-second rival is a configured target. Use Tab to leave the editor or switch games to reset.</p>
+</main><script type="module" src="../vim-game.js"></script></body></html>

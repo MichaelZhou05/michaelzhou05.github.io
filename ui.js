@@ -46,6 +46,11 @@ if (sections.length) {
     let active = sections[0];
 
     sections.forEach((pair) => {
+      if (pair.section.classList.contains('disk-anchor')) {
+        const disk = pair.section.closest('.macintosh')?.dataset.disk || 'experience';
+        const id = pair.section.id === 'race' ? 'fun' : pair.section.id;
+        if (id !== disk) return;
+      }
       if (pair.section.getBoundingClientRect().top <= line) active = pair;
     });
 
@@ -65,6 +70,7 @@ if (sections.length) {
 
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule);
+  document.addEventListener('diskchange', schedule);
   update();
 }
 

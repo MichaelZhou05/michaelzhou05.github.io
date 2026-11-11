@@ -14,6 +14,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./macintosh.css" />
+    <link rel="stylesheet" href="./programs/system.css" />
+    <link rel="stylesheet" href="./programs/work.css" />
+    <link rel="stylesheet" href="./programs/now.css" />
+    <link rel="stylesheet" href="./programs/projects.css" />
+    <link rel="stylesheet" href="./programs/arcade.css" />
   </head>
   <body id="top">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -82,447 +88,37 @@
           </ul>
         </section>
 
-        <section id="race" class="panel">
-          <span class="cart-dock" aria-hidden="true"></span>
-          <button
-            class="cart-slot"
-            type="button"
-            data-secret="cart"
-            title="it wobbles a bit"
-            aria-label="A loose cartridge. Give it a blow."
-          ></button>
-          <h2 class="section-title" data-icon="flag" data-icon-color="#e8e4f4">nordschleife eval</h2>
-          <p class="section-intro">
-            Opus, GPT and Jev were given a hand-drawn N&uuml;rburgring and told to drive it.
-            Race their recordings and see how you compare. Heavily inspired by
-            <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>.
-          </p>
-
-          <p class="race-method-link"><a href="./race-method.html">How this eval works →</a> <span>JSON plans, recorded laps, and what the clock measures.</span></p>
-
-          <div class="race-window">
-            <div class="race-window-bar">
-              <span><i></i> n&uuml;rburgring nordschleife &mdash; night</span>
-              <span id="sector-name">sector 01/18</span>
+        <section id="macintosh" class="macintosh" aria-label="Michael's Macintosh portfolio">
+          <span id="experience" class="disk-anchor" aria-hidden="true"></span>
+          <span id="now" class="disk-anchor" aria-hidden="true"></span>
+          <span id="projects" class="disk-anchor" aria-hidden="true"></span>
+          <span id="race" class="disk-anchor" aria-hidden="true"></span>
+          <span id="fun" class="disk-anchor" aria-hidden="true"></span>
+          <div class="mac-machine">
+            <div class="mac-lid">
+              <span class="mac-screw mac-screw-left" aria-hidden="true"></span>
+              <span class="mac-screw mac-screw-right" aria-hidden="true"></span>
+              <div class="mac-display" id="mac-display" role="region" aria-label="Macintosh screen" tabindex="-1"></div>
+              <div class="mac-wordmark"><span class="mac-mark" aria-hidden="true">▧</span><span>Michael's Macintosh</span><i aria-hidden="true"></i></div>
             </div>
-            <div class="game-screen">
-              <canvas
-                id="race-canvas"
-                width="300"
-                height="200"
-                tabindex="0"
-                aria-label="Top-down racetrack. Use the arrow keys or WASD to drive to the finish."
-              ></canvas>
-              <div class="game-overlay" id="game-overlay">
-                <div class="overlay-car" aria-hidden="true"></div>
-                <p class="overlay-title">NORDSCHLEIFE</p>
-                <p>20.832 km &middot; 18 sectors &middot; arrow keys or wasd</p>
-                <p>the window shifts each sector &middot; grass costs you</p>
-                <button id="start-race" class="button primary" type="button">start lap</button>
-              </div>
+            <div class="mac-hinge" aria-hidden="true"><i></i><i></i></div>
+            <div class="mac-base">
+              <div class="mac-speaker mac-speaker-left" aria-hidden="true"></div>
+              <div class="mac-keyboard" aria-hidden="true"></div>
+              <div class="mac-speaker mac-speaker-right" aria-hidden="true"></div>
+              <div class="mac-palmrest"><span class="mac-model">Personal computer<br>Duke '28</span><span class="mac-trackpad" aria-hidden="true"></span><button class="mac-dust" type="button" data-secret="cart" title="it wobbles a bit" aria-label="A loose cartridge. Give it a blow."></button></div>
             </div>
-            <!--
-              Touch controls for the race. Hidden on hover-capable machines —
-              the keyboard is the controller there — and shown by the CSS only
-              when the pointer is a finger. app.js wires each pad straight into
-              the same key state the arrow keys set. The car is steered in four
-              directions, not driven with pedals, so the pads are the four
-              arrows the keyboard offers and nothing more.
-            -->
-            <div class="race-touch" id="race-touch">
-              <div class="touch-cluster">
-                <button class="touch-key" type="button" data-control="left" aria-label="Steer left">&#9664;</button>
-                <button class="touch-key" type="button" data-control="right" aria-label="Steer right">&#9654;</button>
-              </div>
-              <div class="touch-cluster">
-                <button class="touch-key" type="button" data-control="up" aria-label="Steer up">&#9650;</button>
-                <button class="touch-key" type="button" data-control="down" aria-label="Steer down">&#9660;</button>
-              </div>
-            </div>
-            <div class="race-readout">
-              <div class="gauge you-gauge">
-                <span class="gauge-label"><i class="dot-you"></i> you</span>
-                <span class="gauge-value"><span id="player-distance">00</span><em>%</em></span>
-                <span class="progress-track"><span id="player-progress"></span></span>
-              </div>
-              <div class="gauge">
-                <span class="gauge-label">lap time</span>
-                <span class="gauge-value" id="player-time">0:00.00</span>
-                <span class="gauge-note"><span id="player-hits">0</span> off-track</span>
-              </div>
-              <div class="gauge opus-stat">
-                <span class="gauge-label"><i class="dot-opus"></i> usv opus 5</span>
-                <span class="gauge-value"><span id="opus-distance">00</span><em>%</em></span>
-                <span class="progress-track"><span id="opus-progress"></span></span>
-                <span class="gauge-note" id="opus-lap-note"></span>
-              </div>
-              <div class="gauge gpt-stat">
-                <span class="gauge-label"><i class="dot-gpt"></i> usv gpt 5.6 sol xhigh</span>
-                <span class="gauge-value"><span id="gpt-distance">00</span><em>%</em></span>
-                <span class="progress-track"><span id="gpt-progress"></span></span>
-                <span class="gauge-note" id="sol-lap-note"></span>
-              </div>
-              <div id="jev-gauge" class="gauge jev-stat" hidden>
-                <span class="gauge-label"><i class="dot-jev"></i> jev · reactive</span>
-                <span class="gauge-value"><span id="jev-distance">00</span><em>%</em></span>
-                <span class="progress-track"><span id="jev-progress"></span></span>
-                <span class="gauge-note" id="jev-lap-note"></span>
-              </div>
-            </div>
-            <div class="race-log">
-              <span id="race-log" aria-live="polite">JEV, USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.</span>
-              <button id="restart-race" class="text-button" type="button">&#8635; reset</button>
+            <div class="mac-front">
+              <i class="mac-drive-led" aria-hidden="true"></i>
+              <button class="mac-drive" type="button" aria-label="Insert Work experience disk"><span class="mac-slot" aria-hidden="true"></span><span class="mac-drive-label">Insert Work experience</span></button>
+              <button class="mac-eject" type="button" disabled aria-label="Eject disk" title="Eject disk">⏏</button>
+              <span class="mac-latch" aria-hidden="true"></span>
             </div>
           </div>
-        </section>
-
-        <section id="projects" class="panel">
-          <h2 class="section-title" data-icon="chest">projects</h2>
-
-          <article class="work work-feature">
-            <div class="work-body">
-              <h3>race me in Vim <span class="work-num">// 001</span></h3>
-              <p>
-                A little Vim race for fun — try a lap and see how our times compare.
-                I’m still practising, so my time is very beatable.
-              </p>
-            </div>
-            <!--
-              race me in vim. Not the trainer in a frame — the trainer is an
-              application and made a lousy exhibit — but its game, rebuilt
-              native to this page like the racetrack above it: a small vim
-              engine, one fixed course, and a clock. The course is identical
-              for every visitor, so the times mean something.
-
-              data-rival-time is Michael's lap in seconds. Play a lap, then
-              put your real time here — one attribute, no JavaScript.
-            -->
-            <div class="vim-window" data-rival-time="58.0">
-              <div class="vim-window-bar">
-                <span><i></i> nvim &mdash; taskpy/tasks/cli.py</span>
-                <span class="vim-mode" id="vim-mode">-- NORMAL --</span>
-              </div>
-              <div
-                class="vim-screen"
-                id="vim-screen"
-                tabindex="0"
-                aria-label="Race me in vim. A small vim buffer with twelve marks to reach or repair using vim motions, against the clock. Keyboard only."
-              >
-                <div class="vim-buffer" id="vim-buffer" aria-hidden="true"></div>
-                <div class="vim-status" aria-hidden="true">
-                  <span id="vim-hint">nvim sprint &mdash; press a key, the clock starts</span>
-                  <span class="vim-status-right">
-                    <span id="vim-progress">mark 00/12</span>
-                    <span id="vim-clock">you 0:00.0</span>
-                    <span id="vim-rival">michael &mdash;</span>
-                  </span>
-                </div>
-                <div class="game-overlay" id="vim-overlay">
-                  <div id="vim-intro">
-                    <p class="overlay-title">RACE ME IN VIM</p>
-                    <p>twelve marks &middot; reach the block &middot; repair the typo</p>
-                    <p>hjkl w b e 0 $ f t { } gg G &middot; x r ciw u &middot; counts work</p>
-                    <p>my lap: <span id="vim-rival-intro">&mdash;</span> &middot; the clock starts on your first key</p>
-                    <button id="vim-start" class="button primary" type="button">race me</button>
-                    <a class="arrow-link vim-touch-link" href="https://michaelzhou05.github.io/learnNvim/" target="_blank" rel="noreferrer">&rarr; open the full trainer &mdash; this race wants a keyboard</a>
-                  </div>
-                  <div id="vim-results" hidden>
-                    <p class="overlay-title" id="vim-verdict">PHOTO FINISH</p>
-                    <p id="vim-result-times">&mdash;</p>
-                    <p id="vim-result-keys">&mdash;</p>
-                    <button id="vim-again" class="button primary" type="button">run it again</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="work">
-            <div class="work-visual graph-visual" aria-hidden="true">
-              <div class="graph-node n1">PDF</div>
-              <div class="graph-node n2">RAG</div>
-              <div class="graph-node n3">LTI</div>
-              <div class="graph-node n4">KG</div>
-              <div class="graph-node n5">AI</div>
-              <svg viewBox="0 0 500 220" preserveAspectRatio="none">
-                <path d="M80 105 L205 58 L330 118 L430 55 M205 58 L250 180 L430 55 M80 105 L250 180 L330 118" />
-              </svg>
-              <span class="visual-caption">knowledge graph // live</span>
-            </div>
-            <div class="work-body">
-              <h3>Playground AI <span class="work-num">// 002</span></h3>
-              <p>
-                An AI study tool built into Canvas that helps students make sense of their course materials.
-                Students can ask questions about lecture notes and readings, get explanations with links back to
-                the source material, and explore an interactive knowledge graph connecting course concepts to
-                relevant resources.
-              </p>
-              <p class="log-tech">python &middot; flask &middot; vis.js &middot; terraform</p>
-              <p>
-                <a class="arrow-link" href="https://www.youtube.com/watch?v=1ns7t31nPWY" target="_blank" rel="noreferrer">
-                  &rarr; watch demo
-                </a>
-              </p>
-            </div>
-          </article>
-
-          <article class="work">
-            <div class="work-visual bench-visual" aria-hidden="true">
-              <div class="bench-rows">
-                <div class="bench-row"><span>frontend</span><i style="--w: 92%"></i><b>92</b></div>
-                <div class="bench-row"><span>time-to-done</span><i style="--w: 78%"></i><b>78</b></div>
-                <div class="bench-row"><span>one-shot ui</span><i style="--w: 64%"></i><b>64</b></div>
-                <div class="bench-row"><span>backend</span><i style="--w: 55%"></i><b>55</b></div>
-                <div class="bench-row"><span>terminal</span><i style="--w: 41%"></i><b>41</b></div>
-              </div>
-              <span class="visual-caption">per-category boards // no mega-number</span>
-            </div>
-            <div class="work-body">
-              <h3>everyday dev benchmark <span class="work-num">// 003</span></h3>
-              <p>
-                "Which model should I use for <em>this</em> job?" &mdash; answered per job, never blended into one
-                mega-number. Most categories are sourced from the most-cited public leaderboards; the gaps nobody
-                measures &mdash; brownfield frontend work, time-to-done, one-shot UI &mdash; run through an in-house
-                harness: agents in Docker, graded headlessly with Playwright down to visual fidelity and a11y gates.
-              </p>
-              <p class="work-stats">
-                <span><b>8</b> ranked categories</span>
-                <span><b>3</b> measured by in-house evals</span>
-                <span><b>0</b> estimates &mdash; a missing cell renders as a dash</span>
-              </p>
-              <p class="log-tech">python &middot; docker &middot; playwright &middot; react</p>
-              <p class="work-note">repo private for now &mdash; the hidden test sets live in it</p>
-            </div>
-          </article>
-
-          <article class="work">
-            <div class="work-visual doc-visual" aria-hidden="true">
-              <div class="file-stack"><i></i><i></i><i></i><span>10K+</span></div>
-              <div class="pipeline-arrow">&rarr;</div>
-              <div class="data-grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-              <span class="visual-caption">extraction pipeline</span>
-            </div>
-            <div class="work-body">
-              <h3>Amdahl <span class="work-num">// 004</span></h3>
-              <p>
-                Automated document extraction across 10,000+ pages of mixed-format government records, standardizing
-                metadata and cutting retention analysis from days to hours.
-              </p>
-              <p class="work-stats">
-                <span><b>&minus;85%</b> manual analysis time</span>
-                <span><b>10K+</b> pages processed</span>
-                <span><b>top 10%</b> of LeapYear applicants</span>
-              </p>
-              <p class="log-tech">langchain &middot; chromadb &middot; gcloud</p>
-              <p>
-                <a class="arrow-link" href="https://www.youtube.com/watch?v=0XdME2cXink&amp;t=115s" target="_blank" rel="noreferrer">
-                  &rarr; watch demo
-                </a>
-              </p>
-            </div>
-          </article>
-        </section>
-
-        <section id="experience" class="panel">
-          <h2 class="section-title" data-icon="book" data-icon-color="#ffb000">experience</h2>
-          <p class="section-intro">
-            Four jobs, in plain English. Click one for the longer version.
-          </p>
-
-          <div class="logs">
-            <details class="log" name="worklog">
-              <summary class="log-head">
-                <span class="log-badge" data-logo="draftkings"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-crown"><rect x="7" y="0" width="2" height="1"/><rect x="2" y="1" width="1" height="1"/><rect x="7" y="1" width="2" height="1"/><rect x="13" y="1" width="1" height="1"/><rect x="2" y="2" width="2" height="1"/><rect x="6" y="2" width="4" height="1"/><rect x="12" y="2" width="2" height="1"/><rect x="3" y="3" width="2" height="1"/><rect x="6" y="3" width="4" height="1"/><rect x="11" y="3" width="2" height="1"/><rect x="3" y="4" width="10" height="1"/><rect x="5" y="5" width="6" height="1"/></g><g class="px-crown-mid"><rect x="4" y="5" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/></g><g class="px-lit"><rect x="4" y="6" width="7" height="1"/><rect x="4" y="7" width="2" height="1"/><rect x="9" y="7" width="3" height="1"/><rect x="4" y="8" width="2" height="1"/><rect x="10" y="8" width="2" height="1"/><rect x="4" y="9" width="2" height="1"/><rect x="10" y="9" width="2" height="1"/><rect x="4" y="10" width="2" height="1"/><rect x="10" y="10" width="2" height="1"/><rect x="4" y="11" width="2" height="1"/><rect x="9" y="11" width="3" height="1"/><rect x="4" y="12" width="7" height="1"/><rect x="2" y="13" width="4" height="1"/><rect x="2" y="14" width="1" height="1"/></g><g class="px-mid"><rect x="11" y="6" width="1" height="1"/><rect x="3" y="12" width="1" height="1"/><rect x="3" y="14" width="1" height="1"/></g></svg></span>
-                <span class="log-ident">
-                  <span class="log-title">
-                    <b class="log-name" role="heading" aria-level="3">DraftKings</b>
-                    <span class="log-flag">latest</span>
-                  </span>
-                  <span class="log-role">software engineering intern &mdash; market making</span>
-                  <span class="log-when">
-                    <span class="log-date">2026 &middot; jun&ndash;aug</span>
-                    <i class="log-cue" aria-hidden="true"></i>
-                  </span>
-                </span>
-                <span class="log-lede">
-                  I was part of the company-wide push to go live <em>market making</em> on prediction exchanges &mdash;
-                  Kalshi, CME, Robinhood. My piece was the data side: rebuilding how market data moves through the
-                  pricing stack so the automated trading systems get faster, richer signals when a market starts
-                  turning. We did about $30M in volume while I was there.
-                </span>
-              </summary>
-              <div class="log-body">
-                <div class="log-detail">
-                  <div class="log-notes">
-                    <p>
-                      Running a sportsbook and running a market maker aren't the same job, even though they look
-                      similar from the outside. A sportsbook posts a line and waits for you to take it. A market maker
-                      has to have real money on both sides of every contract, all the time, and keep moving those
-                      prices as the game plays out &mdash; automatically, with nobody in the loop. Same models
-                      underneath, much more demanding systems.
-                    </p>
-                    <p>
-                      Prices and game events moved through a pipeline built for a sportsbook, so it was slower than we
-                      needed and didn't carry enough with it &mdash; by the time a signal that a market was getting
-                      dangerous reached the pricing engine, it was late and pretty thin. I reworked how that data flows so
-                      those signals land faster and with more context attached, and so everything downstream is
-                      looking at the same picture. A lot of dead weight came out along the
-                      way: topics still publishing to services that didn't exist anymore, an API answering one question
-                      by scanning whole S3 buckets, a mapper that just went quiet when a game dropped off instead of
-                      telling anyone.
-                    </p>
-                    <p>
-                      I also built an internal AI assistant for the platform that answers "what does this service
-                      actually do" questions, since the person on call at 3am and the new hire in week one turn out to
-                      be asking the same things.
-                    </p>
-                  </div>
-                  <ul class="log-stats">
-                    <li><b>$30M</b><span>in contracts traded once we were live</span></li>
-                    <li><b>&minus;70%</b><span>latency on the endpoint the trading systems hit most</span></li>
-                    <li><b>+25%</b><span>pipeline throughput, plus ~20k lines of old code deleted</span></li>
-                  </ul>
-                </div>
-                <p class="log-tech"><span>c#</span><span>rust</span><span>kafka</span><span>snowflake</span></p>
-              </div>
-            </details>
-
-            <details class="log" name="worklog">
-              <summary class="log-head">
-                <span class="log-badge" data-logo="duke"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-lit"><rect x="0" y="1" width="8" height="1"/><rect x="9" y="1" width="5" height="1"/><rect x="1" y="2" width="6" height="1"/><rect x="10" y="2" width="5" height="1"/><rect x="2" y="3" width="5" height="1"/><rect x="11" y="3" width="5" height="1"/><rect x="2" y="4" width="4" height="1"/><rect x="11" y="4" width="5" height="1"/><rect x="2" y="5" width="4" height="1"/><rect x="11" y="5" width="5" height="1"/><rect x="2" y="6" width="4" height="1"/><rect x="11" y="6" width="5" height="1"/><rect x="2" y="7" width="4" height="1"/><rect x="11" y="7" width="5" height="1"/><rect x="2" y="8" width="4" height="1"/><rect x="11" y="8" width="5" height="1"/><rect x="2" y="9" width="4" height="1"/><rect x="11" y="9" width="5" height="1"/><rect x="2" y="10" width="4" height="1"/><rect x="11" y="10" width="5" height="1"/><rect x="2" y="11" width="4" height="1"/><rect x="11" y="11" width="5" height="1"/><rect x="2" y="12" width="5" height="1"/><rect x="11" y="12" width="5" height="1"/><rect x="1" y="13" width="6" height="1"/><rect x="10" y="13" width="5" height="1"/><rect x="0" y="14" width="8" height="1"/><rect x="9" y="14" width="5" height="1"/></g><g class="px-mid"><rect x="14" y="1" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="6" y="7" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="6" y="11" width="1" height="1"/><rect x="1" y="12" width="1" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="7" y="13" width="1" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="14" y="14" width="1" height="1"/></g></svg></span>
-                <span class="log-ident">
-                  <span class="log-title"><b class="log-name" role="heading" aria-level="3">Duke School of Medicine</b></span>
-                  <span class="log-role">machine learning research assistant</span>
-                  <span class="log-when">
-                    <span class="log-date">2025/26 &middot; nov&ndash;jun</span>
-                    <i class="log-cue" aria-hidden="true"></i>
-                  </span>
-                </span>
-                <span class="log-lede">
-                  Rats squeak at frequencies we can't hear, and the way they squeak changes when they get sick, well
-                  before most other symptoms show up. I trained models to catch that change, so researchers can spot
-                  early Krabbe disease in a recording instead of labeling audio by hand for weeks.
-                </span>
-              </summary>
-              <div class="log-body">
-                <div class="log-detail">
-                  <div class="log-notes">
-                    <p>
-                      Krabbe is degenerative, so timing matters a lot. The sooner you can tell whether a treatment is
-                      doing anything, the more of the animal's life you still have to work with. The usual measurements
-                      show up late; the vocal changes show up early. The catch was that reading them meant someone
-                      sitting there scrolling through hours of audio, drawing a box around each squeak one at a time.
-                    </p>
-                    <p>
-                      So the first job was making the audio usable. I built a pipeline that turns the raw recordings
-                      into clean, high-resolution sonograms and filters out room noise without losing the quieter
-                      calls. Then a detector that finds each call and sorts it into one of about twenty types, and a
-                      couple of classifiers on top of that to tell a healthy rat from a symptomatic one.
-                    </p>
-                    <p>
-                      The accuracy number is nice, but the real win is that the study isn't stuck waiting on someone to
-                      label audio anymore.
-                    </p>
-                  </div>
-                  <ul class="log-stats">
-                    <li><b>&minus;85%</b><span>time spent labeling audio by hand, at 98% recall</span></li>
-                    <li><b>20+</b><span>types of squeak sorted automatically</span></li>
-                    <li><b>96%</b><span>accuracy telling a healthy rat from a sick one</span></li>
-                  </ul>
-                </div>
-                <p class="log-tech"><span>pytorch</span><span>matlab</span><span>cuda</span><span>faster r-cnn</span></p>
-              </div>
-            </details>
-
-            <details class="log" name="worklog">
-              <summary class="log-head">
-                <span class="log-badge" data-logo="army"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-dim"><rect x="10" y="3" width="1" height="1"/><rect x="15" y="6" width="1" height="1"/><rect x="14" y="7" width="2" height="1"/><rect x="13" y="8" width="2" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="7" y="11" width="2" height="1"/><rect x="14" y="11" width="1" height="1"/><rect x="5" y="12" width="3" height="1"/><rect x="10" y="12" width="1" height="1"/><rect x="4" y="13" width="2" height="1"/><rect x="15" y="13" width="1" height="1"/><rect x="2" y="14" width="3" height="1"/><rect x="13" y="14" width="3" height="1"/></g><g class="px-lit"><rect x="7" y="1" width="2" height="1"/><rect x="6" y="2" width="4" height="1"/><rect x="6" y="3" width="4" height="1"/><rect x="5" y="4" width="6" height="1"/><rect x="0" y="5" width="16" height="1"/><rect x="1" y="6" width="14" height="1"/><rect x="2" y="7" width="12" height="1"/><rect x="3" y="8" width="10" height="1"/><rect x="3" y="9" width="10" height="1"/><rect x="2" y="10" width="12" height="1"/><rect x="2" y="11" width="5" height="1"/><rect x="9" y="11" width="5" height="1"/><rect x="1" y="12" width="4" height="1"/><rect x="11" y="12" width="4" height="1"/><rect x="1" y="13" width="3" height="1"/><rect x="12" y="13" width="3" height="1"/></g></svg></span>
-                <span class="log-ident">
-                  <span class="log-title"><b class="log-name" role="heading" aria-level="3">United States Army</b></span>
-                  <span class="log-role">software engineering intern &mdash; resilient networks</span>
-                  <span class="log-when">
-                    <span class="log-date">2025 &middot; may&ndash;aug</span>
-                    <i class="log-cue" aria-hidden="true"></i>
-                  </span>
-                </span>
-                <span class="log-lede">
-                  Jam the radio on a group of small drones and the whole thing is useless. I worked on getting them to
-                  hop between radio channels to stay ahead of a jammer &mdash; and, more importantly, to
-                  <em>learn</em> which channel to jump to next instead of guessing.
-                </span>
-              </summary>
-              <div class="log-body">
-                <div class="log-detail">
-                  <div class="log-notes">
-                    <p>
-                      A jammer isn't a fixed obstacle &mdash; it moves around the spectrum looking for you. So the
-                      drones have to keep switching channels faster than it can follow, and all of them have to agree
-                      on where they're going next. A group that hops out of sync has basically jammed itself.
-                    </p>
-                    <p>
-                      That's two separate problems. The timing one I handled with a Bluetooth clock-sync protocol, so
-                      every drone is working off the same schedule. The other one is picking the next channel, which is
-                      a classic <a href="https://en.wikipedia.org/wiki/Multi-armed_bandit" target="_blank" rel="noreferrer">multi-armed bandit</a>
-                      setup: you're choosing between options over and over, and you only find out how good an option
-                      is by trying it. Do you stick with the channel that's been clean, or test one that might be
-                      better?
-                      Reinforcement learning makes that call, with safety limits on top so the drones can't experiment
-                      their way into losing contact completely.
-                    </p>
-                    <p>
-                      That last part is what turned into a paper &mdash; I co-authored a JSSR publication on it.
-                    </p>
-                  </div>
-                  <ul class="log-stats">
-                    <li><b>95.3%</b><span>of packets still got through while being jammed</span></li>
-                    <li><b>&minus;30%</b><span>time spent out of contact, once the safety limits were in</span></li>
-                    <li><b>JSSR</b><span>paper co-authored</span></li>
-                  </ul>
-                </div>
-                <p class="log-tech"><span>c++</span><span>python</span><span>bluetooth tsch</span><span>reinforcement learning</span></p>
-              </div>
-            </details>
-
-            <details class="log" name="worklog">
-              <summary class="log-head">
-                <span class="log-badge" data-logo="gmu"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><g class="px-lit"><rect x="3" y="2" width="4" height="1"/><rect x="1" y="3" width="6" height="1"/><rect x="0" y="4" width="3" height="1"/><rect x="0" y="5" width="2" height="1"/><rect x="0" y="6" width="2" height="1"/><rect x="0" y="7" width="2" height="1"/><rect x="0" y="8" width="2" height="1"/><rect x="5" y="8" width="2" height="1"/><rect x="0" y="9" width="2" height="1"/><rect x="5" y="9" width="2" height="1"/><rect x="0" y="10" width="2" height="1"/><rect x="0" y="11" width="3" height="1"/><rect x="1" y="12" width="6" height="1"/><rect x="3" y="13" width="3" height="1"/></g><g class="px-mid"><rect x="7" y="4" width="2" height="1"/><rect x="14" y="4" width="2" height="1"/><rect x="7" y="5" width="2" height="1"/><rect x="14" y="5" width="2" height="1"/><rect x="7" y="6" width="3" height="1"/><rect x="13" y="6" width="3" height="1"/><rect x="7" y="7" width="4" height="1"/><rect x="12" y="7" width="4" height="1"/><rect x="7" y="8" width="2" height="1"/><rect x="10" y="8" width="3" height="1"/><rect x="14" y="8" width="2" height="1"/><rect x="7" y="9" width="2" height="1"/><rect x="11" y="9" width="1" height="1"/><rect x="14" y="9" width="2" height="1"/><rect x="7" y="10" width="2" height="1"/><rect x="14" y="10" width="2" height="1"/><rect x="7" y="11" width="2" height="1"/><rect x="14" y="11" width="2" height="1"/><rect x="7" y="12" width="2" height="1"/><rect x="14" y="12" width="2" height="1"/><rect x="7" y="13" width="2" height="1"/><rect x="14" y="13" width="2" height="1"/></g></svg></span>
-                <span class="log-ident">
-                  <span class="log-title"><b class="log-name" role="heading" aria-level="3">GMU Wireless Cyber Center</b></span>
-                  <span class="log-role">cyber security lab intern</span>
-                  <span class="log-when">
-                    <span class="log-date">2024 &middot; jun&ndash;aug</span>
-                    <i class="log-cue" aria-hidden="true"></i>
-                  </span>
-                </span>
-                <span class="log-lede">
-                  Consumer drones will more or less talk to anyone who asks. In a closed lab I built the tooling that
-                  shows it &mdash; knocking a drone off its controller and flying it away myself &mdash; so it's a
-                  documented problem instead of a hypothetical one.
-                </span>
-              </summary>
-              <div class="log-body">
-                <div class="log-detail">
-                  <div class="log-notes">
-                    <p>
-                      Two parts to it. The first was a Python tool driving Aircrack-ng at the Wi-Fi link between a
-                      drone and its controller: find the connection, force it to drop, then be the thing it reconnects
-                      to. On the drones we had on the bench, that worked about four times out of five.
-                    </p>
-                    <p>
-                      The second part was slower and honestly more fun &mdash; pulling apart the Parrot Bebop's
-                      firmware looking for a way in that didn't depend on the Wi-Fi trick at all. All of it ran inside
-                      the lab on hardware we owned, which is the only place this kind of work belongs.
-                    </p>
-                  </div>
-                  <ul class="log-stats">
-                    <li><b>80%</b><span>of the lab drones I could take over remotely</span></li>
-                    <li><b>802.11</b><span>the whole disconnect-and-hijack path, scripted</span></li>
-                  </ul>
-                </div>
-                <p class="log-tech"><span>python</span><span>c++</span><span>802.11</span><span>firmware re</span></p>
-              </div>
-            </details>
-          </div>
+          <div class="mac-disks" role="group" aria-label="Portfolio floppy disks"></div>
+          <p class="mac-instructions">Select a floppy, then insert it into the drive. Or drag it in.<br>Keyboard: arrow keys to choose, Enter to insert.</p>
+          <p class="mac-status" role="status" aria-live="polite">Work experience selected. Ready to insert.</p>
+          <noscript><p>This Macintosh needs JavaScript. You can still <a href="/Michael_Zhou_2026_FSWE.pdf">read my resume</a> or <a href="#contact">get in touch</a>.</p></noscript>
         </section>
 
         <section id="contact" class="panel">
@@ -557,8 +153,9 @@
           <h2 class="side-title" data-icon="dpad" data-icon-color="#7b68ee">index</h2>
           <ul class="warp-list" id="site-index">
             <li><a href="#about" data-icon="hero" data-icon-color="#7b68ee">About me</a></li>
-            <li><a href="#race" data-icon="car" data-icon-color="#e60012">Nordschleife eval <i class="nav-tag">play</i></a></li>
-            <li><a href="#projects" data-icon="chest">Project archive <i class="nav-tag">play</i></a></li>
+            <li><a href="#race" data-icon="car" data-icon-color="#e60012">Cool stuff <i class="nav-tag">play</i></a></li>
+            <li><a href="#now" data-icon="sparkle">Building now</a></li>
+            <li><a href="#projects" data-icon="chest">Project archive</a></li>
             <li><a href="#experience" data-icon="book" data-icon-color="#ffb000">Work logs</a></li>
             <li><a href="#contact" data-icon="tower" data-icon-color="#7b68ee">Contact</a></li>
           </ul>
@@ -706,9 +303,8 @@
     <button class="to-top" id="to-top" type="button" aria-label="Back to top">&uarr;</button>
 
     <script type="module" src="./ui.js"></script>
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="./macintosh.js"></script>
     <script type="module" src="./friends.js"></script>
-    <script type="module" src="./vim-game.js"></script>
     <script type="module" src="./swimmer.js"></script>
     <script type="module" src="./location.js"></script>
     <script type="module" src="./espresso.js"></script>

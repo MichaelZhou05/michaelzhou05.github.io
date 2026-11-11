@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nordschleife eval</title><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="./prototype.css"></head>
+<body class="game-embed"><main>        <section id="race" class="panel">
+          <span class="cart-dock" aria-hidden="true"></span>
+          <button
+            class="cart-slot"
+            type="button"
+            data-secret="cart"
+            title="it wobbles a bit"
+            aria-label="A loose cartridge. Give it a blow."
+          ></button>
+          <h2 class="section-title" data-icon="flag" data-icon-color="#e8e4f4">nordschleife eval</h2>
+          <p class="section-intro">
+            Two frontier models were sat down in front of a hand-drawn N&uuml;rburgring and told to drive it.
+            Race their recorded laps and see if you are faster. Heavily inspired by
+            <a href="https://gbaeval.com" target="_blank" rel="noopener">GBA Eval</a>.
+          </p>
+
+          <p class="race-method-link"><a href="../race-method.html">How this eval works →</a> <span>JSON plans, recorded laps, and what the clock measures.</span></p>
+
+          <div class="race-window">
+            <div class="race-window-bar">
+              <span><i></i> n&uuml;rburgring nordschleife &mdash; night</span>
+              <span id="sector-name">sector 01/18</span>
+            </div>
+            <div class="game-screen">
+              <canvas
+                id="race-canvas"
+                width="300"
+                height="200"
+                tabindex="0"
+                aria-label="Top-down racetrack. Use the arrow keys or WASD to drive to the finish."
+              ></canvas>
+              <div class="game-overlay" id="game-overlay">
+                <div class="overlay-car" aria-hidden="true"></div>
+                <p class="overlay-title">NORDSCHLEIFE</p>
+                <p>20.832 km &middot; 18 sectors &middot; arrow keys or wasd</p>
+                <p>the window shifts each sector &middot; grass costs you</p>
+                <button id="start-race" class="button primary" type="button">start lap</button>
+              </div>
+            </div>
+            <!--
+              Touch controls for the race. Hidden on hover-capable machines —
+              the keyboard is the controller there — and shown by the CSS only
+              when the pointer is a finger. app.js wires each pad straight into
+              the same key state the arrow keys set. The car is steered in four
+              directions, not driven with pedals, so the pads are the four
+              arrows the keyboard offers and nothing more.
+            -->
+            <div class="race-touch" id="race-touch">
+              <div class="touch-cluster">
+                <button class="touch-key" type="button" data-control="left" aria-label="Steer left">&#9664;</button>
+                <button class="touch-key" type="button" data-control="right" aria-label="Steer right">&#9654;</button>
+              </div>
+              <div class="touch-cluster">
+                <button class="touch-key" type="button" data-control="up" aria-label="Steer up">&#9650;</button>
+                <button class="touch-key" type="button" data-control="down" aria-label="Steer down">&#9660;</button>
+              </div>
+            </div>
+            <div class="race-readout">
+              <div class="gauge you-gauge">
+                <span class="gauge-label"><i class="dot-you"></i> you</span>
+                <span class="gauge-value"><span id="player-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="player-progress"></span></span>
+              </div>
+              <div class="gauge">
+                <span class="gauge-label">lap time</span>
+                <span class="gauge-value" id="player-time">0:00.00</span>
+                <span class="gauge-note"><span id="player-hits">0</span> off-track</span>
+              </div>
+              <div class="gauge opus-stat">
+                <span class="gauge-label"><i class="dot-opus"></i> usv opus 5</span>
+                <span class="gauge-value"><span id="opus-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="opus-progress"></span></span>
+                <span class="gauge-note" id="opus-lap-note"></span>
+              </div>
+              <div class="gauge gpt-stat">
+                <span class="gauge-label"><i class="dot-gpt"></i> usv gpt 5.6 sol xhigh</span>
+                <span class="gauge-value"><span id="gpt-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="gpt-progress"></span></span>
+                <span class="gauge-note" id="sol-lap-note"></span>
+              </div>
+              <div id="jev-gauge" class="gauge jev-stat" hidden>
+                <span class="gauge-label"><i class="dot-jev"></i> jev · reactive</span>
+                <span class="gauge-value"><span id="jev-distance">00</span><em>%</em></span>
+                <span class="progress-track"><span id="jev-progress"></span></span>
+                <span class="gauge-note" id="jev-lap-note"></span>
+              </div>
+            </div>
+            <aside id="jev-garage" class="race-garage" aria-label="Upcoming racer">
+              <svg class="jev-car" viewBox="0 0 48 28" width="72" height="42" aria-hidden="true" shape-rendering="crispEdges">
+                <path fill="#6bcbef" d="M8 8h8V4h16v4h8v16H8z" />
+                <path fill="#16141b" d="M17 8h14v6H17zM4 10h4v6H4zm36 0h4v6h-4zM4 20h4v6H4zm36 0h4v6h-4z" />
+                <path fill="#e8e4f4" d="M10 20h6v4h-6zm22 0h6v4h-6z" />
+              </svg>
+              <div><strong>JEV · in the garage</strong><p>TypeSafe AI · awaiting a real recorded lap. <a href="../race-method.html#jev">Could it have an advantage?</a></p></div>
+            </aside>
+            <div class="race-log">
+              <span id="race-log" aria-live="polite">USV OPUS 5 and USV GPT 5.6 SOL XHIGH are waiting on the grid.</span>
+              <button id="restart-race" class="text-button" type="button">&#8635; reset</button>
+            </div>
+          </div>
+        </section>
+
+</main><script type="module" src="../app.js"></script></body></html>

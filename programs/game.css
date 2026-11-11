@@ -1,0 +1,275 @@
+/* The game is drawn on a darker display inside the platinum window. */
+html:has(body.arcade-game),
+body.arcade-game {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #191626;
+  color: #f2eaf8;
+  scroll-behavior: auto;
+}
+body.arcade-game {
+  --game-shell: #191626;
+  --game-panel: #262037;
+  --game-line: #5b4b73;
+  --game-muted: #d5c9e3;
+  --game-amber: #ffc473;
+  --game-pixel: "Press Start 2P", var(--system-mono);
+  font: 14px/1.5 var(--system-ui);
+}
+.arcade-game::before, .arcade-game::after { display: none; }
+.arcade-game main { display: block; width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; }
+.arcade-game :is(.race-window, .vim-window) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--game-shell);
+  box-shadow: none;
+}
+.arcade-game :is(.race-window-bar, .vim-window-bar) {
+  flex: none;
+  min-height: 27px;
+  padding: 4px 10px;
+  gap: 3px 12px;
+  border-bottom: 1px solid var(--game-line);
+  border-radius: 0;
+  background: var(--system-dither), var(--game-panel);
+  color: var(--game-muted);
+  font: 12px/1.4 var(--mono, monospace);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.arcade-game .race-window-bar i {
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  background: var(--game-amber);
+}
+.arcade-game #sector-name, .arcade-game #vim-clock { color: var(--game-amber); text-shadow: none; }
+.arcade-game .game-screen { flex: 1; min-height: 215px; aspect-ratio: auto; background: #0e0b15; box-shadow: none; }
+.arcade-game .game-screen::after { background: repeating-linear-gradient(transparent 0 2px, #0002 2px 3px); }
+.arcade-game #race-canvas { width: 100%; height: 100%; object-fit: contain; }
+
+.arcade-game .game-overlay {
+  overflow: auto;
+  justify-content: safe center;
+  gap: 7px;
+  padding: 13px clamp(12px, 4vw, 34px);
+  background: var(--system-dither), #191626f5;
+}
+.arcade-game .game-overlay.hidden { visibility: hidden; }
+.arcade-game .game-overlay p {
+  margin: 0;
+  color: var(--game-muted);
+  font: 14px/1.5 var(--system-ui);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.arcade-game .game-overlay .overlay-title {
+  margin: 0;
+  color: #f5eaff;
+  font: 400 clamp(14px, 3.2vw, 27px)/1.55 var(--game-pixel);
+  letter-spacing: -.045em;
+  text-transform: uppercase;
+  text-shadow: 2px 3px #0b0911;
+}
+.arcade-game .game-overlay .button {
+  min-height: 44px;
+  margin: 0;
+  padding: 7px 18px;
+  border: 1px solid #110e16;
+  border-radius: 3px;
+  outline: 1px solid var(--game-amber);
+  outline-offset: 1px;
+  background: var(--game-amber);
+  color: #281d2a;
+  box-shadow: inset 1px 2px #fff9, inset -1px -2px #9b5939, 2px 3px #0b0911;
+  font: 750 14px/1.3 var(--system-ui);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.arcade-game .game-overlay .button:hover { background: #ffdaa3; }
+.arcade-game .game-overlay .button:active { box-shadow: inset 1px 2px #9b5939; transform: translateY(1px); }
+
+.race-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(15px, 4vw, 36px);
+  width: min(100%, 690px);
+  margin-block: auto;
+  text-align: left;
+}
+.race-intro-copy {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+  padding: 12px 0;
+}
+.race-intro-copy::before {
+  content: "";
+  width: 60px;
+  height: 12px;
+  margin-bottom: 2px;
+  background: repeating-conic-gradient(var(--game-amber) 0% 25%, transparent 0% 50%) 0 0 / 12px 12px;
+}
+.arcade-game .race-intro .race-spec { color: var(--game-amber); font: 16px/1.3 var(--mono, monospace); }
+.arcade-game .race-intro .button { margin: 6px 0 1px; }
+.arcade-game .race-intro .arcade-credit { font-size: 12px; }
+.race-circuit {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--game-line);
+  background: #151020;
+  box-shadow: 3px 3px #0c0912;
+}
+.race-circuit figcaption {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--game-line);
+  background: var(--game-panel);
+  color: #f2eaf8;
+  font: 15px/1.2 var(--mono, monospace);
+}
+.race-circuit canvas {
+  display: block;
+  width: 100%;
+  max-height: min(35vh, 250px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: linear-gradient(#75639026 1px, transparent 1px), linear-gradient(90deg, #75639026 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.race-circuit span { display: flex; align-items: center; gap: 6px; padding: 3px 8px; color: var(--game-muted); font: 14px/1.2 var(--mono, monospace); }
+.race-circuit span::before { content: ""; width: 6px; height: 6px; background: var(--game-amber); }
+
+.arcade-game .race-readout {
+  flex: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--game-line);
+  background: var(--system-dither), var(--game-panel);
+}
+.arcade-game .race-readout:has(#jev-gauge:not([hidden])) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.arcade-game .gauge {
+  grid-template-rows: auto auto 6px auto;
+  gap: 4px;
+  padding: 7px 9px;
+  border-left: 1px solid var(--game-line);
+}
+.arcade-game .gauge:first-child { border-left: 0; }
+.arcade-game .gauge[hidden] { display: none; }
+.arcade-game .gauge-label {
+  gap: 5px;
+  color: #f4eafc;
+  font: 650 11px/1.3 var(--system-ui);
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+}
+.arcade-game .gauge-label i { width: 6px; height: 6px; }
+.arcade-game .gauge-value { color: var(--game-amber); font: 20px/1 var(--mono, monospace); letter-spacing: 0; text-shadow: 1px 1px #0b0911; white-space: nowrap; }
+.arcade-game .gauge-value em { margin-left: 2px; color: var(--game-muted); font-size: .65em; }
+.arcade-game .gauge-note { color: var(--game-muted); font: 11px/1.3 var(--system-ui); letter-spacing: 0; text-transform: none; white-space: normal; }
+.arcade-game .progress-track { height: 5px; background: #151020; }
+.arcade-game .progress-track::after { background: repeating-linear-gradient(90deg, transparent 0 4px, #151020 4px 6px); }
+.arcade-game .race-log {
+  flex: none;
+  gap: 10px;
+  padding: 5px 9px;
+  border-top: 1px solid var(--game-line);
+  border-radius: 0;
+  background: var(--game-shell);
+  color: var(--game-muted);
+  font: 12px/1.4 var(--system-ui);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.arcade-game #race-log { min-width: 0; white-space: normal; }
+.arcade-game :is(#restart-race, .touch-key) {
+  padding: 5px 9px;
+  border: 1px solid #84739b;
+  border-radius: 3px;
+  background: #392e4c;
+  color: #fff;
+  box-shadow: inset 1px 1px #b8a7d54d, inset -1px -2px #151020;
+  font: 650 12px/1.2 var(--system-ui);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.arcade-game #restart-race { flex: none; min-height: 35px; margin-left: auto; }
+.arcade-game #restart-race:hover { background: #504264; }
+.arcade-game .race-touch {
+  position: relative;
+  z-index: 6;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 9px;
+  border-top: 1px solid var(--game-line);
+  background: var(--game-shell);
+}
+.arcade-game .touch-cluster { flex: 0 1 145px; gap: 6px; }
+.arcade-game .touch-key { min-height: 44px; min-width: 44px; padding: 0; font-size: 15px; }
+.arcade-game .touch-key.is-held { border-color: var(--game-amber); background: var(--game-amber); color: #281d2a; box-shadow: inset 1px 2px #9b5939; transform: none; }
+
+.arcade-game .vim-screen { display: flex; flex: 1; flex-direction: column; min-height: 0; box-shadow: none; }
+.arcade-game .vim-buffer { flex: 1; min-height: 0; overflow: auto; padding: 12px 10px 18px; font: 14px/1.55 var(--system-mono); scrollbar-width: thin; }
+.arcade-game .vim-gutter { color: #9299ae; }
+.arcade-game .vim-status { flex: none; gap: 4px; padding: 8px 10px; background: var(--game-panel); font: 12px/1.4 var(--system-mono); letter-spacing: 0; text-transform: none; }
+.arcade-game .vim-status-right { gap: 12px; }
+.arcade-game .vim-label { font-size: .9em; }
+.arcade-game .vim-window-bar i { display: none; }
+.arcade-game :is(#vim-intro, #vim-results) { width: 100%; max-width: 56ch; margin-block: auto; }
+.arcade-game :is(#vim-intro, #vim-results) p { margin: 0 auto 10px; }
+.arcade-game #vim-intro .overlay-title { color: #dcc8ff; }
+.arcade-game .vim-touch-link { display: block; margin: 11px 0 0; color: #dcc8ff; font: 13px/1.4 var(--system-ui); letter-spacing: 0; text-transform: none; text-decoration: underline; }
+.arcade-game .game-overlay .vim-keyboard-note { color: #dcc8ff; font-size: 12px; }
+.arcade-game kbd { display: inline-block; padding: 1px 4px; margin: 2px 0; border: 1px solid var(--game-line); border-radius: 2px; background: var(--game-panel); color: #eee; font: 12px/1.5 var(--system-mono); }
+.arcade-game .game-footnote { margin: 0; padding: 12px 14px 16px; background: var(--game-panel); color: var(--game-muted); font: 13px/1.55 var(--system-ui); letter-spacing: 0; text-transform: none; }
+.arcade-game :is(button, a):focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.arcade-game :is(#race-canvas, .vim-screen):focus-visible { outline: 2px solid #dcc8ff; outline-offset: -3px; }
+.arcade-game .game-overlay .button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+@media (max-width: 600px), (hover: none) and (pointer: coarse) { .arcade-game .race-touch { display: flex; } }
+
+@media (max-width: 520px) {
+  .race-intro { grid-template-columns: minmax(0, 1fr); text-align: center; }
+  .arcade-game .race-overlay { padding-block: 8px; }
+  .race-intro-copy { justify-items: center; gap: 5px; padding: 1px 0; }
+  .race-intro-copy::before { width: 36px; height: 6px; margin: 0; }
+  .race-circuit { display: none; }
+  .arcade-game .game-overlay p { font-size: 12px; }
+  .arcade-game .game-overlay .overlay-title { font-size: clamp(11px, 4vw, 20px); }
+  .arcade-game .race-intro .race-spec { font-size: 14px; }
+  .arcade-game .race-intro .button { margin-top: 3px; }
+  .arcade-game .gauge { padding: 6px 4px; gap: 3px; }
+  .arcade-game .gauge-label { font-size: 10px; }
+  .arcade-game .gauge-note { font-size: 10px; }
+  .arcade-game .gauge-value { font-size: 16px; }
+  .arcade-game .race-log { padding: 6px; }
+  .arcade-game #race-log { font-size: 11px; }
+  .arcade-game #restart-race { min-height: 44px; }
+  .arcade-game .vim-buffer { padding-inline: 6px; font-size: 13px; }
+  .arcade-game #vim-intro p { margin-bottom: 7px; }
+}
+
+@media (max-width: 450px) {
+  .arcade-game .race-window-bar > span:first-child,
+  .arcade-game .race-intro .arcade-credit { display: none; }
+  .arcade-game.race-game .race-window { height: auto; min-height: 100%; padding-bottom: 57px; }
+  .arcade-game .game-screen { flex: none; height: calc(100dvh - 84px); min-height: 146px; }
+  .arcade-game .race-touch { position: fixed; inset: auto 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-game *, .arcade-game *::before, .arcade-game *::after { animation: none; transition: none; scroll-behavior: auto; }
+}

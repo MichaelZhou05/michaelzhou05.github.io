@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sampleLap } from '../race-replay.js';
-import { jevLap } from '../jev-lap.js';
+import { jevLap } from '../results/jev-2026-10-18-r4.js';
+import { jevLap as activeJev } from '../jev-lap.js';
 import { opusLap } from '../opus-lap.js';
 
 test('real Jev trial moves during playback and stops without becoming a finish', () => {
@@ -20,4 +21,11 @@ test('real Jev trial moves during playback and stops without becoming a finish',
 test('completed Opus replay becomes a finish only at its recorded end', () => {
   assert.equal(sampleLap(opusLap, opusLap.finishTime - 1).finished, false);
   assert.equal(sampleLap(opusLap, opusLap.finishTime).finished, true);
+});
+
+test('active Jev replay ends at its saved position with its actual completion status', () => {
+  const end = sampleLap(activeJev, activeJev.finishTime + 100);
+  assert.deepEqual([end.x, end.y], activeJev.frames.at(-1).slice(1, 3));
+  assert.equal(end.done, true);
+  assert.equal(end.finished, activeJev.finished);
 });
