@@ -34,14 +34,6 @@ Run `npm run check` for syntax checks, including all four programs. After changi
 the display, check desktop and phone layouts, both games, disk swaps/ejection,
 keyboard focus, touch controls, and reduced motion in a browser.
 
-## Visitor analytics
-
-[`analytics.js`](analytics.js) loads [Umami Cloud](https://cloud.umami.is) (cookieless, no consent banner) on the homepage, the case-study reader and the race method page. Set `WEBSITE_ID` at the top of the file. Off the live host it only logs events to the console.
-
-- **Tagged links:** add `?utm_source=<tag>` to any URL, e.g. `https://michaelzhou05.github.io/?utm_source=google-tmatch`. The tag is kept in `localStorage`, attached to every later event as `ref`, and set as Umami session data.
-- **Events:** `tagged-visit`, `tagged-return`, `program-open`, `resume-open`, `email-click`, `outbound-link`, `internal-link`, `button-click`, `section-view`, and `engaged` (30s / 2m / 5m visible after a real interaction).
-- **Exclude yourself:** open the site once with `?notrack` in each of your browsers; `?track` undoes it.
-
 ## Race game
 
 Inspired by [GBA Eval](https://gbaeval.com), which grades frontier models by

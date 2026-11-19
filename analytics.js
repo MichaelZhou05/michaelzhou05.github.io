@@ -4,17 +4,15 @@
  * Loaded with `defer` in <head>, so it runs after parsing but before the
  * page's module scripts, which lets it hear the first `diskchange`.
  *
- * Tagged links: append ?utm_source=<tag> (or ?ref=<tag>) to any page URL,
- * e.g. https://michaelzhou05.github.io/?utm_source=google-tmatch
- * The tag is remembered in localStorage and attached to every later event
+ * Tagged links: append ?r=<code> (or ?utm_source=<code>) to any page URL.
+ * The code is remembered in localStorage and attached to every later event
  * from that browser, so return visits stay attributed.
  *
  * Exclude yourself: open the site once with ?notrack on each of your own
  * browsers (?track turns it back on).
  */
 (() => {
-  // Umami Cloud → Settings → Websites → your site → Website ID.
-  const WEBSITE_ID = 'PASTE-UMAMI-WEBSITE-ID';
+  const WEBSITE_ID = '33e9d2eb-b4b1-4eac-969a-efc73f28391a';
   const HOST = 'michaelzhou05.github.io';
 
   const store = {
@@ -33,8 +31,8 @@
     return;
   }
 
-  const live = location.hostname === HOST && !WEBSITE_ID.startsWith('PASTE');
-  const tag = (params.get('ref') || params.get('utm_source') || '').trim().toLowerCase().slice(0, 60);
+  const live = location.hostname === HOST;
+  const tag = (params.get('r') || params.get('ref') || params.get('utm_source') || '').trim().toLowerCase().slice(0, 60);
   const previousRef = store.get('mz:ref');
   const lastSeen = Number(store.get('mz:last')) || 0;
   const ref = tag || previousRef;
