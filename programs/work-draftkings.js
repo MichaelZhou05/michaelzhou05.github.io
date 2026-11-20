@@ -160,7 +160,10 @@ function marketDemo() {
 
 export function draftkingsExperience(job) {
   return `<section class="dk-intro">
-      <p>DraftKings prices every bet from a <b>true price</b>, the probability of an outcome before any margin is added. Player, team, venue and weather data feed a model built for each sport, which simulates the game possession by possession, thousands of times. The output is a matrix of simulated stats called <b>counters</b>. Same-game parlay pricing reads joint probabilities from the counters and sends them to the sportsbook, to traders and to prediction-market exchanges.</p>
+      <h5 class="dk-sub">How a bet gets priced</h5>
+      <p>DraftKings prices every bet from a <b>true price</b>, the probability of an outcome before any margin is added. Player, team, venue and weather data feed a model built for each sport.</p>
+      <p>The model simulates the game possession by possession, thousands of times. The output is a matrix of simulated stats called <b>counters</b>. Same-game parlay pricing reads joint probabilities from the counters and sends them to the sportsbook, to traders and to prediction-market exchanges.</p>
+      <h5 class="dk-sub">My team</h5>
       <p><b>Hornet</b> is the 12-person team that runs the pipeline around the models. It ingests and routes the data going in and turns the counters into prices coming out. Over the summer I shipped work at three points in that pipeline.</p>
     </section>
     ${pipelineMap()}
@@ -173,22 +176,35 @@ export function draftkingsExperience(job) {
 
     <section class="dk-block" id="dk-card-1">
       <h4 class="dk-h"><span class="dk-badge">1</span>Backtesting API</h4>
-      <p>Traders, engineers and product teams use this endpoint to pull the counters behind a specific price, usually to debug it. The old version searched S3 by game state, sport and time window, returned every match, and left the caller to find the right run by hand. It also broke on edge cases. The data team had made counters queryable in Snowflake, and I rebuilt the endpoint on top of that with lookup by calculation ID, the unique ID on every model run. The old filters still work for browsing.</p>
+      <h5 class="dk-sub">What it does</h5>
+      <p>Traders, engineers and product teams use this endpoint to pull the counters behind a specific price, usually to debug it.</p>
+      <h5 class="dk-sub">The old version</h5>
+      <p>It searched S3 by game state, sport and time window, returned every match, and left the caller to find the right run by hand. It also broke on edge cases.</p>
+      <h5 class="dk-sub">The rebuild</h5>
+      <p>The data team had made counters queryable in Snowflake. I rebuilt the endpoint on top of that with lookup by calculation ID, the unique ID on every model run. The old filters still work for browsing.</p>
       ${backtestDemo()}
       <p class="dk-stat"><b>−63%</b> endpoint latency</p>
     </section>
 
     <section class="dk-block" id="dk-card-2">
       <h4 class="dk-h"><span class="dk-badge">2</span>Market making V2</h4>
-      <p>DraftKings also makes markets on prediction exchanges by quoting buy and sell prices on event contracts. V1 reused the sportsbook’s output directly, which held up for two exchanges. V2 was designed for five: Kalshi, Polymarket, CME, Rothera and DraftKings’ own exchange. It maps each true price to each exchange’s listing, attaches a tradability state to every probability, and makes ownership of suspensions explicit so the system knows when to pull quotes and when to stay in the book.</p>
+      <h5 class="dk-sub">What it does</h5>
+      <p>DraftKings also makes markets on prediction exchanges by quoting buy and sell prices on event contracts.</p>
+      <h5 class="dk-sub">Why V2</h5>
+      <p>V1 reused the sportsbook’s output directly, which held up for two exchanges. V2 was designed for five: Kalshi, Polymarket, CME, Rothera and DraftKings’ own exchange. It maps each true price to each exchange’s listing, attaches a tradability state to every probability, and makes ownership of suspensions explicit so the system knows when to pull quotes and when to stay in the book.</p>
       ${marketDemo()}
+      <h5 class="dk-sub">My part</h5>
       <p>I finished the cutover. I moved every remaining flow from V1 to V2, removed the legacy components and retired the unused Kafka topics with the teams that consumed them. I also brought V2 to full test coverage and kept benchmarks passing throughout.</p>
       <p class="dk-stat"><b>−24%</b> memory in the pricing service, on benchmark</p>
     </section>
 
     <section class="dk-block dk-also">
       <h4 class="dk-h">Also shipped</h4>
-      <p>A game-removal event so services on both sides of the model clear stale state when a game leaves the feed. Shared contracts for Kafka message types, which fixed a deserialization error. A searchable catalog of 7 runbooks and repos for the on-call rotation.</p>
+      <ul class="dk-also-list">
+        <li>A game-removal event so services on both sides of the model clear stale state when a game leaves the feed.</li>
+        <li>Shared contracts for Kafka message types, which fixed a deserialization error.</li>
+        <li>A searchable catalog of 7 runbooks and repos for the on-call rotation.</li>
+      </ul>
     </section>
     <p class="work-tech"><b>Tools</b> ${job.tech}</p>`;
 }

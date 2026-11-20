@@ -5,13 +5,13 @@ import { dukeExperience, bindDuke } from './work-duke.js';
 // Earlier resume versions report different Duke metrics; do not mix evaluations.
 const experiences = [
   {
-    logo: 'draftkings-logo.svg', brand: 'draftkings',
+    logo: 'draftkings-mark.png', brand: 'draftkings',
     id: 'draftkings', short: 'DraftKings', name: 'DraftKings', area: 'Hornet · Data pipelines',
     role: 'Software engineering intern', dates: 'Jun–Aug 2026',
     tech: 'C# · Rust · Kafka · Snowflake · AWS S3',
   },
   {
-    logo: 'duke-logo.svg', brand: 'duke',
+    logo: 'duke-d.svg', brand: 'duke',
     id: 'duke', short: 'Duke Med', name: 'Duke School of Medicine', area: 'Audio machine learning',
     role: 'Machine learning researcher', dates: 'Nov 2025–May 2026',
     scope: 'These are research results on mouse recordings. They do not establish clinical performance or a deployed diagnostic tool.',
@@ -81,8 +81,8 @@ function armyPublication() {
 
 function armyVisuals() {
   const assets = './assets/programs/work/';
-  return `<section class="work-army-visuals" aria-label="Crazyflie hardware and jammer-test plots">
-    <h4>The hardware</h4>
+  return `<section class="work-army-visuals work-section" aria-label="Crazyflie hardware and jammer-test plots">
+    <h4 class="work-visuals-title">The hardware</h4>
     <div class="work-hardware-pair">
       <figure class="work-reference-figure">
         <a class="work-reference-image work-hardware-photo" href="${assets}army-crazyflie-2-1.jpg" target="_blank" rel="noopener" aria-label="Open full-size Crazyflie 2.1 drone photo">
@@ -96,7 +96,7 @@ function armyVisuals() {
       </figure>
     </div>
     <p class="work-visual-source">Reference photos: <a href="https://www.bitcraze.io/products/old-products/crazyflie-2-1/" target="_blank" rel="noopener noreferrer">Crazyflie</a> and <a href="https://www.bitcraze.io/products/old-products/crazyradio-pa/" target="_blank" rel="noopener noreferrer">Crazyradio</a> by Bitcraze, <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a>.</p>
-    <h4>Testing with a jammer</h4>
+    <h4 class="work-visuals-title">Testing with a jammer</h4>
     <figure class="work-reference-figure">
       <a class="work-reference-image work-test-plot" href="${assets}army-ucb1-with-jammer.png" target="_blank" rel="noopener" aria-label="Open full-size UCB1 action chart with jammer">
         <img src="${assets}army-ucb1-with-jammer.png" alt="UCB1 action chart with a jammer, showing the number of selections for each of 25 numbered channels." width="640" height="480" loading="lazy" decoding="async">
@@ -113,8 +113,8 @@ function armyVisuals() {
 
 function gmuVisuals() {
   const assets = './assets/programs/work/';
-  return `<section class="work-gmu-visuals" aria-label="Parrot Bebop reference photos">
-    <h4>The Parrot Bebop</h4>
+  return `<section class="work-gmu-visuals work-section" aria-label="Parrot Bebop reference photos">
+    <h4 class="work-visuals-title">The Parrot Bebop</h4>
     <div class="work-hardware-pair">
       <figure class="work-reference-figure">
         <a class="work-reference-image" href="${assets}gmu-parrot-bebop-front.jpg" target="_blank" rel="noopener" aria-label="Enlarge the Parrot Bebop drone photo">
