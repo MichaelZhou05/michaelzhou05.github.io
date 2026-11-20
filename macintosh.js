@@ -12,7 +12,7 @@ const disks = [
   {id:'projects', title:'Past projects', label:'CODE', color:'#a17c6d', load:()=>import('./programs/projects.js')},
   {id:'fun', title:'Cool stuff', label:'PLAY', color:'#a38d5e', load:()=>import('./programs/arcade.js')},
 ];
-let selected = 'experience';
+let selected = null;
 let mounted = null;
 let seated = null;
 let cleanup = null;
@@ -42,7 +42,8 @@ function idle() {
   screen.innerHTML = `<div class="mac-idle"><div class="mac-idle-bar"><span>▧ &nbsp; Michael's Macintosh</span><span>MZ System 7</span></div><div class="mac-idle-welcome"><div class="mac-happy" aria-hidden="true"><span class="mac-happy-face">☺</span><span class="mac-happy-slot"></span></div><h2>Hello.</h2><p>Pick a disk.<br>Make yourself at home.</p></div><div class="mac-idle-footer"><span>Four disks. A few rabbit holes.</span><span>Drive empty</span></div></div>`;
 }
 function update() {
-  machine.dataset.disk = mounted || selected;
+  const current = mounted || selected;
+  if (current) machine.dataset.disk = current; else delete machine.dataset.disk;
   const disk = diskFor(selected);
   diskButtons.forEach(button => {
     const active = button.dataset.disk === selected;
@@ -52,10 +53,15 @@ function update() {
     button.querySelector('.mac-disk-state').textContent = inserted ? 'In the drive'
       : button.dataset.disk === mounted ? 'Inserting…' : active ? 'Ready to insert' : 'Select disk';
   });
-  drive.disabled = selected === mounted;
-  drive.setAttribute('aria-label', seated === selected ? `${disk.title} disk inserted`
-    : mounted === selected ? `Inserting ${disk.title} disk` : `Insert ${disk.title} disk`);
-  drive.querySelector('.mac-drive-label').textContent = mounted === selected ? disk.title : `Insert ${disk.title}`;
+  drive.disabled = !disk || selected === mounted;
+  if (!disk) {
+    drive.setAttribute('aria-label', 'Floppy drive, empty');
+    drive.querySelector('.mac-drive-label').textContent = 'Drive empty';
+  } else {
+    drive.setAttribute('aria-label', seated === selected ? `${disk.title} disk inserted`
+      : mounted === selected ? `Inserting ${disk.title} disk` : `Insert ${disk.title} disk`);
+    drive.querySelector('.mac-drive-label').textContent = mounted === selected ? disk.title : `Insert ${disk.title}`;
+  }
   ejectButton.disabled = !mounted;
 }
 function select(id) {
@@ -101,6 +107,7 @@ function animateDisk(disk, {ejecting = false, fromDrive = false} = {}) {
   const pose = ({x = 0, y = halfDepth + 3, tilt = pitch, turn = 0, roll = 0, travel = 0, scale = fit} = {}) =>
     `translate(${x}px, ${y}px) perspective(520px) rotateX(${tilt}deg) rotateY(${turn}deg) rotateZ(${roll}rad) translateY(${travel}px) scale(${scale})`;
   const resting = pose({x, y, tilt: 0, roll: shelfAngle, scale: 1});
+  const lifted = pose({x, y: y - 14, tilt: 0, roll: shelfAngle * .4, scale: 1.08});
   const turning = pose({x: x * .49, y: y * .55 + halfDepth * .45, tilt: 34, turn: x < 0 ? 17 : -17});
   const aligned = pose();
   const inside = pose({travel: -height * fit - 47});
@@ -120,12 +127,13 @@ function animateDisk(disk, {ejecting = false, fromDrive = false} = {}) {
     duration = 220;
   } else {
     frames = [
-      { transform: resting, easing: approach },
-      { transform: turning, offset: .31, easing: approach },
-      { transform: aligned, offset: .65, easing: 'ease-in' },
+      { transform: resting, easing: 'cubic-bezier(.3, 1.6, .5, 1)' },
+      { transform: lifted, offset: .18, easing: approach },
+      { transform: turning, offset: .45, easing: approach },
+      { transform: aligned, offset: .74, easing: 'ease-in' },
       { transform: inside },
     ];
-    duration = 550;
+    duration = 720;
   }
 
   const layer = document.createElement('span');
@@ -227,11 +235,9 @@ async function eject() {
 }
 shelf.addEventListener('click',event=>{
   const button = event.target.closest('[data-disk]');
-  if(button) select(button.dataset.disk);
-});
-shelf.addEventListener('dblclick',event=>{
-  const button = event.target.closest('[data-disk]');
-  if(button) insert(button.dataset.disk);
+  if (!button) return;
+  select(button.dataset.disk);
+  insert(button.dataset.disk);
 });
 shelf.addEventListener('keydown',event=>{
   const button = event.target.closest('[data-disk]');
