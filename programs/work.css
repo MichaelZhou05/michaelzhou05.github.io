@@ -268,9 +268,7 @@
 }
 
 /* Published DeepSqueak reference views; crops preserve the original annotations. */
-.work-program .work-duke-visuals { margin: 26px 0; }
-.work-program .work-duke-visuals h4 { margin: 0 0 8px; font: 600 16px/1.4 var(--system-ui); }
-.work-program .work-duke-visuals .work-visual-intro { margin-bottom: 16px; color: var(--work-muted); font-size: 13px; }
+.work-program .du-ds { margin: 14px 0 0; }
 .work-program .work-reference-figure { margin: 0 0 22px; }
 .work-program .work-reference-image { position: relative; display: block; overflow: hidden; background: #181818; border: 1px solid #d5d4de; border-radius: 3px; }
 .work-program .work-reference-image:focus-visible, .work-program .work-visual-source a:focus-visible { outline: 2px solid var(--work-accent); outline-offset: 3px; }
@@ -282,7 +280,7 @@
 .work-program .work-reference-detections img { position: absolute; width: 139.6582%; left: -28.2051%; top: -262.1053%; }
 .work-program .work-reference-figure figcaption { margin-top: 8px; color: var(--work-muted); font-size: 13px; line-height: 1.6; }
 .work-program .work-reference-figure figcaption b { color: var(--work-ink); font-weight: 600; }
-.work-program .work-duke-visuals .work-visual-source { color: var(--work-muted); font-size: 12px; line-height: 1.6; }
+.work-program .du-ds .work-visual-source { color: var(--work-muted); font-size: 12px; line-height: 1.6; }
 .work-program .work-visual-source a { color: var(--work-accent); text-decoration: underline; text-underline-offset: 2px; }
 
 .work-program .work-publication { margin: 20px 0; padding-left: 13px; border-left: 3px solid #b7a9ca; }
@@ -303,4 +301,111 @@
   .work-program .work-hardware-pair,
   .work-program .work-gmu-visuals .work-hardware-pair { grid-template-columns: minmax(0, 1fr); }
   .work-program .work-hardware-photo { aspect-ratio: 4 / 3; }
+}
+
+/* Duke story: Krabbe background, genotypes, call types, pipeline map, litter split. */
+.du-story {
+  --du-navy: #012169;
+  --du-blue: #00539b;
+  --du-muted: #4d5a73;
+  --du-line: #bcc8dc;
+  --du-wash: #e6eef8;
+  --du-paper: #f5f8fc;
+  --du-sick: #b5462f;
+  container-type: inline-size;
+}
+.du-story .work-identity { gap: 11px; margin-bottom: 16px; padding-bottom: 12px; }
+.du-story .work-identity .work-brand { width: 82px; height: 36px; padding: 5px; }
+.du-story .work-identity .mac-document-title { font-size: 16px; letter-spacing: -.02em; }
+.du-story .work-identity .work-role { margin: 2px 0 0; font-size: 12px; }
+.du-story .work-identity .work-dates { font-size: 11px; }
+.du-story p { line-height: 1.6; }
+.du-story b { color: var(--du-navy); }
+.du-h { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; color: var(--du-navy); font: 700 16px/1.3 var(--system-ui); }
+.du-block { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--du-line); }
+.du-badge { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--du-navy); color: #fff; font: 700 12px/1 var(--system-ui); }
+.du-stat { margin: 12px 0 0; padding: 4px 0 4px 10px; border-left: 3px solid var(--du-blue); color: var(--du-muted); font-size: 13px; }
+.du-stat b { margin-right: 4px; color: var(--du-blue); font-size: 18px; letter-spacing: -.02em; }
+.du-scope { margin: 12px 0 0; color: var(--du-muted); font-size: 12px; }
+.du-story :is(.du-node, .du-chips button):focus-visible { outline: 2px solid var(--du-blue); outline-offset: 2px; }
+.du-story figure { min-width: 0; }
+
+/* Genotypes */
+.du-geno { margin: 16px 0 0; }
+.du-geno-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.du-geno-cards li { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 10px; border: 1px solid var(--du-line); border-radius: 6px; background: var(--du-paper); }
+.du-geno-cards li.is-sick { border-color: var(--du-sick); background: #fbefec; }
+.du-geno-name { color: var(--du-navy); font: 700 13px/1.2 var(--system-ui); }
+.du-alleles { display: flex; gap: 4px; }
+.du-alleles i { padding: 2px 7px; border-radius: 3px; font: 700 11px/1.4 var(--system-mono); font-style: normal; }
+.du-alleles .is-ok { background: var(--du-wash); color: var(--du-blue); border: 1px solid var(--du-line); }
+.du-alleles .is-mut { background: var(--du-sick); color: #fff; border: 1px solid var(--du-sick); }
+.du-geno-note { flex: 1; color: var(--du-muted); font-size: 12px; line-height: 1.45; }
+.du-geno-label { align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: var(--du-navy); color: #fff !important; font: 700 11px/1.4 var(--system-ui); }
+.is-sick .du-geno-label { background: var(--du-sick); }
+.du-geno figcaption, .du-calls figcaption, .du-litters figcaption { margin-top: 8px; color: var(--du-muted); font-size: 12px; line-height: 1.55; }
+
+/* Call-type sketches */
+.du-calls { margin: 6px 0 0; padding: 12px; border: 1px solid var(--du-line); border-radius: 6px; background: var(--du-paper); }
+.du-calls ul { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.du-calls li { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.du-calls svg { display: block; width: 100%; height: auto; border-radius: 4px; background: #101827; }
+.du-calls path { fill: none; stroke: #8fd3ff; stroke-width: 2.6; stroke-linecap: round; }
+.du-calls .du-jump { stroke: #8fd3ff; stroke-width: 1; stroke-dasharray: 2 2; opacity: .6; }
+.du-calls .du-harm { opacity: .45; }
+.du-calls span { color: var(--du-muted); font-size: 11px; line-height: 1.3; text-align: center; }
+
+/* Pipeline map */
+.du-map { margin: 14px 0 0; padding: 12px; border: 1px solid var(--du-line); border-radius: 6px; background: var(--du-paper); }
+.du-map svg { display: block; width: 100%; height: auto; overflow: visible; }
+.du-node { cursor: pointer; outline: none; }
+.du-node rect { fill: #fff; stroke: var(--du-line); stroke-width: 1.5; stroke-dasharray: 4 3; transition: fill .15s, stroke .15s; }
+.du-node.is-mine rect { fill: var(--du-wash); stroke: var(--du-navy); stroke-dasharray: none; }
+.du-node:is(:hover, :focus-visible) rect { fill: #d3e2f4; stroke: var(--du-blue); stroke-width: 2; }
+.du-node-title { fill: var(--du-navy); font: 700 13px var(--system-ui); text-anchor: middle; }
+.du-node-sub { fill: var(--du-muted); font: 10.5px var(--system-mono); text-anchor: middle; }
+.du-wires path { fill: none; stroke: var(--du-muted); stroke-width: 1.5; }
+.du-map marker path { fill: var(--du-muted); }
+.du-wire-label { fill: var(--du-muted); font: italic 11px var(--system-mono); }
+.du-map figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 10px; color: var(--du-muted); font-size: 12px; }
+.du-swatch { width: 14px; height: 10px; border: 1.5px solid var(--du-navy); border-radius: 2px; background: var(--du-wash); }
+.du-swatch.is-pre { margin-left: 8px; border: 1.5px dashed var(--du-line); background: #fff; }
+.du-map-note { flex-basis: 100%; min-height: 2.8em; padding: 6px 9px; border-radius: 4px; background: #fff; color: var(--du-navy); font-size: 13px; line-height: 1.45; }
+.du-map-list { display: none; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+.du-map-list li { padding: 6px 9px; border-left: 3px dashed var(--du-line); }
+.du-map-list li + li { margin-top: 4px; }
+.du-map-list li.is-mine { border-left-style: solid; border-color: var(--du-navy); background: var(--du-wash); }
+.du-map-list b { display: block; }
+
+/* Litter split */
+.du-litters { margin: 12px 0 0; padding: 12px; border: 1px solid var(--du-line); border-radius: 6px; background: var(--du-paper); }
+.du-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.du-chips button { min-height: 30px; padding: 4px 11px; border: 1px solid var(--du-line); border-radius: 999px; background: #fff; color: var(--du-muted); font: 600 12px/1.2 var(--system-ui); cursor: pointer; }
+.du-chips button[aria-pressed="true"] { border-color: var(--du-navy); background: var(--du-navy); color: #fff; }
+.du-litter-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; margin: 0; padding: 0; list-style: none; }
+.du-litter-rows li { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.du-litter-name { width: 58px; flex: none; color: var(--du-muted); font: 11px var(--system-mono); }
+.du-story :is(.du-litter-rows, .du-legend) i { display: inline-block; flex: none; width: 16px; height: 16px; border: 2px solid var(--du-blue); border-radius: 50%; background: #fff; box-sizing: border-box; transition: box-shadow .2s; }
+.du-story :is(.du-litter-rows, .du-legend) i.is-sick { border-color: var(--du-sick); background: var(--du-sick); }
+.du-story :is(.du-litter-rows, .du-legend) i.is-test { box-shadow: 0 0 0 2px var(--du-paper), 0 0 0 4px #e3a21a; }
+.du-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0 0; color: var(--du-muted); font-size: 12px; }
+.du-legend i:not(:first-child) { margin-left: 8px; }
+.du-legend i.is-test { border-color: var(--du-muted); }
+
+.du-detail { margin-top: 24px; }
+.du-story .work-tech { margin-top: 16px; color: var(--du-muted); font-size: 12px; }
+
+@container (max-width: 460px) {
+  .du-map svg { display: none; }
+  .du-map-list { display: block; }
+  .du-map-note { display: none; }
+  .du-geno-cards { grid-template-columns: minmax(0, 1fr); }
+  .du-calls ul { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .du-litter-rows { grid-template-columns: minmax(0, 1fr); }
+}
+@container (max-width: 350px) {
+  .du-story .work-identity .work-brand { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .du-node rect, .du-story i { transition: none; }
 }
