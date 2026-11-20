@@ -125,7 +125,7 @@
 .mac-disk[aria-pressed=true] .mac-disk-state {color:var(--amber);}
 .mac-disk:is(.is-mounted, .is-moving) .mac-floppy {visibility:hidden;}
 .mac-disk.is-mounted .mac-disk-state {color:#a2c29c;}
-.mac-instructions,.mac-status {margin:20px 0 0;text-align:center;color:var(--fg-dim);font:15px/1.4 var(--mono);}
+.mac-instructions,.mac-status {margin:20px 0 0;max-width:none;text-align:center;color:var(--fg-dim);font:15px/1.4 var(--mono);}
 .mac-status {margin-top:5px;color:#b8a9df;min-height:1.4em;}
 .macintosh + .panel {margin-top:32px;}
 .mac-idle {display:flex;flex-direction:column;background:var(--system-dither),#c3bec8;}
