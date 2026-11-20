@@ -5,13 +5,13 @@ import { dukeExperience, bindDuke } from './work-duke.js';
 // Earlier resume versions report different Duke metrics; do not mix evaluations.
 const experiences = [
   {
-    logo: 'draftkings-logo.svg', brand: 'draftkings',
+    logo: 'draftkings-mark.png', brand: 'draftkings',
     id: 'draftkings', short: 'DraftKings', name: 'DraftKings', area: 'Hornet · Data pipelines',
     role: 'Software engineering intern', dates: 'Jun–Aug 2026',
     tech: 'C# · Rust · Kafka · Snowflake · AWS S3',
   },
   {
-    logo: 'duke-logo.svg', brand: 'duke',
+    logo: 'duke-d.svg', brand: 'duke',
     id: 'duke', short: 'Duke Med', name: 'Duke School of Medicine', area: 'Audio machine learning',
     role: 'Machine learning researcher', dates: 'Nov 2025–May 2026',
     scope: 'These are research results on mouse recordings. They do not establish clinical performance or a deployed diagnostic tool.',
