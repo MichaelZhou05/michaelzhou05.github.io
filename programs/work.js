@@ -1,4 +1,5 @@
 import { draftkingsExperience, bindDraftkings } from './work-draftkings.js';
+import { dukeExperience, bindDuke } from './work-duke.js';
 
 // Public-facing summaries draw on the August 2026 full-stack resume and firsthand project details.
 // Earlier resume versions report different Duke metrics; do not mix evaluations.
@@ -13,21 +14,12 @@ const experiences = [
     logo: 'duke-logo.svg', brand: 'duke',
     id: 'duke', short: 'Duke Med', name: 'Duke School of Medicine', area: 'Audio machine learning',
     role: 'Machine learning researcher', dates: 'Nov 2025–May 2026',
-    heading: 'From mouse calls to research signals',
-    problem: 'Researchers study disease-related changes in ultrasonic mouse calls. Preparing recordings and categorizing calls by hand slowed each experiment.',
-    contribution: [
-      'I built audio preprocessing and disease classifiers around existing call-detection tools, replacing manually categorized call features with learned audio features.',
-      'I compared random forests, SVMs, and neural networks with group-aware cross-validation.',
-    ],
-    outcomes: [
-      ['~30 min', 'Experiment preparation, down from more than 10 hours.'],
-      ['Up to 86%', 'Disease-classification accuracy in lab evaluation.'],
-    ],
     scope: 'These are research results on mouse recordings. They do not establish clinical performance or a deployed diagnostic tool.',
     detail: [
-      'The preprocessing work covered eight hours of raw audio, using adaptive thresholding and Gaussian denoising to prepare sonograms.',
-      'The archived pipeline uses SqueakOut for call segmentation and encoder features, then aggregates calls into recording-level predictions. SqueakOut is an existing model, not my own detector.',
-      'The evaluation code groups recordings by litter, helping keep related animals from appearing on both sides of a validation split.',
+      'Preprocessing covered eight hours of raw audio, using adaptive thresholding and Gaussian denoising to prepare spectrograms.',
+      'Calls are detected with a sliding window over each recording. SqueakOut segmentation masks become call boxes, and calls split across window edges are merged.',
+      'Each call is encoded by the frozen MobileNetV2 backbone. The backbone can be tapped at 32 to 1,280 dimensions. The 96-dimension layer limits overfitting on a small dataset. Hand-crafted features such as duration, pitch slope and bandwidth can be concatenated per call.',
+      'A 2×2×2 ablation on Duke’s H200 cluster crossed noise augmentation, encoder-only versus combined features, and sliced-Wasserstein versus average pooling. Jobs ran as SLURM arrays.',
     ],
     tech: 'Python · PyTorch · MATLAB · CUDA · scikit-learn',
   },
@@ -76,34 +68,6 @@ const experiences = [
 
 function brandLogo(job, className = '') {
   return `<span class="work-brand work-brand-${job.brand} ${className}"><img src="./assets/programs/work/${job.logo}" alt="${job.short} logo" width="112" height="56" decoding="async"></span>`;
-}
-
-function dukeVisuals() {
-  const source = 'https://github.com/DrCoffey/DeepSqueak/wiki/Main-Window';
-  const image = './assets/programs/work/deepsqueak-reference-ui.png';
-  return `<section class="work-duke-visuals" aria-label="DeepSqueak interface and ultrasonic vocalizations">
-    <h4>From recordings to detected calls</h4>
-    <p class="work-visual-intro">Reference images from the DeepSqueak authors’ public guide, separate from my Duke study results.</p>
-    <figure class="work-reference-figure">
-      <a class="work-reference-image work-reference-full" href="${image}" target="_blank" rel="noopener" aria-label="Open full-size DeepSqueak interface image">
-        <img src="${image}" alt="Annotated DeepSqueak interface with call statistics, spectrograms, detection boxes, and review controls." width="1634" height="962" loading="lazy" decoding="async">
-      </a>
-      <figcaption><b>DeepSqueak interface.</b> Review detected calls, inspect their shape, and accept or reject detections.</figcaption>
-    </figure>
-    <figure class="work-reference-figure">
-      <a class="work-reference-image work-reference-usvs" href="${image}" target="_blank" rel="noopener" aria-label="Open full-size source for the ultrasonic call close-up">
-        <img src="${image}" alt="Close-up of ultrasonic vocalizations: bright curved tracks show sound energy across time and frequency; green call boxes are retained from the original screenshot." width="1634" height="962" loading="lazy" decoding="async">
-      </a>
-      <figcaption><b>Ultrasonic vocalizations (USVs).</b> Bright tracks show the calls’ changing frequency over time. Close-up of the upper spectrogram.</figcaption>
-    </figure>
-    <figure class="work-reference-figure">
-      <a class="work-reference-image work-reference-detections" href="${image}" target="_blank" rel="noopener" aria-label="Open full-size source for the detection overview">
-        <img src="${image}" alt="A longer spectrogram with green boxes marking detected vocalizations and a highlighted window connecting the overview to the close-up." width="1634" height="962" loading="lazy" decoding="async">
-      </a>
-      <figcaption><b>Detections across a recording.</b> Green boxes mark candidate calls; the highlighted region connects the overview to the detailed view.</figcaption>
-    </figure>
-    <p class="work-visual-source">All three views use the same published screenshot; the close-ups retain its original detection boxes. <a href="${source}" target="_blank" rel="noopener noreferrer">DeepSqueak guide and image credit</a>. Select any image to see the full-size original.</p>
-  </section>`;
 }
 
 function armyPublication() {
@@ -194,17 +158,16 @@ export function mount(root) {
     });
     root.querySelector('[data-work-compact]').value = String(selected);
     page.setAttribute('aria-label', `${job.name} experience`);
-    const isDraftKings = job.id === 'draftkings';
-    page.innerHTML = `<article class="work-document mac-page-enter${isDraftKings ? ' dk-story' : ''}"><header class="work-identity">
+    const story = { draftkings: ['dk-story', draftkingsExperience], duke: ['du-story', dukeExperience] }[job.id];
+    page.innerHTML = `<article class="work-document mac-page-enter${story ? ` ${story[0]}` : ''}"><header class="work-identity">
         ${brandLogo(job)}<div><h3 class="mac-document-title">${job.name}</h3><p class="work-role">${job.role}</p><p class="work-dates">${job.dates}</p></div>
       </header>
-      ${isDraftKings ? draftkingsExperience(job) : `<h4 class="work-subject">${job.heading}</h4><p>${job.problem}</p>
+      ${story ? story[1](job) : `<h4 class="work-subject">${job.heading}</h4><p>${job.problem}</p>
       ${job.id === 'army' ? armyPublication() : ''}
       <h4 class="work-section-title">My contribution</h4>
       <ul class="work-contribution">${job.contribution.map(item => `<li>${item}</li>`).join('')}</ul>
       <dl class="work-outcomes" aria-label="Results">${job.outcomes.map(([value, description]) => `<div><dt>${value}</dt><dd>${description}</dd></div>`).join('')}</dl>
       <p class="work-scope">${job.scope}</p>
-      ${job.id === 'duke' ? dukeVisuals() : ''}
       ${job.id === 'army' ? armyVisuals() : ''}
       ${job.id === 'gmu' ? gmuVisuals() : ''}
       <details class="work-detail"><summary>Technical detail</summary>
@@ -241,6 +204,7 @@ export function mount(root) {
   }, { signal: controller.signal });
 
   bindDraftkings(page, controller.signal);
+  bindDuke(page, controller.signal);
   render();
   return () => {
     controller.abort();
